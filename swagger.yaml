@@ -1,0 +1,956 @@
+openapi: 3.0.4
+info:
+  title: DLU Services - OpenAPI 3.0
+  description: |-
+
+  termsOfService: https://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.12
+externalDocs:
+  description: Find out more about Swagger
+  url: https://swagger.io
+servers:
+  - url: https://dlu.nypd.org/api/v3
+tags:
+  - name: user
+    description: Operations about user
+  - name: reference
+    description: Operations about reference data
+  - name: case
+    description: Operations about case data
+paths:
+  /case/stats:
+    get:
+      tags:
+        - case
+      summary: Retrieve DLU case stats
+      description: Retrieve DLU case stats
+      operationId: getCaseStats
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DLUCaseStats'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /case/{caseId}:
+    get:
+      tags:
+        - case
+      summary: Retrieve DLU case.
+      description: Retrieve DLU case.
+      operationId: getCaseById
+      parameters:
+        - in: path
+          name: caseId
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the case to get
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DLUCase'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - case
+      summary: Update DLU case.
+      description: Update DLU case.
+      operationId: updateCase
+      parameters:
+        - in: path
+          name: caseId
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the case to update
+      requestBody:
+        description: Updated Case object
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DLUCase'
+      responses:
+        '200':
+          description: Case updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DLUCase"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /case:
+    post:
+      tags:
+        - case
+      summary: Create new DLU case.
+      description: Create new DLU case.
+      operationId: createCaseByArrest
+      requestBody:
+        $ref: '#/components/requestBodies/CreateCaseRequest'
+      responses:
+        '200':
+          description: Case exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DLUCase"
+        '201':
+          description: Case created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DLUCase"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /case/{caseId}/note:
+    post:
+      tags:
+        - case
+      summary: Create new case note
+      description: Create new case note
+      operationId: createCaseNote
+      parameters:
+        - in: path
+          name: caseId
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the case to update
+      requestBody:
+         content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                noteDesc:
+                  type: string
+                fileNm:
+                  type: string
+                fileContent:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Note created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DLUCase"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /case/list:
+    post:
+      tags:
+        - case
+      summary: Retrieve DLU case list.
+      description: Retrieve DLU case list.
+      operationId: getCaseList
+      requestBody:
+        $ref: '#/components/requestBodies/CaseFilter'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/CaseListResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /users:
+    get:
+      tags:
+        - user
+      summary: Retrieve DLU user list from AD.
+      description: Retrieve DLU user list from AD.
+      operationId: getUserList
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /reference/codes:
+    get:
+      tags:
+        - reference
+      summary: Retrieve general code list from db.
+      description: Retrieve general code list from db.
+      operationId: getGeneralCodeList
+      parameters:
+        - in: query
+          name: codeType
+          required: true
+          schema:
+            type: string
+          description: code type to retrieve
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReferenceCode'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /reference/items:
+    get:
+      tags:
+        - reference
+      summary: Retrieve item list from db.
+      description: Retrieve item list from db.
+      operationId: getItemList
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /reference/adas:
+    get:
+      tags:
+        - reference
+      summary: Retrieve ADA list from db.
+      description: Retrieve ADA list from db.
+      operationId: getADAList
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ADA'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /reference/categories:
+    get:
+      tags:
+        - reference
+      summary: Retrieve category list from db.
+      description: Retrieve category list from db.
+      operationId: getCategoryList
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /reference/tags:
+    get:
+      tags:
+        - reference
+      summary: Retrieve tag list from db.
+      description: Retrieve tag list from db.
+      operationId: getTagList
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /reference/dluOffices:
+    get:
+      tags:
+        - reference
+      summary: Retrieve DLU Office list from db.
+      description: Retrieve DLU Office list from db.
+      operationId: getDLUOfficeList
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DLUOffice'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /reference/statuses:
+    get:
+      tags:
+        - reference
+      summary: Retrieve status list from db.
+      description: Retrieve status list from db.
+      operationId: getStatusList
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Status'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user/login:
+    get:
+      tags:
+        - user
+      summary: Logs user into the system.
+      description: Log into the system.
+      operationId: loginUser
+      parameters:
+        - name: username
+          in: query
+          description: The user name for login
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/xml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: Invalid username/password supplied
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user/logout:
+    get:
+      tags:
+        - user
+      summary: Logs out current logged in user session.
+      description: Log user out of the system.
+      operationId: logoutUser
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user/{username}:
+    get:
+      tags:
+        - user
+      summary: Get user by user name.
+      description: Get user detail based on username.
+      operationId: getUserByName
+      parameters:
+        - name: username
+          in: path
+          description: The name that needs to be fetched. Use user1 for testing
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    ArrestInfo:
+      type: object
+      properties:
+        arrId:
+          type: string
+        arrDt:
+          type: string
+          format: date
+        arrPct:
+          type: string
+        arrPb:
+          type: string
+        cmplntId:
+          type: array
+          items:
+            type: string
+        topCharge:
+          type: string
+        aoTax:
+          type: string
+        aoFrstNm:
+          type: string
+        aoLastNm:
+          type: string
+        aoCmd:
+          type: string
+        deftFrstNm:
+          type: string
+        deftLastNm:
+          type: string
+        deftNysid:
+          type: string
+        arrSealedFlg:
+          type: string
+        deftGender:
+          type: string
+        deftBrthDt:
+          type: string
+          format: date
+        felonyFlg:
+          type: integer
+        dvFlg:
+          type: integer
+        indexCrimeFlg:
+          type: integer
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        itemDesc:
+          type: string
+          example: ECMS
+        inactiveFlg:
+          type: integer
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        tagDesc:
+          type: string
+          example: Gun
+        inactiveFlg:
+          type: integer
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        categoryDesc:
+          type: string
+          example: Shootings
+        inactiveFlg:
+          type: integer
+    Status:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        statusDesc:
+          type: string
+          example: Completed
+        inactiveFlg:
+          type: integer
+    DLUOffice:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        dluOfficeDesc:
+          type: string
+          example: Manhattan
+        inactiveFlg:
+          type: integer
+    ADA:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        jobTitleDesc:
+          type: string
+        frstNm:
+          type: string
+        lastNm:
+          type: string
+        emailAddrDesc:
+          type: string
+        boroughNm:
+          type: string
+        busPhoneNum:
+          type: string
+        cellPhoneNum:
+          type: string
+        faxNum:
+          type: string
+        noteDesc:
+          type: string
+        archiveFlg:
+          type: integer
+        inactiveFlg:
+          type: integer
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          example: theUser
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: James
+        email:
+          type: string
+          example: john@email.com
+        rank:
+          type: string
+        title:
+          type: string
+        tax:
+          type: string
+          example: '123456'
+        cmdCode:
+          type: string
+        mobile:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+    DLUCaseStats:
+      type: object
+      properties:
+        overdueCount:
+          type: integer
+          example: 1
+        comingDueCount:
+          type: integer
+          example: 1
+    DLUCase:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        parentId:
+          type: integer
+        arrId:
+          type: string
+        assignedNm:
+          type: string
+        requestDt:
+          type: string
+          format: date
+        dueDt:
+          type: string
+          format: date
+        completeDt:
+          type: string
+          format: date
+        proactiveFlg:
+          type: integer
+          format: int32 
+        activeFlg:
+          type: integer
+          format: int32 
+        relatedCases:
+          type: array
+          items:
+            $ref: '#/components/schemas/DLUCase'    
+        category:
+          $ref: '#/components/schemas/Category'
+        dlu:
+          $ref: '#/components/schemas/DLUOffice'
+        status:
+          $ref: '#/components/schemas/Status'
+        arrest:
+          $ref: '#/components/schemas/ArrestInfo'
+        ada:
+          $ref: '#/components/schemas/ADA'
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseTag'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseItem'
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseNote'
+        uploads:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseUpload'
+        rowInsertTs:
+          type: string
+          format: date-time
+    DLUCaseSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        parentId:
+          type: integer
+        arrId:
+          type: string
+        dlu:
+          $ref: '#/components/schemas/DLUOffice'
+        status:
+          $ref: '#/components/schemas/Status'
+        assignedNm:
+          type: string
+        requestDt:
+          type: string
+          format: date
+        dueDt:
+          type: string
+          format: date
+        completeDt:
+          type: string
+          format: date
+        proactiveFlg:
+          type: integer
+          format: int32  
+        activeFlg:
+          type: integer
+          format: int32
+        category:
+          $ref: '#/components/schemas/Category'
+        arrest:
+          $ref: '#/components/schemas/ArrestInfo'
+        ada:
+          $ref: '#/components/schemas/ADA'
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseTag'
+    CaseNote:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        caseId:
+          type: integer
+        userNm:
+          type: string
+        noteDesc:
+          type: string
+        upload:
+          $ref: '#/components/schemas/CaseUpload'
+        rowInsertTs:
+          type: string
+          format: date-time
+    CaseTag:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        caseId:
+          type: integer
+        tagId:
+          type: integer
+        tagDesc:
+          type: string
+    CaseItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        caseId:
+          type: integer
+        itemId:
+          type: integer
+        itemDesc:
+          type: string
+        statusDesc:
+          type: string
+        noteDesc:
+          type: string
+        quantity:
+          type: integer
+    CaseUpload:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        caseId:
+          type: integer
+        fileNm:
+          type: string
+        userNm:
+          type: string
+        rowInsertTs:
+          type: string
+          format: date-time
+    ReferenceCode:
+        type: object
+        properties:
+          id:
+            type: integer
+          codeType:
+            type: string
+          codeVal:
+            type: string
+          codeDesc:
+            type: string
+    CaseListResponse:
+        type: object
+        properties:
+          totalElements:
+            type: integer
+            format: int64
+          totalPages:
+            type: integer
+          pageSize:
+            type: integer
+          pageNumber:
+            type: integer
+          isFirst:
+            type: boolean
+          isLast:
+            type: boolean
+          hasNext:
+            type: boolean
+          hasPrevious:
+            type: boolean
+          caseSummaries:
+            type: array
+            items:
+              $ref: '#/components/schemas/DLUCaseSummary'
+          caseStats:
+            $ref: '#/components/schemas/DLUCaseStats'
+    CreateCaseRequest:
+        type: object
+        required: 
+          - arrId
+          - dluOfficeId
+          - proactiveFlg
+        properties:
+          arrId:
+            type: string
+          parentId:
+            type: integer
+          proactiveFlg:
+            type: integer
+            format: int32
+          dluOfficeId:
+            type: integer
+          requestDt:
+            type: string
+            format: date
+          dueDt:
+            type: string
+            format: date
+    CaseFilter:
+        type: object
+        properties:
+          arrId:
+            type: string
+          requestDtFrom:
+            type: string
+          requestDtTo:
+            type: string
+          dueDtFrom:
+            type: string
+          dueDtTo:
+            type: string
+          categoryIds:
+            type: array
+            items:
+              type: integer
+          dluOfficeIds:
+            type: array
+            items:
+              type: integer
+          statusIds:
+            type: array
+            items:
+              type: integer
+          pageSize:
+            type: integer
+          pageNumber:
+            type: integer
+          sortBy:
+            type: array
+            items:
+              type: string
+          sortOrder:
+            type: array
+            items:
+              type: integer
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+      xml:
+        name: '##default'
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
+  requestBodies: 
+    CreateCaseRequest:
+      description: Object containing case creation criteria
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateCaseRequest' 
+    CaseFilter:
+      description: Object containing case filter criteria
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CaseFilter' 
+    UserArray:
+      description: List of user object
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/User'
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
