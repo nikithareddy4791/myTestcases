@@ -1,0 +1,15 @@
+<!-- Testcontainers core -->
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>1.19.3</version>
+    <scope>test</scope>
+</dependency>
+
+<!-- DB2 container -->
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>db2</artifactId>
+    <version>1.19.3</version>
+    <scope>test</scope>
+</dependency>
