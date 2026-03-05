@@ -1,0 +1,14 @@
+# Run ALL tests
+mvn test
+
+# Run a single test class
+mvn test -Dtest=CaseControllerTest
+
+# Run a single test method
+mvn test -Dtest=CaseControllerTest#getCaseById_Success
+
+# Run only unit tests (skip integration)
+mvn test -Dtest="*ControllerTest"
+
+# Run with full output (don't suppress logs)
+mvn test -Dsurefire.failIfNoSpecifiedTests=false
