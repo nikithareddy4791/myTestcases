@@ -1,0 +1,189 @@
+package org.nnnn.ddd.service;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.nnnn.ddd.AppConstants;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class AuthenticationServiceTest {
+
+    @InjectMocks
+    private AuthenticationService authenticationService;
+
+    @Mock
+    private Authentication authentication;
+
+    @Mock
+    private SecurityContext securityContext;
+
+    @Mock
+    private Jwt jwt;
+
+    @BeforeEach
+    void setUp() {
+        SecurityContextHolder.setContext(securityContext);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
+    // =========================================================================
+    // getUsername
+    // =========================================================================
+
+    @Test
+    void getUsername_withJwtPrincipal_returnsPreferredUsername() {
+        when(authentication.getPrincipal()).thenReturn(jwt);
+        when(jwt.getClaimAsString("preferred_username")).thenReturn("jdoe");
+
+        String username = authenticationService.getUsername();
+
+        assertEquals("jdoe", username);
+    }
+
+    @Test
+    void getUsername_withNonJwtPrincipal_returnsNull() {
+        when(authentication.getPrincipal()).thenReturn("simpleStringPrincipal");
+
+        String username = authenticationService.getUsername();
+
+        assertNull(username);
+    }
+
+    // =========================================================================
+    // isSupervisor
+    // =========================================================================
+
+    @Test
+    void isSupervisor_whenUserHasSupervisorRole_returnsTrue() {
+        String supervisorRole = AppConstants.ROLE_PREFIX + AppConstants.SG_SUPERVISOR;
+        GrantedAuthority authority = new SimpleGrantedAuthority(supervisorRole);
+
+        when(authentication.getAuthorities())
+                .thenReturn((Collection) Collections.singletonList(authority));
+
+        assertTrue(authenticationService.isSupervisor());
+    }
+
+    @Test
+    void isSupervisor_whenUserDoesNotHaveSupervisorRole_returnsFalse() {
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_OTHER");
+
+        when(authentication.getAuthorities())
+                .thenReturn((Collection) Collections.singletonList(authority));
+
+        assertFalse(authenticationService.isSupervisor());
+    }
+
+    @Test
+    void isSupervisor_whenUserHasNoRoles_returnsFalse() {
+        when(authentication.getAuthorities())
+                .thenReturn((Collection) Collections.emptyList());
+
+        assertFalse(authenticationService.isSupervisor());
+    }
+
+    // =========================================================================
+    // hasSealedAccess
+    // =========================================================================
+
+    @Test
+    void hasSealedAccess_whenUserHasSealedRole_returnsTrue() {
+        String sealedRole = AppConstants.ROLE_PREFIX + AppConstants.SG_SEALED_EVENT;
+        GrantedAuthority authority = new SimpleGrantedAuthority(sealedRole);
+
+        when(authentication.getAuthorities())
+                .thenReturn((Collection) Collections.singletonList(authority));
+
+        assertTrue(authenticationService.hasSealedAccess());
+    }
+
+    @Test
+    void hasSealedAccess_whenUserDoesNotHaveSealedRole_returnsFalse() {
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_OTHER");
+
+        when(authentication.getAuthorities())
+                .thenReturn((Collection) Collections.singletonList(authority));
+
+        assertFalse(authenticationService.hasSealedAccess());
+    }
+
+    // =========================================================================
+    // hasRole
+    // =========================================================================
+
+    @Test
+    void hasRole_whenUserHasMatchingRole_returnsTrue() {
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_ANALYST");
+
+        when(authentication.getAuthorities())
+                .thenReturn((Collection) Collections.singletonList(authority));
+
+        assertTrue(authenticationService.hasRole("ROLE_ANALYST"));
+    }
+
+    @Test
+    void hasRole_whenUserDoesNotHaveMatchingRole_returnsFalse() {
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_ANALYST");
+
+        when(authentication.getAuthorities())
+                .thenReturn((Collection) Collections.singletonList(authority));
+
+        assertFalse(authenticationService.hasRole("ROLE_SUPERVISOR"));
+    }
+
+    @Test
+    void hasRole_whenUserHasMultipleRoles_matchesCorrectOne() {
+        List<GrantedAuthority> authorities = List.of(
+                new SimpleGrantedAuthority("ROLE_ANALYST"),
+                new SimpleGrantedAuthority("ROLE_VIEWER"),
+                new SimpleGrantedAuthority("ROLE_SUPERVISOR")
+        );
+
+        when(authentication.getAuthorities())
+                .thenReturn((Collection) authorities);
+
+        assertTrue(authenticationService.hasRole("ROLE_SUPERVISOR"));
+        assertFalse(authenticationService.hasRole("ROLE_ADMIN"));
+    }
+
+    @Test
+    void hasRole_emptyAuthorities_returnsFalse() {
+        when(authentication.getAuthorities())
+                .thenReturn((Collection) Collections.emptyList());
+
+        assertFalse(authenticationService.hasRole("ROLE_ANALYST"));
+    }
+
+    // =========================================================================
+    // authenticatedUser
+    // =========================================================================
+
+    @Test
+    void authenticatedUser_returnsFixedString() {
+        String result = authenticationService.authenticatedUser();
+        assertEquals("You are authenticated", result);
+    }
+}
