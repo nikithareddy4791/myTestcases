@@ -1,0 +1,11 @@
+package org.nnnn.ddd.service;
+
+import java.util.List;
+import org.nnnn.ddd.model.User;
+public interface ADSearchService {
+    List<User> findAllUsers();
+
+    List<User> findMembersOfGroup(String groupDn);
+
+    public User findUser(final String username);
+}
