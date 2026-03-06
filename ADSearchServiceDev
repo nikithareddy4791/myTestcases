@@ -1,0 +1,175 @@
+package org.nnnn.ddd.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.naming.directory.Attributes;
+
+import org.nnnn.ddd.AppConstants;
+import org.nnnn.ddd.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.query.LdapQuery;
+import org.springframework.stereotype.Service;
+import static org.springframework.ldap.query.LdapQueryBuilder.query;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@Service
+@Profile({ "test", "dev", "local", "uat" })
+public class ADSearchServiceDev implements ADSearchService {
+    @Autowired
+    private LdapTemplate ldapTemplate;
+
+    public List<User> findAllUsers() {
+        List<User> allUsers = new ArrayList<User>();
+        allUsers.addAll(findMembersOfGroup("CN=" + AppConstants.SG_SUPERVISOR
+                + ",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
+        allUsers.addAll(findMembersOfGroup("CN=" + AppConstants.SG_ANALYST_BK
+                + ",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
+        allUsers.addAll(findMembersOfGroup("CN=" + AppConstants.SG_ANALYST_BX
+                + ",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
+        allUsers.addAll(findMembersOfGroup("CN=" + AppConstants.SG_ANALYST_MN
+                + ",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
+        allUsers.addAll(findMembersOfGroup("CN=" + AppConstants.SG_ANALYST_QN
+                + ",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
+        allUsers.addAll(findMembersOfGroup("CN=" + AppConstants.SG_ANALYST_SI
+                + ",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
+        allUsers.addAll(findMembersOfGroup("CN=" + AppConstants.SG_ANALYST_SNP
+                + ",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
+        allUsers.addAll(findMembersOfGroup("CN=" + AppConstants.SG_ANALYST_RMD
+                + ",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
+        allUsers.addAll(testUsers());
+        return allUsers;
+    }
+
+    public List<User> findMembersOfGroup(String groupDn) {
+        LdapQuery query = query()
+                .where("objectClass").is("user")
+                .and("memberOf").is(groupDn);
+
+        return ldapTemplate.search(query, (Attributes attrs) -> {
+            User user = new User();
+            user.setUsername(attrs.get("sAMAccountName").get().toString());
+            user.setFirstName(attrs.get("givenName").get().toString());
+            user.setLastName(attrs.get("sn").get().toString());
+            user.setMobile(attrs.get("telephoneNumber") != null ? attrs.get("telephoneNumber").get().toString() : "");
+            user.setEmail(attrs.get("mail") != null ? attrs.get("mail").get().toString() : "");
+            user.setRank(attrs.get("nnnnrank") != null ? attrs.get("nnnnrank").get().toString() : "");
+            user.setTitle(attrs.get("title") != null ? attrs.get("title").get().toString() : "");
+            user.setTax(attrs.get("nnnntaxid") != null ? attrs.get("nnnntaxid").get().toString() : "");
+            user.setCmdCode(attrs.get("nnnncmdcode") != null ? attrs.get("nnnncmdcode").get().toString() : "");
+            return user;
+        });
+    }
+
+    final String jsonUsers = "[\n" +
+            "  {\n" +
+            "    \"username\": \"T-SG-ddd-SUPERVISOR\",\n" +
+            "    \"firstName\": \"John\",\n" +
+            "    \"lastName\": \"ddd-SUPERVISOR\",\n" +
+            "    \"email\": \"SG-ddd-SUPERVISOR@nnnn.org\",\n" +
+            "    \"rank\": \"Sgt\",\n" +
+            "    \"title\": \"\",\n" +
+            "    \"tax\": \"\",\n" +
+            "    \"cmdCode\": \"\",\n" +
+            "    \"mobile\": \"\"\n" +
+            "  },\n" +
+            "  {\n" +
+            "    \"username\": \"T-SG-ddd-ANALYST-BROOKLYN\",\n" +
+            "    \"firstName\": \"Mike\",\n" +
+            "    \"lastName\": \"SG-ddd-ANALYST-BROOKLYN\",\n" +
+            "    \"email\": \"SG-ddd-ANALYST-BROOKLYN@nnnn.org\",\n" +
+            "    \"rank\": \"Sgt\",\n" +
+            "    \"title\": \"\",\n" +
+            "    \"tax\": \"\",\n" +
+            "    \"cmdCode\": \"\",\n" +
+            "    \"mobile\": \"\"\n" +
+            "  },\n" +
+            "  {\n" +
+            "    \"username\": \"T-SG-ddd-ANALYST-BRONX\",\n" +
+            "    \"firstName\": \"Chris\",\n" +
+            "    \"lastName\": \"SG-ddd-ANALYST-BRONX\",\n" +
+            "    \"email\": \"SG-ddd-ANALYST-BRONX@nnnn.org\",\n" +
+            "    \"rank\": \"Sgt\",\n" +
+            "    \"title\": \"\",\n" +
+            "    \"tax\": \"\",\n" +
+            "    \"cmdCode\": \"\",\n" +
+            "    \"mobile\": \"\"\n" +
+            "  },\n" +
+            "  {\n" +
+            "    \"username\": \"T-SG-ddd-ANALYST-QUEENS\",\n" +
+            "    \"firstName\": \"Elizabeth\",\n" +
+            "    \"lastName\": \"SG-ddd-ANALYST-QUEENS\",\n" +
+            "    \"email\": \"SG-ddd-ANALYST-QUEENS@nnnn.org\",\n" +
+            "    \"rank\": \"Sgt\",\n" +
+            "    \"title\": \"\",\n" +
+            "    \"tax\": \"\",\n" +
+            "    \"cmdCode\": \"\",\n" +
+            "    \"mobile\": \"\"\n" +
+            "  },\n" +
+            "  {\n" +
+            "    \"username\": \"T-SG-ddd-ANALYST-SI\",\n" +
+            "    \"firstName\": \"Cindy\",\n" +
+            "    \"lastName\": \"SG-ddd-ANALYST-SI\",\n" +
+            "    \"email\": \"SG-ddd-ANALYST-SI@nnnn.org\",\n" +
+            "    \"rank\": \"Sgt\",\n" +
+            "    \"title\": \"\",\n" +
+            "    \"tax\": \"\",\n" +
+            "    \"cmdCode\": \"\",\n" +
+            "    \"mobile\": \"\"\n" +
+            "  },\n" +
+            "  {\n" +
+            "    \"username\": \"T-SG-ddd-ANALYST-MANHATTAN\",\n" +
+            "    \"firstName\": \"Jose\",\n" +
+            "    \"lastName\": \"SG-ddd-ANALYST-MANHATTAN\",\n" +
+            "    \"email\": \"SG-ddd-ANALYST-MANHATTAN@nnnn.org\",\n" +
+            "    \"rank\": \"Sgt\",\n" +
+            "    \"title\": \"\",\n" +
+            "    \"tax\": \"\",\n" +
+            "    \"cmdCode\": \"\",\n" +
+            "    \"mobile\": \"\"\n" +
+            "  },\n" +
+            "  {\n" +
+            "    \"username\": \"T-SG-ddd-ANALYST-SNP\",\n" +
+            "    \"firstName\": \"Jennifer\",\n" +
+            "    \"lastName\": \"SG-ddd-ANALYST-SNP\",\n" +
+            "    \"email\": \"SG-ddd-ANALYST-SNP@nnnn.org\",\n" +
+            "    \"rank\": \"Sgt\",\n" +
+            "    \"title\": \"\",\n" +
+            "    \"tax\": \"\",\n" +
+            "    \"cmdCode\": \"\",\n" +
+            "    \"mobile\": \"\"\n" +
+            "  },\n" +
+            "  {\n" +
+            "    \"username\": \"T-SG-ddd-ANALYST-REMANDED\",\n" +
+            "    \"firstName\": \"Brian\",\n" +
+            "    \"lastName\": \"SG-ddd-ANALYST-REMANDED\",\n" +
+            "    \"email\": \"SG-ddd-ANALYST-REMANDED@nnnn.org\",\n" +
+            "    \"rank\": \"Sgt\",\n" +
+            "    \"title\": \"\",\n" +
+            "    \"tax\": \"\",\n" +
+            "    \"cmdCode\": \"\",\n" +
+            "    \"mobile\": \"\"\n" +
+            "  }\n" +
+            "]";
+
+    public List<User> testUsers() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            // Convert JSON array into List<User>
+            return mapper.readValue(jsonUsers, new TypeReference<List<User>>() {
+            });
+        } catch (Exception e) {
+            // Log error if needed
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public User findUser(final String username) {
+        return null;
+    }
+}
