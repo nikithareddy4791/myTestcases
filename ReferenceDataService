@@ -1,0 +1,117 @@
+package org.nypd.dlu.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.modelmapper.ModelMapper;
+import org.nypd.dlu.entity.AdaList;
+import org.nypd.dlu.entity.TagList;
+import org.nypd.dlu.entity.CategoryList;
+import org.nypd.dlu.entity.DluCodeRef;
+import org.nypd.dlu.entity.ItemList;
+import org.nypd.dlu.entity.DluCodeRef;
+import org.nypd.dlu.model.ReferenceCode;
+import org.nypd.dlu.model.Status;
+import org.nypd.dlu.model.ADA;
+import org.nypd.dlu.model.Category;
+import org.nypd.dlu.model.DLUCase;
+import org.nypd.dlu.model.DLUOffice;
+import org.nypd.dlu.model.Item;
+import org.nypd.dlu.model.Tag;
+import org.nypd.dlu.repository.ADAListRepository;
+import org.nypd.dlu.repository.CategoryListRepository;
+import org.nypd.dlu.repository.CodeRefRepository;
+import org.nypd.dlu.repository.DLUOfficeListRepository;
+import org.nypd.dlu.repository.ItemListRepository;
+import org.nypd.dlu.repository.StatusListRepository;
+import org.nypd.dlu.repository.TagListRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ReferenceDataService {
+    @Autowired
+    private ADAListRepository adaListRepository;
+
+    @Autowired
+    private CategoryListRepository categoryListRepository;
+
+    @Autowired
+    private TagListRepository tagListRepository;
+
+    @Autowired
+    private ItemListRepository itemListRepository;
+
+    @Autowired
+    private StatusListRepository statusListRepository;
+
+    @Autowired
+    private DLUOfficeListRepository dluOfficeListRepository;
+
+    @Autowired
+    private CodeRefRepository codeRefRepository;
+
+    @Autowired
+    private AuthenticationService authenticationService;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    private static final Logger log = LoggerFactory.getLogger(ReferenceDataService.class);
+
+    public List<ReferenceCode> getRefCodeByType(final String codeType) {
+        return codeRefRepository.findDTOByCodeTypeOrderByIdAsc(codeType);
+    }
+
+    public List<ADA> getAllAdas() {
+        List<AdaList> adaList = adaListRepository.findAll(); 
+        List<ADA> ret = new ArrayList<ADA>();
+        for(AdaList ada:adaList){
+            /*ADA adaJson = new ADA();
+            adaJson.setId(ada.getId());
+            adaJson.setFrstNm(ada.getFrstNm());
+            adaJson.setLastNm(ada.getLastNm());
+            adaJson.setBoroughNm(ada.getBoroughNm());
+            adaJson.setBusPhoneNum(ada.getBusPhoneNum());
+            adaJson.setCellPhoneNum(ada.getCellPhoneNum());
+            adaJson.setEmailAddrDesc(ada.getEmailAddrDesc());  
+            adaJson.setFaxNum(ada.getFaxNum());
+            adaJson.setInactiveFlg((int) ada.getInactiveFlg());
+            adaJson.setJobTitleDesc(ada.getJobTitleDesc());
+            adaJson.setNoteDesc(ada.getNoteDesc());
+            adaJson.setArchiveFlg(ada.getArchiveFlg()==null?0:(int)ada.getArchiveFlg().shortValue());
+            adaJson.setInactiveFlg((int)ada.getInactiveFlg());
+            ret.add(adaJson);*/
+            ret.add(modelMapper.map(ada, ADA.class));
+        }
+        return ret;
+    }
+
+    public List<Tag> getAllTags() {
+        return tagListRepository.findAllDTO();
+    }
+
+    public List<Category> getAllCategories() {
+        authenticationService.debug();
+        return categoryListRepository.findAllDTO();
+    }
+
+    public List<Item> getAllItems() {
+        return itemListRepository.findAllDTO();
+    }
+
+    public List<Status> getAllStatuses() {
+        return statusListRepository.findAllDTO();
+    }
+
+    public List<DLUOffice> getAllDLUOffices() {
+        return dluOfficeListRepository.findAllDTO();
+    }
+}
