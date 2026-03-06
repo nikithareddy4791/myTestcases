@@ -1,0 +1,159 @@
+package org.nnnn.ddd.api;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.nnnn.ddd.model.User;
+import org.nnnn.ddd.service.AuditService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(UserApiController.class)
+public class UserApiControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private AuditService auditService;
+
+    // =========================================================================
+    // GET /user/login
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void loginUser_withUsername_returnsOkAndAudits() throws Exception {
+        doNothing().when(auditService).auditAction(anyString(), any());
+
+        mockMvc.perform(get("/user/login")
+                .param("username", "jdoe")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(auditService, times(1)).auditAction(anyString(), any());
+    }
+
+    @Test
+    @WithMockUser
+    void loginUser_withoutUsername_returnsOk() throws Exception {
+        doNothing().when(auditService).auditAction(anyString(), any());
+
+        mockMvc.perform(get("/user/login")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
+    void loginUser_auditServiceThrows_returns500() throws Exception {
+        doThrow(new RuntimeException("Audit DB error"))
+                .when(auditService).auditAction(anyString(), any());
+
+        mockMvc.perform(get("/user/login")
+                .param("username", "jdoe")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void loginUser_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/user/login")
+                .param("username", "jdoe")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    void loginUser_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(get("/user/login")
+                .param("username", "jdoe"))
+                .andExpect(status().isNotImplemented());
+    }
+
+    // =========================================================================
+    // GET /user/logout
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void logoutUser_returnsOkAndAudits() throws Exception {
+        doNothing().when(auditService).auditAction(anyString(), any());
+
+        mockMvc.perform(get("/user/logout")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(auditService, times(1)).auditAction(anyString(), any());
+    }
+
+    @Test
+    @WithMockUser
+    void logoutUser_auditServiceThrows_returns500() throws Exception {
+        doThrow(new RuntimeException("Audit DB error"))
+                .when(auditService).auditAction(anyString(), any());
+
+        mockMvc.perform(get("/user/logout")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void logoutUser_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/user/logout")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    void logoutUser_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(get("/user/logout"))
+                .andExpect(status().isNotImplemented());
+    }
+
+    // =========================================================================
+    // GET /user/{username}
+    // NOTE: Current impl returns NOT_IMPLEMENTED with hardcoded JSON stub.
+    //       Tests verify the current behavior and the 501 for non-json accept.
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void getUserByName_validUsername_returnsNotImplementedWithStub() throws Exception {
+        // Current controller returns hardcoded stub with NOT_IMPLEMENTED status
+        mockMvc.perform(get("/user/jdoe")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotImplemented())
+                .andExpect(jsonPath("$.username").value("theUser"))
+                .andExpect(jsonPath("$.firstName").value("John"));
+    }
+
+    @Test
+    @WithMockUser
+    void getUserByName_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(get("/user/jdoe"))
+                .andExpect(status().isNotImplemented());
+    }
+
+    @Test
+    void getUserByName_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/user/jdoe")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+}
