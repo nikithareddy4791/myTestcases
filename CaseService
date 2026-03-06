@@ -1,0 +1,394 @@
+package org.nnnn.ddd.service;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.modelmapper.ModelMapper;
+import org.modelmapper.ValidationException;
+import org.nnnn.ddd.AppConstants;
+import org.nnnn.ddd.entity.AdaList;
+import org.nnnn.ddd.entity.CaseItem;
+import org.nnnn.ddd.entity.CaseTag;
+import org.nnnn.ddd.entity.CategoryList;
+import org.nnnn.ddd.entity.dddCase;
+import org.nnnn.ddd.entity.dddOfficeList;
+import org.nnnn.ddd.entity.ItemList;
+import org.nnnn.ddd.entity.StatusList;
+import org.nnnn.ddd.entity.TagList;
+import org.nnnn.ddd.exceptions.CaseExistsException;
+import org.nnnn.ddd.exceptions.CaseNotFoundException;
+import org.nnnn.ddd.exceptions.InvaliddddOfficeException;
+import org.nnnn.ddd.exceptions.SealedAccessException;
+import org.nnnn.ddd.model.ArrestInfo;
+import org.nnnn.ddd.model.CaseFilter;
+import org.nnnn.ddd.model.CaseListResponse;
+import org.nnnn.ddd.model.CaseNote;
+import org.nnnn.ddd.model.CreateCaseRequest;
+import org.nnnn.ddd.model.dddCase;
+import org.nnnn.ddd.model.dddCaseStats;
+import org.nnnn.ddd.model.dddCaseSummary;
+import org.nnnn.ddd.model.Item;
+import org.nnnn.ddd.model.Tag;
+import org.nnnn.ddd.repository.ADAListRepository;
+import org.nnnn.ddd.repository.CDWRepository;
+import org.nnnn.ddd.repository.CaseRepository;
+import org.nnnn.ddd.repository.CategoryListRepository;
+import org.nnnn.ddd.repository.dddOfficeListRepository;
+import org.nnnn.ddd.repository.ItemListRepository;
+import org.nnnn.ddd.repository.StatusListRepository;
+import org.nnnn.ddd.repository.TagListRepository;
+import org.nnnn.ddd.repository.specs.CaseSpecifications;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.threeten.bp.DateTimeUtils;
+import org.threeten.bp.ZoneId;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.NoResultException;
+import jakarta.transaction.Transactional;
+
+@Service
+public class CaseService {
+    @Autowired
+    private CaseRepository caseRepository;
+
+    @Autowired
+    private CategoryListRepository categoryListRepository;
+
+    @Autowired
+    private ADAListRepository adaListRepository;
+
+    @Autowired
+    private CDWRepository cdwRepository;
+
+    @Autowired
+    private AuthenticationService authenticationService;
+
+    @Autowired
+    private dddOfficeListRepository dddOfficeListRepository;
+
+    @Autowired
+    private StatusListRepository statusListRepository;
+
+    @Autowired
+    private TagListRepository tagListRepository;
+
+    @Autowired
+    private ItemListRepository itemListRepository;
+
+    @Autowired
+    private ADSearchService adSearchService;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    private static final Logger log = LoggerFactory.getLogger(CaseService.class);
+
+    public dddCaseStats getCaseStats() {
+        dddCaseStats stats = new dddCaseStats();
+        LocalDate today = LocalDate.now();
+        LocalDate threeDaysLater = today.plusDays(3);
+        if (authenticationService.isSupervisor()) {
+            Integer overdue = caseRepository.countByDueDtBeforeAndStatus_IdNot(today, AppConstants.STATUS_COMPLETED);
+            stats.setOverdueCount(overdue);
+            Integer comingDue = caseRepository.countByDueDtBetweenAndStatus_IdNot(today, threeDaysLater, AppConstants.STATUS_COMPLETED);
+            stats.setComingDueCount(comingDue);
+        } else {
+            Integer overdue = caseRepository.countByDueDtBeforeAndAssignedNmAndStatus_IdNot(today,
+                    authenticationService.getUsername(), AppConstants.STATUS_COMPLETED);
+            stats.setOverdueCount(overdue);
+            Integer comingDue = caseRepository.countByDueDtBetweenAndAssignedNmAndStatus_IdNot(today, threeDaysLater,
+                    authenticationService.getUsername(), AppConstants.STATUS_COMPLETED);
+            stats.setComingDueCount(comingDue);
+        }
+        return stats;
+    }
+
+    public dddCaseStats getCaseStats(final Collection<Integer> dddOfficeIds) {
+        dddCaseStats stats = new dddCaseStats();
+        LocalDate today = LocalDate.now(); 
+        Integer overdue = caseRepository.countByDueDtBeforeAndddd_IdInAndStatus_IdNot(today, dddOfficeIds, AppConstants.STATUS_COMPLETED);
+        stats.setOverdueCount(overdue);
+        LocalDate threeDaysLater = today.plusDays(3);
+        Integer comingDue = caseRepository.countByDueDtBetweenAndddd_IdInAndStatus_IdNot(today, threeDaysLater, dddOfficeIds, AppConstants.STATUS_COMPLETED);
+        stats.setComingDueCount(comingDue);
+        return stats;
+    }
+
+    @Transactional
+    public dddCase createCase(final CreateCaseRequest request) throws CaseExistsException {
+        String username = authenticationService.getUsername();
+        log.info("createCase for " + username + " " + request.getArrId());
+        ArrestInfo arrInfo = cdwRepository.getArrestInfo(request.getArrId());
+        log.info(arrInfo.toString());
+        if (!authenticationService.hasSealedAccess()) {
+            // throw new SealedAccessException("User does not have sealed access");
+        }
+        List<dddCase> existingParent = caseRepository.findByArrIdAndParentIdIsNull(request.getArrId());
+        if (existingParent != null && existingParent.size() > 0) {
+            log.info("Case Exists " + existingParent.get(0).toString());
+            dddCase json = new dddCase();
+            json.setId(existingParent.get(0).getId());
+            return json;
+        } else {
+            dddOfficeList dddOffice = dddOfficeListRepository.findById(request.getdddOfficeId()).orElseGet(null);
+            if(dddOffice == null){
+                throw new InvaliddddOfficeException("ddd Office id " + request.getdddOfficeId() + " not found");
+            }
+            StatusList notStarted = statusListRepository.findById(AppConstants.STATUS_NOT_STARTED).orElse(null);
+            dddCase entityCase = new dddCase();
+            entityCase.setArrId(request.getArrId());
+            entityCase.setddd(dddOffice);
+            entityCase.setStatus(notStarted);
+            entityCase.setProactiveFlg((short) request.getProactiveFlg().intValue());
+            if (request.getDueDt() != null) {
+                entityCase.setDueDt(
+                        DateTimeUtils.toDate(request.getDueDt().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            }
+            if (request.getRequestDt() != null) {
+                entityCase.setRequestDt(
+                        DateTimeUtils.toDate(request.getRequestDt().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            } else {
+                entityCase.setRequestDt(new Date());
+            }
+            caseRepository.save(entityCase);
+            log.info("Case Created " + entityCase.getId());
+            dddCase dtoCase = new dddCase();
+            dtoCase.setId(entityCase.getId());
+            dtoCase.setNew(true);
+            return dtoCase;
+        }
+    }
+
+    public dddCase loadCase(final int caseId) {
+        Optional<dddCase> entityOpt = caseRepository.findById(caseId);
+        if (entityOpt.isEmpty()) {
+            throw new CaseNotFoundException("Case not found with id: " + caseId);
+        }
+        dddCase entity = entityOpt.get();
+        //modelMapper.validate();
+        dddCase dto = modelMapper.map(entity, dddCase.class);
+        if (dto.getStatus() != null && dto.getStatus().getId() != AppConstants.STATUS_NOT_STARTED
+                && dto.getStatus().getId() != AppConstants.STATUS_IN_PROGRESS
+                && dto.getStatus().getId() != AppConstants.STATUS_WAITING) {
+            dto.setActiveFlg(0);
+        } else {
+            dto.setActiveFlg(1);
+        }
+        ArrestInfo arrInfo = cdwRepository.getArrestInfo(entity.getArrId());
+        dto.setArrest(arrInfo);
+        if (entity.getAssignedNm() != null) {
+            dto.setAssignedNmInfo(adSearchService.findUser(entity.getAssignedNm()));
+        }
+        return dto;
+    }
+
+    public dddCase saveCase(final dddCase dtoCase) {
+
+        Optional<dddCase> entityOpt = caseRepository.findById(dtoCase.getId());
+        if (entityOpt.isEmpty()) {
+            throw new CaseNotFoundException("Case not found with id: " + dtoCase.getId());
+        }
+        dddCase entityCase = entityOpt.get();
+        modelMapper.map(dtoCase, entityCase);
+
+        if (dtoCase.getCategory() != null) {
+            CategoryList newCategory = categoryListRepository.findById(dtoCase.getCategory().getId()).orElse(null);
+            entityCase.setCategory(newCategory);
+        } else if (entityCase.getCategory() != null) {
+            entityCase.setCategory(null);
+        }
+
+        if (dtoCase.getAda() != null) {
+            AdaList newAda = adaListRepository.findById(dtoCase.getAda().getId()).orElse(null);
+            entityCase.setAda(newAda);
+        } else if (entityCase.getAda() != null) {
+            entityCase.setAda(null);
+        }
+
+        if (dtoCase.getddd() != null) {
+            dddOfficeList newddd = dddOfficeListRepository.findById(dtoCase.getddd().getId()).orElse(null);
+            entityCase.setddd(newddd);
+        } else if (entityCase.getddd() != null) {
+            entityCase.setAda(null);
+        }
+
+        if (dtoCase.getStatus() != null) {
+            StatusList newStatus = statusListRepository.findById(dtoCase.getStatus().getId()).orElse(null);
+            entityCase.setStatus(newStatus);
+        } else if (entityCase.getStatus() != null) {
+            entityCase.setAda(null);
+        }
+
+        List<CaseTag> updatedTags = new ArrayList<>();
+
+        for (org.nnnn.ddd.model.CaseTag dtoTag : dtoCase.getTags()) {
+            Optional<CaseTag> foundTag = entityCase.getTags().stream()
+                    .filter(entityTag -> dtoTag.getTagId().intValue() == entityTag.getTag().getId())
+                    .findFirst();
+            if (foundTag.isEmpty()) {
+                TagList tag = tagListRepository.findById(dtoTag.getTagId()).orElseGet(null);
+                if (tag != null) {
+                    CaseTag newTag = new CaseTag();
+                    newTag.setdddCase(entityCase);
+                    newTag.setTag(tag);
+                    updatedTags.add(newTag);
+                } else {
+                    log.error("Tag " + dtoTag.getTagId() + " not found for case " + entityCase.getId());
+                }
+            } else {
+                updatedTags.add(foundTag.get());
+            }
+        }
+
+        entityCase.getTags().clear();
+        entityCase.getTags().addAll(updatedTags);
+
+        List<CaseItem> updatedItems = new ArrayList<>();
+
+        for (org.nnnn.ddd.model.CaseItem dtoItem : dtoCase.getItems()) {
+            Optional<CaseItem> foundItem = entityCase.getItems().stream()
+                    .filter(entityItem -> dtoItem.getId().intValue() == entityItem.getId())
+                    .findFirst();
+            if (foundItem.isEmpty()) {
+                ItemList item = itemListRepository.findById(dtoItem.getItemId()).orElseGet(null);
+                if (item != null) {
+                    CaseItem newItem = new CaseItem();
+                    newItem.setdddCase(entityCase);
+                    newItem.setItem(item);
+                    newItem.setNoteDesc(dtoItem.getNoteDesc());
+                    newItem.setQuantity(dtoItem.getQuantity());
+                    newItem.setStatusDesc(dtoItem.getStatusDesc());
+                    updatedItems.add(newItem);
+                } else {
+                    log.error("Item " + dtoItem.getItemId() + " not found for case " + entityCase.getId());
+                }
+            } else {
+                CaseItem existingItem = foundItem.get();
+                existingItem.setNoteDesc(dtoItem.getNoteDesc());
+                existingItem.setQuantity(dtoItem.getQuantity());
+                existingItem.setStatusDesc(dtoItem.getStatusDesc());
+                updatedItems.add(existingItem);
+            }
+        }
+
+        entityCase.getItems().clear();
+        entityCase.getItems().addAll(updatedItems);
+
+        caseRepository.save(entityCase);
+        /*
+         * modelMapper.createTypeMap(dddCase.class, dddCase.class);
+         * try {
+         * modelMapper.validate();
+         * } catch (ValidationException e) {
+         * log.error(e.getMessage(), e);
+         * }
+         */
+        return dtoCase;
+    }
+
+    public CaseListResponse findCases(final CaseFilter filter) {
+        CaseListResponse response = new CaseListResponse();
+        List<Specification<dddCase>> filters = new ArrayList<>();
+        if (filter.getArrId() != null) {
+            filters.add(CaseSpecifications.hasArrId(filter.getArrId()));
+        }
+        if (filter.getRequestDtFrom() != null || filter.getRequestDtTo() != null) {
+            filters.add(CaseSpecifications.requestBetween(
+                    filter.getRequestDtFrom() != null ? LocalDate.parse(filter.getRequestDtFrom()) : null,
+                    filter.getRequestDtTo() != null ? LocalDate.parse(filter.getRequestDtTo()) : null));
+        }
+        if (filter.getDueDtFrom() != null || filter.getDueDtTo() != null) {
+            filters.add(CaseSpecifications.dueBetween(
+                    filter.getDueDtFrom() != null ? LocalDate.parse(filter.getDueDtFrom()) : null,
+                    filter.getDueDtTo() != null ? LocalDate.parse(filter.getDueDtTo()) : null));
+        }
+        if (filter.getCategoryIds() != null) {
+            filters.add(CaseSpecifications.hasCategories(filter.getCategoryIds()));
+        }
+        if (filter.getdddOfficeIds() != null) {
+            filters.add(CaseSpecifications.hasdddOfficesIn(filter.getdddOfficeIds()));
+        }
+        if (filter.getStatusIds() != null) {
+            filters.add(CaseSpecifications.hasStatusesIn(filter.getStatusIds()));
+        }
+        if (filters.isEmpty()) {
+            return response;
+        }
+        filters.add(CaseSpecifications.fetchDependencies());
+
+        Pageable pageable = PageRequest.of(filter.getPageNumber()!=null?filter.getPageNumber():0, filter.getPageSize()!=null?filter.getPageSize():AppConstants.DEFAULT_PAGE_SIZE, Sort.by("id").ascending());
+
+        Page<dddCase> page = caseRepository.findAll(Specification.allOf(filters), pageable);
+
+        List<dddCase> entities = page.getContent();
+
+        List<dddCaseSummary> cases = entities.stream()
+                .map(entity -> modelMapper.map(entity, dddCaseSummary.class))
+                .toList();
+        List<String> arrIds = cases.stream()
+                .map(caseSummary -> caseSummary.getArrId())
+                .toList();
+        List<ArrestInfo> arrInfos = cdwRepository.getArrestInfoSummary(arrIds);
+
+        Map<String, ArrestInfo> arrInfoMap = arrInfos.stream()
+            .collect(Collectors.toMap(ArrestInfo::getArrId, Function.identity()));
+
+        for(dddCaseSummary caseSummary: cases){
+            if(arrInfoMap.get(caseSummary.getArrId().trim())!=null){
+                caseSummary.setArrest(arrInfoMap.get(caseSummary.getArrId()));
+            }
+        } 
+        response.setCaseSummaries(cases);
+        response.setPageNumber(page.getNumber());
+        response.setHasNext(page.hasNext());
+        response.setHasPrevious(page.hasPrevious());
+        response.setIsFirst(page.isFirst());
+        response.setIsLast(page.isLast());
+        response.setPageSize(page.getSize());
+        response.setTotalElements(page.getTotalElements());
+        response.setTotalPages(page.getTotalPages());
+        if(authenticationService.isSupervisor() && filter.getdddOfficeIds()!=null){
+            response.setCaseStats(getCaseStats(filter.getdddOfficeIds()));
+        } else {
+            response.setCaseStats(getCaseStats());
+        }
+        return response;
+    }
+
+    @Transactional
+    public dddCase saveNote(final Integer caseId, final String noteDesc, final String fileNm,
+            final MultipartFile fileContent) {
+        dddCase entityCase = caseRepository.findById(caseId).orElse(null);
+        if (entityCase != null) {
+            org.nnnn.ddd.entity.CaseNote entityNote = new org.nnnn.ddd.entity.CaseNote();
+            entityNote.setNoteDesc(noteDesc);
+            entityNote.setUserNm(authenticationService.getUsername());
+            entityNote.setdddCase(entityCase);
+            entityCase.getNotes().add(entityNote);
+            caseRepository.save(entityCase);
+            return modelMapper.map(entityCase, dddCase.class);
+        } else {
+            throw new CaseNotFoundException("Case " + caseId + " not found");
+        }
+    }
+
+}
