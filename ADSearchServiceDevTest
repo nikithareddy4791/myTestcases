@@ -1,0 +1,190 @@
+package org.nnnn.ddd.service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.nnnn.ddd.model.User;
+import org.springframework.ldap.core.AttributesMapper;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.query.LdapQuery;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class ADSearchServiceDevTest {
+
+    @Mock
+    private LdapTemplate ldapTemplate;
+
+    @InjectMocks
+    private ADSearchServiceDev adSearchServiceDev;
+
+    private User mockSupervisor;
+    private User mockAnalystBk;
+
+    @BeforeEach
+    void setUp() {
+        mockSupervisor = new User();
+        mockSupervisor.setUsername("T-SG-ddd-SUPERVISOR");
+        mockSupervisor.setFirstName("John");
+        mockSupervisor.setLastName("ddd-SUPERVISOR");
+        mockSupervisor.setEmail("SG-ddd-SUPERVISOR@nnnn.org");
+        mockSupervisor.setRank("Sgt");
+
+        mockAnalystBk = new User();
+        mockAnalystBk.setUsername("T-SG-ddd-ANALYST-BROOKLYN");
+        mockAnalystBk.setFirstName("Mike");
+        mockAnalystBk.setLastName("SG-ddd-ANALYST-BROOKLYN");
+        mockAnalystBk.setEmail("SG-ddd-ANALYST-BROOKLYN@nnnn.org");
+        mockAnalystBk.setRank("Sgt");
+    }
+
+    // =========================================================================
+    // findMembersOfGroup
+    // =========================================================================
+
+    @Test
+    void findMembersOfGroup_returnsUsersFromLdap() {
+        String groupDn = "CN=SG-ddd-SUPERVISOR,OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest";
+
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(Arrays.asList(mockSupervisor));
+
+        List<User> result = adSearchServiceDev.findMembersOfGroup(groupDn);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("T-SG-ddd-SUPERVISOR", result.get(0).getUsername());
+        verify(ldapTemplate, times(1)).search(any(LdapQuery.class), any(AttributesMapper.class));
+    }
+
+    @Test
+    void findMembersOfGroup_returnsEmptyList_whenNoUsersFound() {
+        String groupDn = "CN=SG-ddd-EMPTY,OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest";
+
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(Collections.emptyList());
+
+        List<User> result = adSearchServiceDev.findMembersOfGroup(groupDn);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    // =========================================================================
+    // findAllUsers
+    // =========================================================================
+
+    @Test
+    void findAllUsers_aggregatesAllGroupsAndTestUsers() {
+        // Each LDAP group call returns one user; 8 groups = 8 LDAP users + 8 test users = 16
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(Collections.singletonList(mockSupervisor));
+
+        List<User> result = adSearchServiceDev.findAllUsers();
+
+        assertNotNull(result);
+        // 8 LDAP group calls (1 user each) + 8 hardcoded test users = 16
+        assertEquals(16, result.size());
+        // Verify LDAP was queried exactly 8 times (once per group)
+        verify(ldapTemplate, times(8)).search(any(LdapQuery.class), any(AttributesMapper.class));
+    }
+
+    @Test
+    void findAllUsers_whenLdapReturnsEmpty_stillReturnsTestUsers() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(Collections.emptyList());
+
+        List<User> result = adSearchServiceDev.findAllUsers();
+
+        assertNotNull(result);
+        // 0 LDAP users + 8 hardcoded test users
+        assertEquals(8, result.size());
+    }
+
+    @Test
+    void findAllUsers_whenLdapThrows_propagatesException() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenThrow(new RuntimeException("LDAP connection failed"));
+
+        assertThrows(RuntimeException.class, () -> adSearchServiceDev.findAllUsers());
+    }
+
+    // =========================================================================
+    // testUsers  (internal hardcoded JSON users)
+    // =========================================================================
+
+    @Test
+    void testUsers_returnsEightHardcodedUsers() {
+        List<User> testUsers = adSearchServiceDev.testUsers();
+
+        assertNotNull(testUsers);
+        assertEquals(8, testUsers.size());
+    }
+
+    @Test
+    void testUsers_containsSupervisor() {
+        List<User> testUsers = adSearchServiceDev.testUsers();
+
+        boolean hasSupervisor = testUsers.stream()
+                .anyMatch(u -> "T-SG-ddd-SUPERVISOR".equals(u.getUsername()));
+
+        assertTrue(hasSupervisor);
+    }
+
+    @Test
+    void testUsers_allUsersHaveRequiredFields() {
+        List<User> testUsers = adSearchServiceDev.testUsers();
+
+        for (User user : testUsers) {
+            assertNotNull(user.getUsername(), "Username should not be null");
+            assertNotNull(user.getFirstName(), "FirstName should not be null");
+            assertNotNull(user.getLastName(), "LastName should not be null");
+            assertNotNull(user.getEmail(), "Email should not be null");
+        }
+    }
+
+    @Test
+    void testUsers_containsAllExpectedBoroughs() {
+        List<User> testUsers = adSearchServiceDev.testUsers();
+
+        List<String> expectedUsernames = Arrays.asList(
+                "T-SG-ddd-SUPERVISOR",
+                "T-SG-ddd-ANALYST-BROOKLYN",
+                "T-SG-ddd-ANALYST-BRONX",
+                "T-SG-ddd-ANALYST-QUEENS",
+                "T-SG-ddd-ANALYST-SI",
+                "T-SG-ddd-ANALYST-MANHATTAN",
+                "T-SG-ddd-ANALYST-SNP",
+                "T-SG-ddd-ANALYST-REMANDED"
+        );
+
+        List<String> actualUsernames = testUsers.stream()
+                .map(User::getUsername)
+                .toList();
+
+        assertTrue(actualUsernames.containsAll(expectedUsernames));
+    }
+
+    // =========================================================================
+    // findUser
+    // =========================================================================
+
+    @Test
+    void findUser_returnsNull_currentImplementation() {
+        // Current implementation always returns null — test documents this behavior
+        User result = adSearchServiceDev.findUser("jdoe");
+
+        assertNull(result, "findUser currently returns null - update this test when implemented");
+    }
+}
