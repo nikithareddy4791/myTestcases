@@ -1,0 +1,107 @@
+package org.nnnn.ddd.api;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.nnnn.ddd.model.User;
+import org.nnnn.ddd.service.ADSearchService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Arrays;
+import java.util.Collections;
+
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(
+    controllers = UsersApiController.class,
+    excludeAutoConfiguration = {
+        DataSourceAutoConfiguration.class,
+        DataSourceTransactionManagerAutoConfiguration.class,
+        HibernateJpaAutoConfiguration.class
+    }
+)
+public class UsersApiControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private ADSearchService adSearchService;
+
+    private User mockUser1;
+    private User mockUser2;
+
+    @BeforeEach
+    void setUp() {
+        mockUser1 = new User();
+        mockUser1.setUsername("T-SG-ddd-SUPERVISOR");
+        mockUser1.setFirstName("John");
+        mockUser1.setLastName("ddd-SUPERVISOR");
+        mockUser1.setEmail("SG-ddd-SUPERVISOR@nnnn.org");
+
+        mockUser2 = new User();
+        mockUser2.setUsername("T-SG-ddd-ANALYST-BROOKLYN");
+        mockUser2.setFirstName("Mike");
+        mockUser2.setLastName("SG-ddd-ANALYST-BROOKLYN");
+        mockUser2.setEmail("SG-ddd-ANALYST-BROOKLYN@nnnn.org");
+    }
+
+    // =========================================================================
+    // GET /users
+    // =========================================================================
+
+    @Test @WithMockUser
+    void getUserList_returnsOkWithUsers() throws Exception {
+        when(adSearchService.findAllUsers()).thenReturn(Arrays.asList(mockUser1, mockUser2));
+        mockMvc.perform(get("/users").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].username").value("T-SG-ddd-SUPERVISOR"))
+                .andExpect(jsonPath("$[1].username").value("T-SG-ddd-ANALYST-BROOKLYN"))
+                .andExpect(jsonPath("$.length()").value(2));
+        verify(adSearchService, times(1)).findAllUsers();
+    }
+
+    @Test @WithMockUser
+    void getUserList_returnsEmptyList() throws Exception {
+        when(adSearchService.findAllUsers()).thenReturn(Collections.emptyList());
+        mockMvc.perform(get("/users").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test @WithMockUser
+    void getUserList_ldapThrowsException_returns500() throws Exception {
+        when(adSearchService.findAllUsers()).thenThrow(new RuntimeException("LDAP connection failed"));
+        mockMvc.perform(get("/users").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void getUserList_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/users").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test @WithMockUser
+    void getUserList_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(get("/users")).andExpect(status().isNotImplemented());
+    }
+
+    @Test @WithMockUser
+    void getUserList_singleUser_returnsListWithOneUser() throws Exception {
+        when(adSearchService.findAllUsers()).thenReturn(Collections.singletonList(mockUser1));
+        mockMvc.perform(get("/users").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].username").value("T-SG-ddd-SUPERVISOR"));
+    }
+}
