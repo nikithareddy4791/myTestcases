@@ -1,40 +1,59 @@
-package org.nnnn.ddd.api;
+package org.nypd.dlu.service ;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.nnnn.ddd.model.*;
-import org.nnnn.ddd.service.ReferenceDataService;
+import org.modelmapper.ModelMapper;
+import org.nypd.dlu.model.*;
+import org.nypd.dlu.TestConfig;
+import org.nypd.dlu.api.ReferenceApiController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
-
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(ReferenceApiController.class)
-public class ReferenceApiControllerTest {
+
+@WebMvcTest(controllers = ReferenceApiController.class)
+@Import({TestConfig.class, ReferenceApiController.class})
+
+public class ReferenceControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
+     @MockBean
+    private javax.sql.DataSource dataSource;
+
     @MockBean
     private ReferenceDataService referenceDataService;
+
+    @MockBean
+    private ModelMapper modelMapper;
+
+    @MockBean
+    private CaseService caseService;
+
+    @MockBean
+    private AuthenticationService authenticationService;
+
+    @MockBean
+    private AuditService auditService;
 
     private ADA mockAda;
     private Category mockCategory;
     private Tag mockTag;
     private Item mockItem;
     private Status mockStatus;
-    private dddOffice mockOffice;
+    private DLUOffice mockOffice;
     private ReferenceCode mockRefCode;
 
     @BeforeEach
@@ -53,7 +72,7 @@ public class ReferenceApiControllerTest {
         mockTag.setId(1);
         mockTag.setTagDesc("Gun");
 
-        mockItem = new Item();
+        mockItem = new Item(null, null, null);
         mockItem.setId(10);
         mockItem.setItemDesc("ECMS");
 
@@ -61,11 +80,11 @@ public class ReferenceApiControllerTest {
         mockStatus.setId(1);
         mockStatus.setStatusDesc("Completed");
 
-        mockOffice = new dddOffice();
+        mockOffice = new DLUOffice();
         mockOffice.setId(1);
-        mockOffice.setDddOfficeDesc("Manhattan");
+        mockOffice.setDluOfficeDesc("Manhattan");
 
-        mockRefCode = new ReferenceCode();
+        mockRefCode = new ReferenceCode(null, null, null, null);
         mockRefCode.setId(1);
         mockRefCode.setCodeType("STATUS");
         mockRefCode.setCodeVal("OPEN");
@@ -311,29 +330,29 @@ public class ReferenceApiControllerTest {
     }
 
     // =========================================================================
-    // GET /reference/dddOffices
+    // GET /reference/dluOffices
     // =========================================================================
 
     @Test
     @WithMockUser
-    void getdddOfficeList_returnsOkWithList() throws Exception {
-        when(referenceDataService.getAlldddOffices()).thenReturn(Arrays.asList(mockOffice));
+    void getdluOfficeList_returnsOkWithList() throws Exception {
+        when(referenceDataService.getAllDLUOffices()).thenReturn(Arrays.asList(mockOffice));
 
-        mockMvc.perform(get("/reference/dddOffices")
+        mockMvc.perform(get("/reference/dluOffices")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].dddOfficeDesc").value("Manhattan"));
+                .andExpect(jsonPath("$[0].dluOfficeDesc").value("Manhattan"));
 
-        verify(referenceDataService, times(1)).getAlldddOffices();
+        verify(referenceDataService, times(1)).getAllDLUOffices();
     }
 
     @Test
     @WithMockUser
-    void getdddOfficeList_returnsEmptyList() throws Exception {
-        when(referenceDataService.getAlldddOffices()).thenReturn(Collections.emptyList());
+    void getdluOfficeList_returnsEmptyList() throws Exception {
+        when(referenceDataService.getAllDLUOffices()).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/reference/dddOffices")
+        mockMvc.perform(get("/reference/dluOffices")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
@@ -341,17 +360,17 @@ public class ReferenceApiControllerTest {
 
     @Test
     @WithMockUser
-    void getdddOfficeList_serviceThrowsException_returns500() throws Exception {
-        when(referenceDataService.getAlldddOffices()).thenThrow(new RuntimeException("DB error"));
+    void getdluOfficeList_serviceThrowsException_returns500() throws Exception {
+        when(referenceDataService.getAllDLUOffices()).thenThrow(new RuntimeException("DB error"));
 
-        mockMvc.perform(get("/reference/dddOffices")
+        mockMvc.perform(get("/reference/dluOffices")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
     }
 
     @Test
-    void getdddOfficeList_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/reference/dddOffices")
+    void getdluOfficeList_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/reference/dluOffices")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
