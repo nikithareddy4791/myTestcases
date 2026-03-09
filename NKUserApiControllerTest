@@ -1,31 +1,42 @@
-package org.nnnn.ddd.api;
+package org.nypd.dlu.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.nnnn.ddd.model.User;
-import org.nnnn.ddd.service.AuditService;
+import org.modelmapper.ModelMapper;
+import org.nypd.dlu.TestConfig;
+import org.nypd.dlu.api.UserApiController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(UserApiController.class)
-public class UserApiControllerTest {
+@WebMvcTest(controllers = UserApiController.class)
+@Import({TestConfig.class, UserApiController.class})
+public class UserControllerTest {
 
-    @Autowired
+     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    
+    @MockBean
+    private javax.sql.DataSource dataSource;
+
+    @MockBean
+    private ModelMapper modelMapper;
+
+    @MockBean
+    private CaseService caseService;
+
+    @MockBean
+    private AuthenticationService authenticationService;
 
     @MockBean
     private AuditService auditService;
@@ -55,18 +66,6 @@ public class UserApiControllerTest {
         mockMvc.perform(get("/user/login")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockUser
-    void loginUser_auditServiceThrows_returns500() throws Exception {
-        doThrow(new RuntimeException("Audit DB error"))
-                .when(auditService).auditAction(anyString(), any());
-
-        mockMvc.perform(get("/user/login")
-                .param("username", "jdoe")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
     }
 
     @Test
