@@ -1,16 +1,15 @@
-package org.nnnn.ddd.api;
+package org.nypd.dlu.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.nnnn.ddd.model.User;
-import org.nnnn.ddd.service.ADSearchService;
+import org.modelmapper.ModelMapper;
+import org.nypd.dlu.TestConfig;
+import org.nypd.dlu.api.UsersApiController;
+import org.nypd.dlu.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,21 +21,31 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(
-    controllers = UsersApiController.class,
-    excludeAutoConfiguration = {
-        DataSourceAutoConfiguration.class,
-        DataSourceTransactionManagerAutoConfiguration.class,
-        HibernateJpaAutoConfiguration.class
-    }
-)
-public class UsersApiControllerTest {
+@WebMvcTest(controllers = UsersApiController.class)
+@Import({TestConfig.class, UsersApiController.class})
+public class UsersControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private ADSearchService adSearchService;
+     
+    @MockBean
+    private javax.sql.DataSource dataSource;
+
+    @MockBean
+    private ModelMapper modelMapper;
+
+    @MockBean
+    private CaseService caseService;
+
+    @MockBean
+    private AuthenticationService authenticationService;
+
+    @MockBean
+    private AuditService auditService;
+    
 
     private User mockUser1;
     private User mockUser2;
@@ -44,16 +53,16 @@ public class UsersApiControllerTest {
     @BeforeEach
     void setUp() {
         mockUser1 = new User();
-        mockUser1.setUsername("T-SG-ddd-SUPERVISOR");
+        mockUser1.setUsername("T-SG-dlu-SUPERVISOR");
         mockUser1.setFirstName("John");
-        mockUser1.setLastName("ddd-SUPERVISOR");
-        mockUser1.setEmail("SG-ddd-SUPERVISOR@nnnn.org");
+        mockUser1.setLastName("dlu-SUPERVISOR");
+        mockUser1.setEmail("SG-dlu-SUPERVISOR@nypd.org");
 
         mockUser2 = new User();
-        mockUser2.setUsername("T-SG-ddd-ANALYST-BROOKLYN");
+        mockUser2.setUsername("T-SG-dlu-ANALYST-BROOKLYN");
         mockUser2.setFirstName("Mike");
-        mockUser2.setLastName("SG-ddd-ANALYST-BROOKLYN");
-        mockUser2.setEmail("SG-ddd-ANALYST-BROOKLYN@nnnn.org");
+        mockUser2.setLastName("SG-dlu-ANALYST-BROOKLYN");
+        mockUser2.setEmail("SG-dlu-ANALYST-BROOKLYN@nypd.org");
     }
 
     // =========================================================================
@@ -65,8 +74,8 @@ public class UsersApiControllerTest {
         when(adSearchService.findAllUsers()).thenReturn(Arrays.asList(mockUser1, mockUser2));
         mockMvc.perform(get("/users").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].username").value("T-SG-ddd-SUPERVISOR"))
-                .andExpect(jsonPath("$[1].username").value("T-SG-ddd-ANALYST-BROOKLYN"))
+                .andExpect(jsonPath("$[0].username").value("T-SG-dlu-SUPERVISOR"))
+                .andExpect(jsonPath("$[1].username").value("T-SG-dlu-ANALYST-BROOKLYN"))
                 .andExpect(jsonPath("$.length()").value(2));
         verify(adSearchService, times(1)).findAllUsers();
     }
@@ -102,6 +111,6 @@ public class UsersApiControllerTest {
         mockMvc.perform(get("/users").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].username").value("T-SG-ddd-SUPERVISOR"));
+                .andExpect(jsonPath("$[0].username").value("T-SG-dlu-SUPERVISOR"));
     }
 }
