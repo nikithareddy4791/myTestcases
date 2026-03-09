@@ -1,0 +1,21 @@
+package org.nnnn.ddd;
+
+import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.Suite;
+import org.junit.platform.suite.api.SuiteDisplayName;
+import org.nnnn.ddd.service.CaseServiceControllerTest;
+import org.nnnn.ddd.service.ReferenceControllerTest;
+import org.nnnn.ddd.service.UserControllerTest;
+import org.nnnn.ddd.service.UsersControllerTest;
+
+@Suite
+@SuiteDisplayName("All DDD Tests")
+@SelectClasses({
+    CaseServiceControllerTest.class,
+    ReferenceControllerTest.class,
+    UserControllerTest.class,
+    UsersControllerTest.class
+})
+public class AllTestsSuite {
+    // Runs all controller tests
+}
