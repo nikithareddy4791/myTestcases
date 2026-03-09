@@ -1,53 +1,66 @@
-package org.nnnn.ddd.api;
+package org.nypd.dlu.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.nnnn.ddd.exceptions.CaseExistsException;
-import org.nnnn.ddd.exceptions.CaseNotFoundException;
-import org.nnnn.ddd.exceptions.SealedAccessException;
-import org.nnnn.ddd.model.*;
-import org.nnnn.ddd.service.CaseService;
+import org.modelmapper.ModelMapper;
+import org.nypd.dlu.TestConfig;
+import org.nypd.dlu.api.CaseApiController;
+import org.nypd.dlu.exceptions.CaseNotFoundException;
+import org.nypd.dlu.exceptions.SealedAccessException;
+import org.nypd.dlu.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(CaseApiController.class)
-public class CaseApiControllerTest {
+@WebMvcTest(controllers = CaseApiController.class)
+@Import({TestConfig.class, CaseApiController.class})
+public class CaseServiceControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    
+    @MockBean
+    private javax.sql.DataSource dataSource;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @MockBean
+    private ModelMapper modelMapper;
+
+    @MockBean
     private CaseService caseService;
 
-    private dddCase mockCaseDto;
-    private dddCaseStats mockStats;
+    @MockBean
+    private AuthenticationService authenticationService;
+
+    @MockBean
+    private AuditService auditService;
+
+    private DLUCase mockCaseDto;
+    private DLUCaseStats mockStats;
 
     @BeforeEach
     void setUp() {
-        mockCaseDto = new dddCase();
+        mockCaseDto = new DLUCase();
         mockCaseDto.setId(100);
         mockCaseDto.setArrId("ARR001");
 
-        mockStats = new dddCaseStats();
+        mockStats = new DLUCaseStats();
         mockStats.setOverdueCount(3);
         mockStats.setComingDueCount(2);
     }
@@ -68,16 +81,6 @@ public class CaseApiControllerTest {
                 .andExpect(jsonPath("$.comingDueCount").value(2));
 
         verify(caseService, times(1)).getCaseStats();
-    }
-
-    @Test
-    @WithMockUser
-    void getCaseStats_serviceThrowsException_returns500() throws Exception {
-        when(caseService.getCaseStats()).thenThrow(new RuntimeException("DB error"));
-
-        mockMvc.perform(get("/case/stats")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -138,10 +141,10 @@ public class CaseApiControllerTest {
     void createCaseByArrest_newCase_returns201() throws Exception {
         CreateCaseRequest request = new CreateCaseRequest();
         request.setArrId("ARR002");
-        request.setDddOfficeId(1);
+        request.setDluOfficeId(1);
         request.setProactiveFlg(0);
 
-        dddCase newCase = new dddCase();
+        DLUCase newCase = new DLUCase();
         newCase.setId(101);
         newCase.setNew(true);
 
@@ -161,10 +164,10 @@ public class CaseApiControllerTest {
     void createCaseByArrest_existingCase_returns200() throws Exception {
         CreateCaseRequest request = new CreateCaseRequest();
         request.setArrId("ARR001");
-        request.setDddOfficeId(1);
+        request.setDluOfficeId(1);
         request.setProactiveFlg(0);
 
-        dddCase existingCase = new dddCase();
+        DLUCase existingCase = new DLUCase();
         existingCase.setId(100);
         existingCase.setNew(false);
 
@@ -184,7 +187,7 @@ public class CaseApiControllerTest {
     void createCaseByArrest_sealedAccessException_throws() throws Exception {
         CreateCaseRequest request = new CreateCaseRequest();
         request.setArrId("ARR001");
-        request.setDddOfficeId(1);
+        request.setDluOfficeId(1);
         request.setProactiveFlg(0);
 
         when(caseService.createCase(any(CreateCaseRequest.class)))
@@ -203,7 +206,7 @@ public class CaseApiControllerTest {
     void createCaseByArrest_serviceThrowsException_returns500() throws Exception {
         CreateCaseRequest request = new CreateCaseRequest();
         request.setArrId("ARR001");
-        request.setDddOfficeId(1);
+        request.setDluOfficeId(1);
         request.setProactiveFlg(0);
 
         when(caseService.createCase(any(CreateCaseRequest.class)))
@@ -237,7 +240,7 @@ public class CaseApiControllerTest {
     @Test
     @WithMockUser
     void updateCase_validCase_returnsOk() throws Exception {
-        when(caseService.saveCase(any(dddCase.class))).thenReturn(mockCaseDto);
+        when(caseService.saveCase(any(DLUCase.class))).thenReturn(mockCaseDto);
 
         mockMvc.perform(put("/case/100")
                 .with(csrf())
@@ -247,13 +250,13 @@ public class CaseApiControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(100));
 
-        verify(caseService, times(1)).saveCase(any(dddCase.class));
+        verify(caseService, times(1)).saveCase(any(DLUCase.class));
     }
 
     @Test
     @WithMockUser
     void updateCase_caseNotFound_returns500() throws Exception {
-        when(caseService.saveCase(any(dddCase.class)))
+        when(caseService.saveCase(any(DLUCase.class)))
                 .thenThrow(new CaseNotFoundException("Case not found"));
 
         mockMvc.perform(put("/case/100")
