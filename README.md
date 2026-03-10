@@ -1,5 +1,3 @@
-CaseServiceControllerTest — 21 tests covering case CRUD, note creation, stats, auth
-ReferenceControllerTest — 35 tests covering all reference data endpoints (ADAs, categories, tags, items, statuses, offices, codes)
-UserControllerTest — 11 tests covering login, logout, and user lookup
-UsersControllerTest — 6 tests covering AD/LDAP user list endpoint
-AllTestsSuite — master suite to run all tests in one command
+[ERROR] Failures: 
+[ERROR]   ReferenceControllerTest.getdluOfficeList_returnsOkWithList:344 No value at JSON path "$[0].id"
+[ERROR]   ReferenceControllerTest.getdluOfficeList_serviceThrowsException_returns500:368 Status expected:<500> but was:<200>
