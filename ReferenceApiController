@@ -1,15 +1,15 @@
-package org.nnnn.ddd.api;
+package org.nypd.dlu.api;
 
-import org.nnnn.ddd.entity.AdaList;
-import org.nnnn.ddd.model.ADA;
-import org.nnnn.ddd.model.Category;
-import org.nnnn.ddd.model.dddOffice;
-import org.nnnn.ddd.model.Error;
-import org.nnnn.ddd.model.Item;
-import org.nnnn.ddd.model.ReferenceCode;
-import org.nnnn.ddd.model.Status;
-import org.nnnn.ddd.model.Tag;
-import org.nnnn.ddd.service.ReferenceDataService;
+import org.nypd.dlu.entity.AdaList;
+import org.nypd.dlu.model.ADA;
+import org.nypd.dlu.model.Category;
+import org.nypd.dlu.model.DLUOffice;
+import org.nypd.dlu.model.Error;
+import org.nypd.dlu.model.Item;
+import org.nypd.dlu.model.ReferenceCode;
+import org.nypd.dlu.model.Status;
+import org.nypd.dlu.model.Tag;
+import org.nypd.dlu.service.ReferenceDataService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -151,18 +151,32 @@ public class ReferenceApiController implements ReferenceApi {
         return new ResponseEntity<List<Status>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<List<dddOffice>> getdddOfficeList() {
+    public ResponseEntity<List<DLUOffice>> getDLUOfficeList() {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<List<dddOffice>>(this.referenceDataService.getAlldddOffices(), HttpStatus.OK);
+                return new ResponseEntity<List<DLUOffice>>(this.referenceDataService.getDLUOffices(), HttpStatus.OK);
             } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<List<dddOffice>>(HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<List<DLUOffice>>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
 
-        return new ResponseEntity<List<dddOffice>>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<List<DLUOffice>>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    public ResponseEntity<List<DLUOffice>> getAllDLUOfficeList() {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<List<DLUOffice>>(this.referenceDataService.getAllDLUOffices(), HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<DLUOffice>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<List<DLUOffice>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
 }
