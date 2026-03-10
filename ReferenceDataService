@@ -111,6 +111,21 @@ public class ReferenceDataService {
         return statusListRepository.findAllDTO();
     }
 
+    public List<DLUOffice> getDLUOffices() {
+        if (authenticationService.isSupervisor()) {
+            return dluOfficeListRepository.findAllDTO();
+        } else {
+            List<DLUOffice> results = new ArrayList<>();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            auth.getAuthorities().forEach(authority -> {
+                if (authority.getAuthority().startsWith("ROLE_SG-DLU")) {
+                    results.addAll(dluOfficeListRepository.findAllDTOForSG(authority.getAuthority()));
+                }
+            });
+            return results;
+        }
+    }
+
     public List<DLUOffice> getAllDLUOffices() {
         return dluOfficeListRepository.findAllDTO();
     }
