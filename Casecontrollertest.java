@@ -368,6 +368,71 @@ class CaseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.caseSummaries[0].arrId", is("ARR-001")));
     }
+====================
+    java// =========================================================================
+// GET /case/{caseId}/upload/{uploadId}  (getCaseUploadById)
+// =========================================================================
+
+@Test
+@WithMockUser
+void getCaseUploadById_validIds_returnsFileWithHeaders() throws Exception {
+    byte[] fileContent = "PDF content".getBytes();
+    Resource mockResource = new ByteArrayResource(fileContent);
+    Object[] fileNameAndResource = new Object[]{"test.pdf", mockResource};
+
+    when(caseService.getFile(100, 1)).thenReturn(fileNameAndResource);
+
+    mockMvc.perform(get("/case/100/upload/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, 
+                    "attachment; filename=\"test.pdf\""))
+            .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, 
+                    HttpHeaders.CONTENT_DISPOSITION))
+            .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM));
+
+    verify(caseService, times(1)).getFile(100, 1);
+}
+
+@Test
+@WithMockUser
+void getCaseUploadById_fileNotFound_returns500() throws Exception {
+    when(caseService.getFile(999, 1))
+            .thenThrow(new RuntimeException("File not found"));
+
+    mockMvc.perform(get("/case/999/upload/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
+
+    verify(caseService, times(1)).getFile(999, 1);
+}
+
+@Test
+@WithMockUser
+void getCaseUploadById_caseNotFound_returns500() throws Exception {
+    when(caseService.getFile(999, 99))
+            .thenThrow(new CaseNotFoundException("Case not found"));
+
+    mockMvc.perform(get("/case/999/upload/99")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
+}
+
+@Test
+@WithMockUser
+void getCaseUploadById_noAcceptHeader_returns501() throws Exception {
+    mockMvc.perform(get("/case/100/upload/1"))
+            .andExpect(status().isNotImplemented());
+}
+
+@Test
+void getCaseUploadById_noAuth_returns401() throws Exception {
+    mockMvc.perform(get("/case/100/upload/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+}
+
+    ==========================================
 
     @Test
     @DisplayName("POST /case/list - should filter by categoryIds and dddOfficeIds")
