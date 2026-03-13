@@ -1,3 +1,6 @@
+
+
+
 public ResponseEntity<String> loginUser(@Parameter(in = ParameterIn.QUERY, description = "The user name for login" ,schema=@Schema()) @Valid @RequestParam(value = "username", required = false) String username) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
