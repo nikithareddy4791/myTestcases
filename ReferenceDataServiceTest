@@ -1,0 +1,342 @@
+package org.nnnn.dlu.service;
+
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
+import org.nnnn.dlu.entity.AdaList;
+import org.nnnn.dlu.model.ADA;
+import org.nnnn.dlu.model.Category;
+import org.nnnn.dlu.model.Item;
+import org.nnnn.dlu.model.ReferenceCode;
+import org.nnnn.dlu.model.Status;
+import org.nnnn.dlu.model.Tag;
+import org.nnnn.dlu.model.dluOffice;
+import org.nnnn.dlu.repository.ADAListRepository;
+import org.nnnn.dlu.repository.CategoryListRepository;
+import org.nnnn.dlu.repository.CodeRefRepository;
+import org.nnnn.dlu.repository.dluOfficeListRepository;
+import org.nnnn.dlu.repository.ItemListRepository;
+import org.nnnn.dlu.repository.StatusListRepository;
+import org.nnnn.dlu.repository.TagListRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class ReferenceDataServiceTest {
+
+    @Mock
+    private ADAListRepository adaListRepository;
+
+    @Mock
+    private CategoryListRepository categoryListRepository;
+
+    @Mock
+    private TagListRepository tagListRepository;
+
+    @Mock
+    private ItemListRepository itemListRepository;
+
+    @Mock
+    private StatusListRepository statusListRepository;
+
+    @Mock
+    private dluOfficeListRepository dluOfficeListRepository;
+
+    @Mock
+    private CodeRefRepository codeRefRepository;
+
+    @Mock
+    private AuthenticationService authenticationService;
+
+    @Mock
+    private ModelMapper modelMapper;
+
+    @InjectMocks
+    private ReferenceDataService referenceDataService;
+
+    @BeforeEach
+    void setUp() {
+        SecurityContextHolder.clearContext();
+    }
+
+    // ----------------------------------------------------------------
+    // getRefCodeByType
+    // ----------------------------------------------------------------
+
+    @Test
+    void getRefCodeByType_validCodeType_returnsRefCodes() {
+        ReferenceCode code = new ReferenceCode();
+        when(codeRefRepository.findDTOByCodeTypeOrderByIdAsc("STATUS")).thenReturn(List.of(code));
+
+        List<ReferenceCode> result = referenceDataService.getRefCodeByType("STATUS");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(codeRefRepository, times(1)).findDTOByCodeTypeOrderByIdAsc("STATUS");
+    }
+
+    @Test
+    void getRefCodeByType_noResults_returnsEmptyList() {
+        when(codeRefRepository.findDTOByCodeTypeOrderByIdAsc("UNKNOWN")).thenReturn(new ArrayList<>());
+
+        List<ReferenceCode> result = referenceDataService.getRefCodeByType("UNKNOWN");
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getRefCodeByType_repositoryThrows_propagatesException() {
+        when(codeRefRepository.findDTOByCodeTypeOrderByIdAsc("STATUS"))
+                .thenThrow(new RuntimeException("DB error"));
+
+        assertThrows(RuntimeException.class, () -> referenceDataService.getRefCodeByType("STATUS"));
+    }
+
+    // ----------------------------------------------------------------
+    // getAllAdas
+    // ----------------------------------------------------------------
+
+    @Test
+    void getAllAdas_returnsListOfADAs() {
+        AdaList adaEntity = new AdaList();
+        ADA adaModel = new ADA();
+        when(adaListRepository.findAll()).thenReturn(List.of(adaEntity));
+        when(modelMapper.map(adaEntity, ADA.class)).thenReturn(adaModel);
+
+        List<ADA> result = referenceDataService.getAllAdas();
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(adaListRepository, times(1)).findAll();
+        verify(modelMapper, times(1)).map(adaEntity, ADA.class);
+    }
+
+    @Test
+    void getAllAdas_emptyRepository_returnsEmptyList() {
+        when(adaListRepository.findAll()).thenReturn(new ArrayList<>());
+
+        List<ADA> result = referenceDataService.getAllAdas();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getAllAdas_multipleEntities_mapsAll() {
+        AdaList ada1 = new AdaList();
+        AdaList ada2 = new AdaList();
+        when(adaListRepository.findAll()).thenReturn(List.of(ada1, ada2));
+        when(modelMapper.map(any(AdaList.class), eq(ADA.class))).thenReturn(new ADA());
+
+        List<ADA> result = referenceDataService.getAllAdas();
+
+        assertEquals(2, result.size());
+        verify(modelMapper, times(2)).map(any(AdaList.class), eq(ADA.class));
+    }
+
+    // ----------------------------------------------------------------
+    // getAllTags
+    // ----------------------------------------------------------------
+
+    @Test
+    void getAllTags_returnsTags() {
+        Tag tag = new Tag();
+        when(tagListRepository.findAllDTO()).thenReturn(List.of(tag));
+
+        List<Tag> result = referenceDataService.getAllTags();
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(tagListRepository, times(1)).findAllDTO();
+    }
+
+    @Test
+    void getAllTags_emptyRepository_returnsEmptyList() {
+        when(tagListRepository.findAllDTO()).thenReturn(new ArrayList<>());
+
+        List<Tag> result = referenceDataService.getAllTags();
+
+        assertTrue(result.isEmpty());
+    }
+
+    // ----------------------------------------------------------------
+    // getAllCategories
+    // ----------------------------------------------------------------
+
+    @Test
+    void getAllCategories_returnsCategories() {
+        Category category = new Category();
+        doNothing().when(authenticationService).debug();
+        when(categoryListRepository.findAllDTO()).thenReturn(List.of(category));
+
+        List<Category> result = referenceDataService.getAllCategories();
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(authenticationService, times(1)).debug();
+        verify(categoryListRepository, times(1)).findAllDTO();
+    }
+
+    @Test
+    void getAllCategories_emptyRepository_returnsEmptyList() {
+        doNothing().when(authenticationService).debug();
+        when(categoryListRepository.findAllDTO()).thenReturn(new ArrayList<>());
+
+        List<Category> result = referenceDataService.getAllCategories();
+
+        assertTrue(result.isEmpty());
+    }
+
+    // ----------------------------------------------------------------
+    // getAllItems
+    // ----------------------------------------------------------------
+
+    @Test
+    void getAllItems_returnsItems() {
+        Item item = new Item();
+        when(itemListRepository.findAllDTO()).thenReturn(List.of(item));
+
+        List<Item> result = referenceDataService.getAllItems();
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(itemListRepository, times(1)).findAllDTO();
+    }
+
+    @Test
+    void getAllItems_emptyRepository_returnsEmptyList() {
+        when(itemListRepository.findAllDTO()).thenReturn(new ArrayList<>());
+
+        List<Item> result = referenceDataService.getAllItems();
+
+        assertTrue(result.isEmpty());
+    }
+
+    // ----------------------------------------------------------------
+    // getAllStatuses
+    // ----------------------------------------------------------------
+
+    @Test
+    void getAllStatuses_returnsStatuses() {
+        Status status = new Status();
+        when(statusListRepository.findAllDTO()).thenReturn(List.of(status));
+
+        List<Status> result = referenceDataService.getAllStatuses();
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(statusListRepository, times(1)).findAllDTO();
+    }
+
+    @Test
+    void getAllStatuses_emptyRepository_returnsEmptyList() {
+        when(statusListRepository.findAllDTO()).thenReturn(new ArrayList<>());
+
+        List<Status> result = referenceDataService.getAllStatuses();
+
+        assertTrue(result.isEmpty());
+    }
+
+    // ----------------------------------------------------------------
+    // getdluOffices — supervisor path
+    // ----------------------------------------------------------------
+
+    @Test
+    void getdluOffices_supervisorUser_returnsAllOffices() {
+        dluOffice office = new dluOffice();
+        when(authenticationService.isSupervisor()).thenReturn(true);
+        when(dluOfficeListRepository.findAllDTO()).thenReturn(List.of(office));
+
+        List<dluOffice> result = referenceDataService.getdluOffices("supervisorUser");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(dluOfficeListRepository, times(1)).findAllDTO();
+        verify(dluOfficeListRepository, never()).findAllDTOForSG(anyString());
+    }
+
+    // ----------------------------------------------------------------
+    // getdluOffices — non-supervisor path
+    // ----------------------------------------------------------------
+
+    @Test
+    void getdluOffices_nonSupervisorWithSGAuthority_returnsFilteredOffices() {
+        when(authenticationService.isSupervisor()).thenReturn(false);
+
+        GrantedAuthority sgAuthority = new SimpleGrantedAuthority("ROLE_SG-dlu-OFFICE1");
+        Authentication auth = mock(Authentication.class);
+        when(auth.getAuthorities()).thenReturn((List) List.of(sgAuthority));
+
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
+        dluOffice office = new dluOffice();
+        when(dluOfficeListRepository.findAllDTOForSG("ROLE_SG-dlu-OFFICE1")).thenReturn(List.of(office));
+
+        List<dluOffice> result = referenceDataService.getdluOffices("regularUser");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(dluOfficeListRepository, times(1)).findAllDTOForSG("ROLE_SG-dlu-OFFICE1");
+    }
+
+    @Test
+    void getdluOffices_nonSupervisorNoSGAuthority_returnsEmptyList() {
+        when(authenticationService.isSupervisor()).thenReturn(false);
+
+        GrantedAuthority otherAuthority = new SimpleGrantedAuthority("ROLE_USER");
+        Authentication auth = mock(Authentication.class);
+        when(auth.getAuthorities()).thenReturn((List) List.of(otherAuthority));
+
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
+        List<dluOffice> result = referenceDataService.getdluOffices("regularUser");
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(dluOfficeListRepository, never()).findAllDTOForSG(anyString());
+    }
+
+    // ----------------------------------------------------------------
+    // getAlldluOffices
+    // ----------------------------------------------------------------
+
+    @Test
+    void getAlldluOffices_returnsAllOffices() {
+        dluOffice office = new dluOffice();
+        when(dluOfficeListRepository.findAllDTO()).thenReturn(List.of(office));
+
+        List<dluOffice> result = referenceDataService.getAlldluOffices();
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(dluOfficeListRepository, times(1)).findAllDTO();
+    }
+
+    @Test
+    void getAlldluOffices_emptyRepository_returnsEmptyList() {
+        when(dluOfficeListRepository.findAllDTO()).thenReturn(new ArrayList<>());
+
+        List<dluOffice> result = referenceDataService.getAlldluOffices();
+
+        assertTrue(result.isEmpty());
+    }
+}
