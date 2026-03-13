@@ -1,67 +1,14 @@
-package org.nypd.dlu.api;
-
-import org.nypd.dlu.entity.AdaList;
-import org.nypd.dlu.model.ADA;
-import org.nypd.dlu.model.Category;
-import org.nypd.dlu.model.DLUOffice;
-import org.nypd.dlu.model.Error;
-import org.nypd.dlu.model.Item;
-import org.nypd.dlu.model.ReferenceCode;
-import org.nypd.dlu.model.Status;
-import org.nypd.dlu.model.Tag;
-import org.nypd.dlu.service.ReferenceDataService;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import jakarta.validation.constraints.*;
-import jakarta.validation.Valid;
-import jakarta.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
-@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
-@RestController
 public class ReferenceApiController implements ReferenceApi {
-
     private static final Logger log = LoggerFactory.getLogger(ReferenceApiController.class);
-
     private final ObjectMapper objectMapper;
-
     private final HttpServletRequest request;
-
     @Autowired
     private ReferenceDataService referenceDataService;
-
     @org.springframework.beans.factory.annotation.Autowired
     public ReferenceApiController(ObjectMapper objectMapper, HttpServletRequest request) {
         this.objectMapper = objectMapper;
         this.request = request;
     }
-
     public ResponseEntity<List<ADA>> getADAList() {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
@@ -73,10 +20,8 @@ public class ReferenceApiController implements ReferenceApi {
                 return new ResponseEntity<List<ADA>>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
         return new ResponseEntity<List<ADA>>(HttpStatus.NOT_IMPLEMENTED);
     }
-
     public ResponseEntity<List<Category>> getCategoryList() {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
@@ -88,10 +33,8 @@ public class ReferenceApiController implements ReferenceApi {
                 return new ResponseEntity<List<Category>>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
         return new ResponseEntity<List<Category>>(HttpStatus.NOT_IMPLEMENTED);
     }
-
     public ResponseEntity<List<ReferenceCode>> getGeneralCodeList(@NotNull @Parameter(in = ParameterIn.QUERY, description = "code type to retrieve" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "codeType", required = true) String codeType) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
@@ -103,10 +46,8 @@ public class ReferenceApiController implements ReferenceApi {
                 return new ResponseEntity<List<ReferenceCode>>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
         return new ResponseEntity<List<ReferenceCode>>(HttpStatus.NOT_IMPLEMENTED);
     }
-
     public ResponseEntity<List<Item>> getItemList() {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
@@ -118,10 +59,8 @@ public class ReferenceApiController implements ReferenceApi {
                 return new ResponseEntity<List<Item>>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
         return new ResponseEntity<List<Item>>(HttpStatus.NOT_IMPLEMENTED);
     }
-
     public ResponseEntity<List<Tag>> getTagList() {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
@@ -133,10 +72,8 @@ public class ReferenceApiController implements ReferenceApi {
                 return new ResponseEntity<List<Tag>>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
         return new ResponseEntity<List<Tag>>(HttpStatus.NOT_IMPLEMENTED);
     }
-
     public ResponseEntity<List<Status>> getStatusList() {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
@@ -147,10 +84,8 @@ public class ReferenceApiController implements ReferenceApi {
                 return new ResponseEntity<List<Status>>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
         return new ResponseEntity<List<Status>>(HttpStatus.NOT_IMPLEMENTED);
     }
-
     public ResponseEntity<List<DLUOffice>> getDLUOfficeList() {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
@@ -161,10 +96,8 @@ public class ReferenceApiController implements ReferenceApi {
                 return new ResponseEntity<List<DLUOffice>>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
         return new ResponseEntity<List<DLUOffice>>(HttpStatus.NOT_IMPLEMENTED);
     }
-
     public ResponseEntity<List<DLUOffice>> getAllDLUOfficeList() {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
@@ -175,8 +108,6 @@ public class ReferenceApiController implements ReferenceApi {
                 return new ResponseEntity<List<DLUOffice>>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
         return new ResponseEntity<List<DLUOffice>>(HttpStatus.NOT_IMPLEMENTED);
     }
-
 }
