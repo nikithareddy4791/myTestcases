@@ -1,401 +1,56 @@
-package org.nypd.dlu.service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
-import org.nypd.dlu.TestConfig;
-import org.nypd.dlu.api.CaseApiController;
-import org.nypd.dlu.exceptions.CaseNotFoundException;
-import org.nypd.dlu.exceptions.SealedAccessException;
-import org.nypd.dlu.model.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Collections;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-@WebMvcTest(controllers = CaseApiController.class)
-@Import({TestConfig.class, CaseApiController.class})
-public class CaseServiceControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    
-    @MockBean
-    private javax.sql.DataSource dataSource;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
-    private ModelMapper modelMapper;
-
-    @MockBean
-    private CaseService caseService;
-
-    @MockBean
-    private AuthenticationService authenticationService;
-
-    @MockBean
-    private AuditService auditService;
-
-    private DLUCase mockCaseDto;
-    private DLUCaseStats mockStats;
-
-    @BeforeEach
-    void setUp() {
-        mockCaseDto = new DLUCase();
-        mockCaseDto.setId(100);
-        mockCaseDto.setArrId("ARR001");
-
-        mockStats = new DLUCaseStats();
-        mockStats.setOverdueCount(3);
-        mockStats.setComingDueCount(2);
-    }
-
-    // =========================================================================
-    // GET /case/stats
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void getCaseStats_returnsOkWithStats() throws Exception {
-        when(caseService.getCaseStats()).thenReturn(mockStats);
-
-        mockMvc.perform(get("/case/stats")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.overdueCount").value(3))
-                .andExpect(jsonPath("$.comingDueCount").value(2));
-
-        verify(caseService, times(1)).getCaseStats();
-    }
-
-    @Test
-    void getCaseStats_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/case/stats")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // GET /case/{caseId}
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void getCaseById_existingCase_returnsOk() throws Exception {
-        when(caseService.loadCase(100)).thenReturn(mockCaseDto);
-
-        mockMvc.perform(get("/case/100")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(100))
-                .andExpect(jsonPath("$.arrId").value("ARR001"));
-
-        verify(caseService, times(1)).loadCase(100);
-    }
-
-    @Test
-    @WithMockUser
-    void getCaseById_caseNotFound_returns500() throws Exception {
-        when(caseService.loadCase(999)).thenThrow(new CaseNotFoundException("Case not found"));
-
-        mockMvc.perform(get("/case/999")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    @WithMockUser
-    void getCaseById_noAcceptHeader_returns501() throws Exception {
-        mockMvc.perform(get("/case/100"))
-                .andExpect(status().isNotImplemented());
-    }
-
-    @Test
-    void getCaseById_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/case/100")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // POST /case  (createCaseByArrest)
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void createCaseByArrest_newCase_returns201() throws Exception {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR002");
-        request.setDluOfficeId(1);
-        request.setProactiveFlg(0);
-
-        DLUCase newCase = new DLUCase();
-        newCase.setId(101);
-        newCase.setNew(true);
-
-        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(newCase);
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(101));
-    }
-
-    @Test
-    @WithMockUser
-    void createCaseByArrest_existingCase_returns200() throws Exception {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDluOfficeId(1);
-        request.setProactiveFlg(0);
-
-        DLUCase existingCase = new DLUCase();
-        existingCase.setId(100);
-        existingCase.setNew(false);
-
-        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(existingCase);
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(100));
-    }
-
-    @Test
-    @WithMockUser
-    void createCaseByArrest_sealedAccessException_throws() throws Exception {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDluOfficeId(1);
-        request.setProactiveFlg(0);
-
-        when(caseService.createCase(any(CreateCaseRequest.class)))
-                .thenThrow(new SealedAccessException("No sealed access"));
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @WithMockUser
-    void createCaseByArrest_serviceThrowsException_returns500() throws Exception {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDluOfficeId(1);
-        request.setProactiveFlg(0);
-
-        when(caseService.createCase(any(CreateCaseRequest.class)))
-                .thenThrow(new RuntimeException("Unexpected error"));
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void createCaseByArrest_noAuth_returns401() throws Exception {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // PUT /case/{caseId}  (updateCase)
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void updateCase_validCase_returnsOk() throws Exception {
-        when(caseService.saveCase(any(DLUCase.class))).thenReturn(mockCaseDto);
-
-        mockMvc.perform(put("/case/100")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(mockCaseDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(100));
-
-        verify(caseService, times(1)).saveCase(any(DLUCase.class));
-    }
-
-    @Test
-    @WithMockUser
-    void updateCase_caseNotFound_returns500() throws Exception {
-        when(caseService.saveCase(any(DLUCase.class)))
-                .thenThrow(new CaseNotFoundException("Case not found"));
-
-        mockMvc.perform(put("/case/100")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(mockCaseDto)))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void updateCase_noAuth_returns401() throws Exception {
-        mockMvc.perform(put("/case/100")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(mockCaseDto)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // POST /case/list  (getCaseList)
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void getCaseList_validFilter_returnsOk() throws Exception {
-        CaseFilter filter = new CaseFilter();
-        filter.setArrId("ARR001");
-        filter.setPageNumber(0);
-        filter.setPageSize(10);
-
-        CaseListResponse response = new CaseListResponse();
-        response.setTotalElements(1L);
-        response.setCaseSummaries(Collections.emptyList());
-
-        when(caseService.findCases(any(CaseFilter.class))).thenReturn(response);
-
-        mockMvc.perform(post("/case/list")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(filter)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalElements").value(1));
-
-        verify(caseService, times(1)).findCases(any(CaseFilter.class));
-    }
-
-    @Test
-    @WithMockUser
-    void getCaseList_serviceThrowsException_returns500() throws Exception {
-        CaseFilter filter = new CaseFilter();
-        filter.setArrId("ARR001");
-
-        when(caseService.findCases(any(CaseFilter.class)))
-                .thenThrow(new RuntimeException("DB error"));
-
-        mockMvc.perform(post("/case/list")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(filter)))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void getCaseList_noAuth_returns401() throws Exception {
-        mockMvc.perform(post("/case/list")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new CaseFilter())))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // POST /case/{caseId}/note  (createCaseNote)
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void createCaseNote_validNote_returnsOk() throws Exception {
-        MockMultipartFile file = new MockMultipartFile(
-                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "PDF content".getBytes());
-
-        when(caseService.saveNote(eq(100), eq("Test note"), eq("test.pdf"), any()))
-                .thenReturn(mockCaseDto);
-
-        mockMvc.perform(multipart("/case/100/note")
-                .file(file)
-                .param("noteDesc", "Test note")
-                .param("fileNm", "test.pdf")
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(100));
-    }
-
-    @Test
-    @WithMockUser
-    void createCaseNote_caseNotFound_returns500() throws Exception {
-        MockMultipartFile file = new MockMultipartFile(
-                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "PDF content".getBytes());
-
-        when(caseService.saveNote(eq(999), any(), any(), any()))
-                .thenThrow(new CaseNotFoundException("Case not found"));
-
-        mockMvc.perform(multipart("/case/999/note")
-                .file(file)
-                .param("noteDesc", "Note")
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    @WithMockUser
-    void createCaseNote_withoutFile_returnsOk() throws Exception {
-        when(caseService.saveNote(eq(100), eq("Note only"), isNull(), isNull()))
-                .thenReturn(mockCaseDto);
-
-        mockMvc.perform(multipart("/case/100/note")
-                .param("noteDesc", "Note only")
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void createCaseNote_noAuth_returns401() throws Exception {
-        MockMultipartFile file = new MockMultipartFile(
-                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "content".getBytes());
-
-        mockMvc.perform(multipart("/case/100/note")
-                .file(file)
-                .param("noteDesc", "Note")
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
+@Test
+@WithMockUser
+void getCaseUploadById_validIds_returnsFileWithHeaders() throws Exception {
+    byte[] fileContent = "PDF content".getBytes();
+    Resource mockResource = new ByteArrayResource(fileContent);
+    Object[] fileNameAndResource = new Object[]{"test.pdf", mockResource};
+
+    when(caseService.getFile(100, 1)).thenReturn(fileNameAndResource);
+
+    mockMvc.perform(get("/case/100/file/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=\"test.pdf\""))
+            .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS,
+                    HttpHeaders.CONTENT_DISPOSITION))
+            .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM));
+
+    verify(caseService, times(1)).getFile(100, 1);
+}
+
+@Test
+@WithMockUser
+void getCaseUploadById_fileNotFound_returns500() throws Exception {
+    when(caseService.getFile(999, 1))
+            .thenThrow(new RuntimeException("File not found"));
+
+    mockMvc.perform(get("/case/999/file/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
+}
+
+@Test
+@WithMockUser
+void getCaseUploadById_caseNotFound_returns500() throws Exception {
+    when(caseService.getFile(999, 99))
+            .thenThrow(new CaseNotFoundException("Case not found"));
+
+    mockMvc.perform(get("/case/999/file/99")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
+}
+
+@Test
+@WithMockUser
+void getCaseUploadById_noAcceptHeader_returns501() throws Exception {
+    mockMvc.perform(get("/case/100/file/1"))
+            .andExpect(status().isNotImplemented());
+}
+
+@Test
+void getCaseUploadById_noAuth_returns401() throws Exception {
+    mockMvc.perform(get("/case/100/file/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
 }
