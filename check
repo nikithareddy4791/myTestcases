@@ -1,5 +1,14 @@
-[ERROR] Failures: 
-[ERROR]   CaseServiceControllerTest.createCaseByArrest_invalidArrestException_returns500:473 Status expected:<500> but was:<403>        
-[ERROR]   CaseServiceControllerTest.createCaseByArrest_noAcceptHeader_returns501:482 Status expected:<501> but was:<403>
-[ERROR]   CaseServiceControllerTest.createCaseByArrest_sealedAccessException_returns500:512 Status expected:<500> but was:<403>
-[INFO]
+ @Operation(summary = "Create new DLU case.", description = "Create new DLU case.", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Case exists", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DLUCase.class))),
+
+                        @ApiResponse(responseCode = "201", description = "Case created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DLUCase.class))),
+
+                        @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case", produces = { "application/json" }, consumes = {
+                        "application/json" }, method = RequestMethod.POST)
+        ResponseEntity<DLUCase> createCaseByArrest(
+                        @Parameter(in = ParameterIn.DEFAULT, description = "Object containing case creation criteria", required = true, schema = @Schema()) @Valid @RequestBody CreateCaseRequest body);
+
