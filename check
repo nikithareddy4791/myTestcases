@@ -1,51 +1,5 @@
-@Test
-@WithMockUser
-void createCaseByArrest_invalidArrestException_returns500() throws Exception {
-    when(caseService.createCase(any(CreateCaseRequest.class)))
-            .thenThrow(new InvalidArrestException("Invalid arrest"));
-
-    mockMvc.perform(post("/case")
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON)
-            .content("{}"))
-            .andExpect(status().isInternalServerError());
-}
-
-@Test
-@WithMockUser
-void createCaseByArrest_noAcceptHeader_returns501() throws Exception {
-    mockMvc.perform(post("/case")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{}"))
-            .andExpect(status().isNotImplemented());
-}
-
-@Test
-@WithMockUser
-void getCaseStats_serviceThrowsException_returns500() throws Exception {
-    when(caseService.getCaseStats()).thenThrow(new RuntimeException("DB error"));
-
-    mockMvc.perform(get("/case/stats")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isInternalServerError());
-}
-
-@Test
-@WithMockUser
-void getCaseStats_noAcceptHeader_returns501() throws Exception {
-    mockMvc.perform(get("/case/stats"))
-            .andExpect(status().isNotImplemented());
-}
-
-@Test
-@WithMockUser
-void createCaseByArrest_sealedAccessException_returns500() throws Exception {
-    when(caseService.createCase(any(CreateCaseRequest.class)))
-            .thenThrow(new SealedAccessException("Sealed access"));
-
-    mockMvc.perform(post("/case")
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON)
-            .content("{}"))
-            .andExpect(status().isInternalServerError());
-}
+[ERROR] Failures: 
+[ERROR]   CaseServiceControllerTest.createCaseByArrest_invalidArrestException_returns500:473 Status expected:<500> but was:<403>        
+[ERROR]   CaseServiceControllerTest.createCaseByArrest_noAcceptHeader_returns501:482 Status expected:<501> but was:<403>
+[ERROR]   CaseServiceControllerTest.createCaseByArrest_sealedAccessException_returns500:512 Status expected:<500> but was:<403>
+[INFO]
