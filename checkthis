@@ -1,502 +1,111 @@
-package org.nnnn.dlu.service ;
+package org.nnnn.ddd.api;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
-import org.nnnn.dlu.model.*;
-import org.nnnn.dlu.TestConfig;
-import org.nnnn.dlu.api.ReferenceApiController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
+import org.nnnn.ddd.model.Error;
+import org.nnnn.ddd.service.CacheService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-03-12T13:31:51.218-04:00")
+@RestController
+public class CacheApiController implements CacheApi {
 
+    private static final Logger log = LoggerFactory.getLogger(CacheApiController.class);
 
-@WebMvcTest(controllers = ReferenceApiController.class)
-@Import({TestConfig.class, ReferenceApiController.class})
-public class ReferenceControllerTest {
+    private final ObjectMapper objectMapper;
+
+    private final HttpServletRequest request;
 
     @Autowired
-    private MockMvc mockMvc;
+    private CacheService cacheService;
 
-    @SpyBean
-    private ObjectMapper objectMapper;
-
-     @MockBean
-    private javax.sql.DataSource dataSource;
-
-    @MockBean
-    private ReferenceDataService referenceDataService;
-
-    @MockBean
-    private ModelMapper modelMapper;
-
-    @MockBean
-    private CaseService caseService;
-
-    @MockBean
-    private AuthenticationService authenticationService;
-
-    @MockBean
-    private AuditService auditService;
-
-    private ADA mockAda;
-    private Category mockCategory;
-    private Tag mockTag;
-    private Item mockItem;
-    private Status mockStatus;
-    private DLUOffice mockOffice;
-    private ReferenceCode mockRefCode;
-
-    @BeforeEach
-    void setUp() {
-        mockAda = new ADA();
-        mockAda.setId(1);
-        mockAda.setFrstNm("Jane");
-        mockAda.setLastNm("Doe");
-        mockAda.setBoroughNm("Manhattan");
-
-        mockCategory = new Category();
-        mockCategory.setId(1);
-        mockCategory.setCategoryDesc("Shootings");
-
-        mockTag = new Tag();
-        mockTag.setId(1);
-        mockTag.setTagDesc("Gun");
-
-        mockItem = new Item(null, null, null);
-        mockItem.setId(10);
-        mockItem.setItemDesc("ECMS");
-
-        mockStatus = new Status();
-        mockStatus.setId(1);
-        mockStatus.setStatusDesc("Completed");
-
-        mockOffice = new DLUOffice();
-        mockOffice.setId(1);
-        mockOffice.setDluOfficeDesc("Manhattan");
-
-        mockRefCode = new ReferenceCode(null, null, null, null);
-        mockRefCode.setId(1);
-        mockRefCode.setCodeType("STATUS");
-        mockRefCode.setCodeVal("OPEN");
-        mockRefCode.setCodeDesc("Open Status");
-
-        when(authenticationService.isSupervisor()).thenReturn(true);
-        when(authenticationService.getUsername()).thenReturn("test");
+    @org.springframework.beans.factory.annotation.Autowired
+    public CacheApiController(ObjectMapper objectMapper, HttpServletRequest request) {
+        this.objectMapper = objectMapper;
+        this.request = request;
     }
 
-    // =========================================================================
-    // GET /reference/adas
-    // =========================================================================
+    public ResponseEntity<String> clearCache() {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                cacheService.clearAllCache();
+                return new ResponseEntity<String>("Done", HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
 
-    @Test
-    @WithMockUser
-    void getADAList_returnsOkWithList() throws Exception {
-        when(referenceDataService.getAllAdas()).thenReturn(Arrays.asList(mockAda));
-
-        mockMvc.perform(get("/reference/adas")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].frstNm").value("Jane"))
-                .andExpect(jsonPath("$[0].lastNm").value("Doe"));
-
-        verify(referenceDataService, times(1)).getAllAdas();
+        return new ResponseEntity<String>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    @Test
-    @WithMockUser
-    void getADAList_returnsEmptyList() throws Exception {
-        when(referenceDataService.getAllAdas()).thenReturn(Collections.emptyList());
+}
 
-        mockMvc.perform(get("/reference/adas")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
+
+
+
+===========================================
+
+package org.nnnn.ddd.api;
+
+import org.nnnn.ddd.service.AuthTestService;
+import org.springframework.context.annotation.Profile;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@Profile("dev")
+
+public class AuthTestController {
+
+    private final AuthTestService service;
+
+    public AuthTestController(AuthTestService service) {
+        this.service = service;
     }
 
-    @Test
-    @WithMockUser
-    void getADAList_serviceThrowsException_returns500() throws Exception {
-        when(referenceDataService.getAllAdas()).thenThrow(new RuntimeException("DB error"));
-
-        mockMvc.perform(get("/reference/adas")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
+    @GetMapping("/testAuth")
+    public String testAuth() {
+        return service.authenticatedUser();
     }
 
-    @Test
-    void getADAList_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/reference/adas")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @WithMockUser
-    void getADAList_noAcceptHeader_returns501() throws Exception {
-        mockMvc.perform(get("/reference/adas"))
-                .andExpect(status().isNotImplemented());
-    }
-
-    // =========================================================================
-    // GET /reference/categories
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void getCategoryList_returnsOkWithList() throws Exception {
-        when(referenceDataService.getAllCategories()).thenReturn(Arrays.asList(mockCategory));
-
-        mockMvc.perform(get("/reference/categories")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].categoryDesc").value("Shootings"));
-
-        verify(referenceDataService, times(1)).getAllCategories();
-    }
-
-    @Test
-    @WithMockUser
-    void getCategoryList_returnsEmptyList() throws Exception {
-        when(referenceDataService.getAllCategories()).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/reference/categories")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
-    }
-
-    @Test
-    @WithMockUser
-    void getCategoryList_serviceThrowsException_returns500() throws Exception {
-        when(referenceDataService.getAllCategories()).thenThrow(new RuntimeException("DB error"));
-
-        mockMvc.perform(get("/reference/categories")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void getCategoryList_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/reference/categories")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // GET /reference/tags
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void getTagList_returnsOkWithList() throws Exception {
-        when(referenceDataService.getAllTags()).thenReturn(Arrays.asList(mockTag));
-
-        mockMvc.perform(get("/reference/tags")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].tagDesc").value("Gun"));
-
-        verify(referenceDataService, times(1)).getAllTags();
-    }
-
-    @Test
-    @WithMockUser
-    void getTagList_returnsEmptyList() throws Exception {
-        when(referenceDataService.getAllTags()).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/reference/tags")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
-    }
-
-    @Test
-    @WithMockUser
-    void getTagList_serviceThrowsException_returns500() throws Exception {
-        when(referenceDataService.getAllTags()).thenThrow(new RuntimeException("DB error"));
-
-        mockMvc.perform(get("/reference/tags")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void getTagList_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/reference/tags")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // GET /reference/items
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void getItemList_returnsOkWithList() throws Exception {
-        when(referenceDataService.getAllItems()).thenReturn(Arrays.asList(mockItem));
-
-        mockMvc.perform(get("/reference/items")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(10))
-                .andExpect(jsonPath("$[0].itemDesc").value("ECMS"));
-
-        verify(referenceDataService, times(1)).getAllItems();
-    }
-
-    @Test
-    @WithMockUser
-    void getItemList_returnsEmptyList() throws Exception {
-        when(referenceDataService.getAllItems()).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/reference/items")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
-    }
-
-    @Test
-    @WithMockUser
-    void getItemList_serviceThrowsException_returns500() throws Exception {
-        when(referenceDataService.getAllItems()).thenThrow(new RuntimeException("DB error"));
-
-        mockMvc.perform(get("/reference/items")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void getItemList_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/reference/items")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // GET /reference/statuses
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void getStatusList_returnsOkWithList() throws Exception {
-        when(referenceDataService.getAllStatuses()).thenReturn(Arrays.asList(mockStatus));
-
-        mockMvc.perform(get("/reference/statuses")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].statusDesc").value("Completed"));
-
-        verify(referenceDataService, times(1)).getAllStatuses();
-    }
-
-    @Test
-    @WithMockUser
-    void getStatusList_returnsEmptyList() throws Exception {
-        when(referenceDataService.getAllStatuses()).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/reference/statuses")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
-    }
-
-    @Test
-    @WithMockUser
-    void getStatusList_serviceThrowsException_returns500() throws Exception {
-        when(referenceDataService.getAllStatuses()).thenThrow(new RuntimeException("DB error"));
-
-        mockMvc.perform(get("/reference/statuses")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void getStatusList_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/reference/statuses")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // GET /reference/dluOffices
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void getdluOfficeList_returnsOkWithList() throws Exception {
-        when(referenceDataService.getDLUOffices("test")).thenReturn(Arrays.asList(mockOffice));
-
-        mockMvc.perform(get("/reference/dluOffices")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].dluOfficeDesc").value("Manhattan"));
-
-        verify(referenceDataService, times(1)).getDLUOffices("test");
-    }
-
-    @Test
-    @WithMockUser
-    void getdluOfficeList_returnsEmptyList() throws Exception {
-        when(referenceDataService.getAllDLUOffices()).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/reference/dluOffices")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
-    }
-
-    @Test
-    @WithMockUser
-    void getdluOfficeList_serviceThrowsException_returns500() throws Exception {
-        when(referenceDataService.getDLUOffices("test")).thenThrow(new RuntimeException("DB error"));
-
-        mockMvc.perform(get("/reference/dluOffices")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void getdluOfficeList_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/reference/dluOffices")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // GET /reference/codes?codeType=
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void getGeneralCodeList_validCodeType_returnsOk() throws Exception {
-        when(referenceDataService.getRefCodeByType("STATUS")).thenReturn(Arrays.asList(mockRefCode));
-
-        mockMvc.perform(get("/reference/codes")
-                .param("codeType", "STATUS")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].codeType").value("STATUS"))
-                .andExpect(jsonPath("$[0].codeVal").value("OPEN"));
-
-        verify(referenceDataService, times(1)).getRefCodeByType("STATUS");
-    }
-
-    @Test
-    @WithMockUser
-    void getGeneralCodeList_unknownCodeType_returnsEmptyList() throws Exception {
-        when(referenceDataService.getRefCodeByType("UNKNOWN")).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/reference/codes")
-                .param("codeType", "UNKNOWN")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
-    }
-
-    @Test
-    @WithMockUser
-    void getGeneralCodeList_missingCodeTypeParam_returns400() throws Exception {
-        mockMvc.perform(get("/reference/codes")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @WithMockUser
-    void getGeneralCodeList_serviceThrowsException_returns500() throws Exception {
-        when(referenceDataService.getRefCodeByType(anyString())).thenThrow(new RuntimeException("DB error"));
-
-        mockMvc.perform(get("/reference/codes")
-                .param("codeType", "STATUS")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void getGeneralCodeList_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/reference/codes")
-                .param("codeType", "STATUS")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-// GET /reference/allDLUOffices
-// =========================================================================
-
-    @Test
-    @WithMockUser
-    void getAllDLUOfficeList_returnsOkWithList() throws Exception {
-        when(referenceDataService.getAllDLUOffices()).thenReturn(Arrays.asList(mockOffice));
-
-        mockMvc.perform(get("/reference/allDluOffices")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(1))
-            .andExpect(jsonPath("$[0].dluOfficeDesc").value("Manhattan"));
-
-        verify(referenceDataService, times(1)).getAllDLUOffices();
-    }
-
-    @Test
-    @WithMockUser
-    void getAllDLUOfficeList_returnsEmptyList() throws Exception {
-        when(referenceDataService.getAllDLUOffices()).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/reference/allDluOffices")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$").isEmpty());
-    }
-
-    @Test
-    @WithMockUser
-    void getAllDLUOfficeList_serviceThrowsException_returns500() throws Exception {
-        when(referenceDataService.getAllDLUOffices())
-            .thenThrow(new RuntimeException("DB error"));
-
-        mockMvc.perform(get("/reference/allDluOffices")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void getAllDLUOfficeList_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/reference/allDluOffices")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @WithMockUser
-    void getAllDLUOfficeList_noAcceptHeader_returns501() throws Exception {
-        mockMvc.perform(get("/reference/allDluOffices"))
-            .andExpect(status().isNotImplemented());
+    @GetMapping("/testRole")
+    public String testRole() {
+        return service.analystOrSupervisor();
     }
 }
+
+
+
+
+
