@@ -1,0 +1,86 @@
+package org.nnnn.ddd.service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
+import org.nnnn.ddd.TestConfig;
+import org.nnnn.ddd.api.CacheApiController;
+import org.nnnn.ddd.service.CacheService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(controllers = CacheApiController.class)
+@Import({TestConfig.class, CacheApiController.class})
+public class CacheApiControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private javax.sql.DataSource dataSource;
+
+    @MockBean
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private CacheService cacheService;
+
+    @MockBean
+    private ModelMapper modelMapper;
+
+    @MockBean
+    private AuthenticationService authenticationService;
+
+    @MockBean
+    private AuditService auditService;
+
+    // =========================================================================
+    // GET /cache/clear
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void clearCache_returnsOkWithDone() throws Exception {
+        doNothing().when(cacheService).clearAllCache();
+
+        mockMvc.perform(get("/cache/clear")
+                .accept(MediaType.TEXT_PLAIN))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Done"));
+
+        verify(cacheService, times(1)).clearAllCache();
+    }
+
+    @Test
+    @WithMockUser
+    void clearCache_serviceThrowsException_returns500() throws Exception {
+        doThrow(new RuntimeException("Cache error")).when(cacheService).clearAllCache();
+
+        mockMvc.perform(get("/cache/clear")
+                .accept(MediaType.TEXT_PLAIN))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @WithMockUser
+    void clearCache_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(get("/cache/clear"))
+                .andExpect(status().isNotImplemented());
+    }
+
+    @Test
+    void clearCache_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/cache/clear")
+                .accept(MediaType.TEXT_PLAIN))
+                .andExpect(status().isUnauthorized());
+    }
+}
