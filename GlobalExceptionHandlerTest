@@ -1,0 +1,56 @@
+package org.nnnn.ddd.exceptions;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.nnnn.ddd.model.Error;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+public class GlobalExceptionHandlerTest {
+
+    private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
+
+    @Test
+    void handleSealedAccessException_returnsForbidden() {
+        SealedAccessException ex = new SealedAccessException("Sealed");
+        ResponseEntity<Error> response = handler.handleSealedAccessException(ex);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getMessage());
+        assertNotNull(response.getBody().getCode());
+    }
+
+    @Test
+    void handleCaseNotFoundException_returns500() {
+        CaseNotFoundException ex = new CaseNotFoundException("Not found");
+        ResponseEntity<Error> response = handler.handleCaseNotFoundException(ex);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getMessage());
+        assertNotNull(response.getBody().getCode());
+    }
+
+    @Test
+    void handleInvalidArrestException_returns500() {
+        InvalidArrestException ex = new InvalidArrestException("Invalid arrest");
+        ResponseEntity<Error> response = handler.handleInvalidArrestException(ex);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getMessage());
+        assertNotNull(response.getBody().getCode());
+    }
+
+    @Test
+    void handleFileUploadException_returns500() {
+        FileUploadException ex = new FileUploadException("Upload failed");
+        ResponseEntity<Error> response = handler.handleFileUploadException(ex);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getMessage());
+        assertNotNull(response.getBody().getCode());
+    }
+}
