@@ -1,0 +1,63 @@
+package org.nnnn.ddd.exceptions;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class ExceptionClassesTest {
+
+    @Test
+    void invalidArrestException_messageConstructor() {
+        InvalidArrestException ex = new InvalidArrestException("Invalid arrest");
+        assertEquals("Invalid arrest", ex.getMessage());
+    }
+
+    @Test
+    void invalidArrestException_messageCauseConstructor() {
+        Throwable cause = new RuntimeException("root cause");
+        InvalidArrestException ex = new InvalidArrestException("Invalid arrest", cause);
+        assertEquals("Invalid arrest", ex.getMessage());
+        assertEquals(cause, ex.getCause());
+    }
+
+    @Test
+    void sealedAccessException_messageConstructor() {
+        SealedAccessException ex = new SealedAccessException("Sealed");
+        assertEquals("Sealed", ex.getMessage());
+    }
+
+    @Test
+    void sealedAccessException_messageCauseConstructor() {
+        Throwable cause = new RuntimeException("root cause");
+        SealedAccessException ex = new SealedAccessException("Sealed", cause);
+        assertEquals("Sealed", ex.getMessage());
+        assertEquals(cause, ex.getCause());
+    }
+
+    @Test
+    void fileUploadException_messageConstructor() {
+        FileUploadException ex = new FileUploadException("Upload failed");
+        assertEquals("Upload failed", ex.getMessage());
+    }
+
+    @Test
+    void fileUploadException_messageCauseConstructor() {
+        Throwable cause = new RuntimeException("root cause");
+        FileUploadException ex = new FileUploadException("Upload failed", cause);
+        assertEquals("Upload failed", ex.getMessage());
+        assertEquals(cause, ex.getCause());
+    }
+
+    @Test
+    void caseNotFoundException_messageConstructor() {
+        CaseNotFoundException ex = new CaseNotFoundException("Not found");
+        assertEquals("Not found", ex.getMessage());
+    }
+
+    @Test
+    void caseNotFoundException_messageCauseConstructor() {
+        Throwable cause = new RuntimeException("root cause");
+        CaseNotFoundException ex = new CaseNotFoundException("Not found", cause);
+        assertEquals("Not found", ex.getMessage());
+        assertEquals(cause, ex.getCause());
+    }
+}
