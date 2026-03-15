@@ -1,25 +1,245 @@
-@Test
-@WithMockUser
-void getUserByName_objectMapperThrows_returns500() throws Exception {
-    doThrow(new JsonProcessingException("forced") {})
-            .when(objectMapper).readValue(anyString(), eq(User.class));
-
-    mockMvc.perform(get("/user/testuser")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isInternalServerError());
+package org.nnnn.ddd.api;
+import jakarta.xml.bind.annotation.XmlTransient;
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
+@jakarta.xml.bind.annotation.XmlRootElement
+public class ApiResponseMessage {
+    public static final int ERROR = 1;
+    public static final int WARNING = 2;
+    public static final int INFO = 3;
+    public static final int OK = 4;
+    public static final int TOO_BUSY = 5;
+    int code;
+    String type;
+    String message;
+    public ApiResponseMessage(){}
+    public ApiResponseMessage(int code, String message){
+        this.code = code;
+        switch(code){
+        case ERROR:
+            setType("error");
+            break;
+        case WARNING:
+            setType("warning");
+            break;
+        case INFO:
+            setType("info");
+            break;
+        case OK:
+            setType("ok");
+            break;
+        case TOO_BUSY:
+            setType("too busy");
+            break;
+        default:
+            setType("unknown");
+            break;
+        }
+        this.message = message;
+    }
+    @XmlTransient
+    public int getCode() {
+        return code;
+    }
+    public void setCode(int code) {
+        this.code = code;
+    }
+    public String getType() {
+        return type;
+    }
+    public void setType(String type) {
+        this.type = type;
+    }
+    public String getMessage() {
+        return message;
+    }
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }
 
-@Test
-@WithMockUser
-void loginUser_objectMapperThrows_returns500() throws Exception {
-    doThrow(new JsonProcessingException("forced") {})
-            .when(objectMapper).readValue(anyString(), eq(String.class));
+====================
 
-    mockMvc.perform(get("/user/login")
-            .param("username", "testuser")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isInternalServerError());
+package org.nnnn.ddd.api;
+import jakarta.xml.bind.annotation.XmlTransient;
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
+@jakarta.xml.bind.annotation.XmlRootElement
+public class ApiResponseMessage {
+    public static final int ERROR = 1;
+    public static final int WARNING = 2;
+    public static final int INFO = 3;
+    public static final int OK = 4;
+    public static final int TOO_BUSY = 5;
+    int code;
+    String type;
+    String message;
+    public ApiResponseMessage(){}
+    public ApiResponseMessage(int code, String message){
+        this.code = code;
+        switch(code){
+        case ERROR:
+            setType("error");
+            break;
+        case WARNING:
+            setType("warning");
+            break;
+        case INFO:
+            setType("info");
+            break;
+        case OK:
+            setType("ok");
+            break;
+        case TOO_BUSY:
+            setType("too busy");
+            break;
+        default:
+            setType("unknown");
+            break;
+        }
+        this.message = message;
+    }
+    @XmlTransient
+    public int getCode() {
+        return code;
+    }
+    public void setCode(int code) {
+        this.code = code;
+    }
+    public String getType() {
+        return type;
+    }
+    public void setType(String type) {
+        this.type = type;
+    }
+    public String getMessage() {
+        return message;
+    }
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }
 
-@SpyBean
-private ObjectMapper objectMapper;
+==========================================
+
+package org.nnnn.ddd.api;
+import java.io.IOException;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletResponse;
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
+public class ApiOriginFilter implements jakarta.servlet.Filter {
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response,
+            FilterChain chain) throws IOException, ServletException {
+        HttpServletResponse res = (HttpServletResponse) response;
+        res.addHeader("Access-Control-Allow-Origin", "*");
+        res.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
+        res.addHeader("Access-Control-Allow-Headers", "Content-Type");
+        chain.doFilter(request, response);
+    }
+    @Override
+    public void destroy() {
+    }
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+    }
+}
+
+===================================
+
+package org.nnnn.ddd.api;
+import org.nnnn.ddd.service.AuthTestService;
+import org.springframework.context.annotation.Profile;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+@RestController
+@Profile("dev")
+public class AuthTestController {
+    private final AuthTestService service;
+    public AuthTestController(AuthTestService service) {
+        this.service = service;
+    }
+    @GetMapping("/testAuth")
+    public String testAuth() {
+        return service.authenticatedUser();
+    }
+    @GetMapping("/testRole")
+    public String testRole() {
+        return service.analystOrSupervisor();
+    }
+}
+
+
+========================================
+
+
+package org.nnnn.ddd.api;
+import org.nnnn.ddd.model.Error;
+import org.nnnn.ddd.service.CacheService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import jakarta.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-03-12T13:31:51.218-04:00")
+@RestController
+public class CacheApiController implements CacheApi {
+    private static final Logger log = LoggerFactory.getLogger(CacheApiController.class);
+    private final ObjectMapper objectMapper;
+    private final HttpServletRequest request;
+    @Autowired
+    private CacheService cacheService;
+    @org.springframework.beans.factory.annotation.Autowired
+    public CacheApiController(ObjectMapper objectMapper, HttpServletRequest request) {
+        this.objectMapper = objectMapper;
+        this.request = request;
+    }
+    public ResponseEntity<String> clearCache() {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                cacheService.clearAllCache();
+                return new ResponseEntity<String>("Done", HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+        return new ResponseEntity<String>(HttpStatus.NOT_IMPLEMENTED);
+    }
+}
+
+================================
+package org.nnnn.ddd.api;
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
+public class NotFoundException extends ApiException {
+    private int code;
+    public NotFoundException (int code, String msg) {
+        super(code, msg);
+        this.code = code;
+    }
+}
+
