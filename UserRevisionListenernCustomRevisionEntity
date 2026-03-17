@@ -1,0 +1,97 @@
+package org.nnnn.ddd.audit.entity;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class CustomRevisionEntityTest {
+
+    @Test
+    void getSetUsername() {
+        CustomRevisionEntity entity = new CustomRevisionEntity();
+        entity.setUsername("testuser");
+        assertEquals("testuser", entity.getUsername());
+    }
+
+    @Test
+    void getUsername_defaultIsNull() {
+        CustomRevisionEntity entity = new CustomRevisionEntity();
+        assertNull(entity.getUsername());
+    }
+}
+
+
+================================
+
+package org.nnnn.ddd.audit.listener;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.nnnn.ddd.audit.entity.CustomRevisionEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.security.oauth2.jwt.Jwt;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class UserRevisionListenerTest {
+
+    private final UserRevisionListener listener = new UserRevisionListener();
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
+    // ---------------------------------------------------------------
+    // Path 1: JWT principal — sets username from preferred_username claim
+    // ---------------------------------------------------------------
+    @Test
+    void newRevision_jwtPrincipal_setsUsernameFromClaim() {
+        Jwt jwt = Jwt.withTokenValue("token")
+                .header("alg", "RS256")
+                .claim("preferred_username", "jdoe")
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(3600))
+                .build();
+
+        Authentication auth = mock(Authentication.class);
+        when(auth.getPrincipal()).thenReturn(jwt);
+
+        SecurityContext context = new SecurityContextImpl();
+        context.setAuthentication(auth);
+        SecurityContextHolder.setContext(context);
+
+        CustomRevisionEntity entity = new CustomRevisionEntity();
+        listener.newRevision(entity);
+
+        assertEquals("jdoe", entity.getUsername());
+    }
+
+    // ---------------------------------------------------------------
+    // Path 2: non-JWT principal — sets username to "SYSTEM"
+    // ---------------------------------------------------------------
+    @Test
+    void newRevision_nonJwtPrincipal_setsUsernameToSystem() {
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(
+                        "someuser", "password", Collections.emptyList());
+
+        SecurityContext context = new SecurityContextImpl();
+        context.setAuthentication(auth);
+        SecurityContextHolder.setContext(context);
+
+        CustomRevisionEntity entity = new CustomRevisionEntity();
+        listener.newRevision(entity);
+
+        assertEquals("SYSTEM", entity.getUsername());
+    }
+}
