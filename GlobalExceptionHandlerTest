@@ -1,56 +1,64 @@
-package org.nnnn.ddd.exceptions;
+package org.nypd.dlu.exceptions;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.nnnn.ddd.model.Error;
+import org.nypd.dlu.AppConstants;
+import org.nypd.dlu.ErrorCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
-public class GlobalExceptionHandlerTest {
-
-    private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
-
-    @Test
-    void handleSealedAccessException_returnsForbidden() {
-        SealedAccessException ex = new SealedAccessException("Sealed");
-        ResponseEntity<Error> response = handler.handleSealedAccessException(ex);
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertNotNull(response.getBody().getMessage());
-        assertNotNull(response.getBody().getCode());
+@ControllerAdvice
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+    
+    @ExceptionHandler(SealedAccessException.class)
+    public ResponseEntity<org.nypd.dlu.model.Error> handleSealedAccessException(SealedAccessException ex) {
+        org.nypd.dlu.model.Error error = new org.nypd.dlu.model.Error();
+        error.setMessage(ErrorCode.SEALED_ACCESS_PERM.getMessage());
+        error.setCode(String.valueOf(ErrorCode.SEALED_ACCESS_PERM.getCode()));
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
-    @Test
-    void handleCaseNotFoundException_returns500() {
-        CaseNotFoundException ex = new CaseNotFoundException("Not found");
-        ResponseEntity<Error> response = handler.handleCaseNotFoundException(ex);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertNotNull(response.getBody().getMessage());
-        assertNotNull(response.getBody().getCode());
+    @ExceptionHandler(CaseNotFoundException.class)
+    public ResponseEntity<org.nypd.dlu.model.Error> handleCaseNotFoundException(CaseNotFoundException ex) {
+        org.nypd.dlu.model.Error error = new org.nypd.dlu.model.Error();
+        error.setMessage(ErrorCode.CASE_NOT_FOUND.getMessage());
+        error.setCode(String.valueOf(ErrorCode.CASE_NOT_FOUND.getCode()));
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @Test
-    void handleInvalidArrestException_returns500() {
-        InvalidArrestException ex = new InvalidArrestException("Invalid arrest");
-        ResponseEntity<Error> response = handler.handleInvalidArrestException(ex);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertNotNull(response.getBody().getMessage());
-        assertNotNull(response.getBody().getCode());
+    @ExceptionHandler(InvalidArrestException.class)
+    public ResponseEntity<org.nypd.dlu.model.Error> handleInvalidArrestException(InvalidArrestException ex) {
+        org.nypd.dlu.model.Error error = new org.nypd.dlu.model.Error();
+        error.setMessage(ErrorCode.ARR_NOT_FOUND.getMessage());
+        error.setCode(String.valueOf(ErrorCode.ARR_NOT_FOUND.getCode()));
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @Test
-    void handleFileUploadException_returns500() {
-        FileUploadException ex = new FileUploadException("Upload failed");
-        ResponseEntity<Error> response = handler.handleFileUploadException(ex);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertNotNull(response.getBody().getMessage());
-        assertNotNull(response.getBody().getCode());
+    @ExceptionHandler(FileUploadException.class)
+    public ResponseEntity<org.nypd.dlu.model.Error> handleFileUploadException(FileUploadException ex) {
+        org.nypd.dlu.model.Error error = new org.nypd.dlu.model.Error();
+        error.setMessage(ErrorCode.FILE_UPLOAD_ERR.getMessage());
+        error.setCode(String.valueOf(ErrorCode.FILE_UPLOAD_ERR.getCode()));
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(FileDeleteException.class)
+    public ResponseEntity<org.nypd.dlu.model.Error> handleFileDeleteException(FileDeleteException ex) {
+        org.nypd.dlu.model.Error error = new org.nypd.dlu.model.Error();
+        error.setMessage(ErrorCode.FILE_DELETE_ERR.getMessage());
+        error.setCode(String.valueOf(ErrorCode.FILE_DELETE_ERR.getCode()));
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler({ ObjectOptimisticLockingFailureException.class,
+            jakarta.persistence.OptimisticLockException.class })
+    public ResponseEntity<org.nypd.dlu.model.Error> handleOptimisticLock(Exception ex) {
+        org.nypd.dlu.model.Error error = new org.nypd.dlu.model.Error();
+        error.setMessage(ErrorCode.OPTIMISTIC_LOCK_ERR.getMessage());
+        error.setCode(String.valueOf(ErrorCode.OPTIMISTIC_LOCK_ERR.getCode()));
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 }
