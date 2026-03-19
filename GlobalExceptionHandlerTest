@@ -1,7 +1,7 @@
-package org.nypd.dlu.exceptions;
+package org.nnnn.ddd.exceptions;
 
-import org.nypd.dlu.AppConstants;
-import org.nypd.dlu.ErrorCode;
+import org.nnnn.ddd.AppConstants;
+import org.nnnn.ddd.ErrorCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -14,40 +14,40 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     
     @ExceptionHandler(SealedAccessException.class)
-    public ResponseEntity<org.nypd.dlu.model.Error> handleSealedAccessException(SealedAccessException ex) {
-        org.nypd.dlu.model.Error error = new org.nypd.dlu.model.Error();
+    public ResponseEntity<org.nnnn.ddd.model.Error> handleSealedAccessException(SealedAccessException ex) {
+        org.nnnn.ddd.model.Error error = new org.nnnn.ddd.model.Error();
         error.setMessage(ErrorCode.SEALED_ACCESS_PERM.getMessage());
         error.setCode(String.valueOf(ErrorCode.SEALED_ACCESS_PERM.getCode()));
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(CaseNotFoundException.class)
-    public ResponseEntity<org.nypd.dlu.model.Error> handleCaseNotFoundException(CaseNotFoundException ex) {
-        org.nypd.dlu.model.Error error = new org.nypd.dlu.model.Error();
+    public ResponseEntity<org.nnnn.ddd.model.Error> handleCaseNotFoundException(CaseNotFoundException ex) {
+        org.nnnn.ddd.model.Error error = new org.nnnn.ddd.model.Error();
         error.setMessage(ErrorCode.CASE_NOT_FOUND.getMessage());
         error.setCode(String.valueOf(ErrorCode.CASE_NOT_FOUND.getCode()));
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(InvalidArrestException.class)
-    public ResponseEntity<org.nypd.dlu.model.Error> handleInvalidArrestException(InvalidArrestException ex) {
-        org.nypd.dlu.model.Error error = new org.nypd.dlu.model.Error();
+    public ResponseEntity<org.nnnn.ddd.model.Error> handleInvalidArrestException(InvalidArrestException ex) {
+        org.nnnn.ddd.model.Error error = new org.nnnn.ddd.model.Error();
         error.setMessage(ErrorCode.ARR_NOT_FOUND.getMessage());
         error.setCode(String.valueOf(ErrorCode.ARR_NOT_FOUND.getCode()));
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(FileUploadException.class)
-    public ResponseEntity<org.nypd.dlu.model.Error> handleFileUploadException(FileUploadException ex) {
-        org.nypd.dlu.model.Error error = new org.nypd.dlu.model.Error();
+    public ResponseEntity<org.nnnn.ddd.model.Error> handleFileUploadException(FileUploadException ex) {
+        org.nnnn.ddd.model.Error error = new org.nnnn.ddd.model.Error();
         error.setMessage(ErrorCode.FILE_UPLOAD_ERR.getMessage());
         error.setCode(String.valueOf(ErrorCode.FILE_UPLOAD_ERR.getCode()));
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(FileDeleteException.class)
-    public ResponseEntity<org.nypd.dlu.model.Error> handleFileDeleteException(FileDeleteException ex) {
-        org.nypd.dlu.model.Error error = new org.nypd.dlu.model.Error();
+    public ResponseEntity<org.nnnn.ddd.model.Error> handleFileDeleteException(FileDeleteException ex) {
+        org.nnnn.ddd.model.Error error = new org.nnnn.ddd.model.Error();
         error.setMessage(ErrorCode.FILE_DELETE_ERR.getMessage());
         error.setCode(String.valueOf(ErrorCode.FILE_DELETE_ERR.getCode()));
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -55,8 +55,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({ ObjectOptimisticLockingFailureException.class,
             jakarta.persistence.OptimisticLockException.class })
-    public ResponseEntity<org.nypd.dlu.model.Error> handleOptimisticLock(Exception ex) {
-        org.nypd.dlu.model.Error error = new org.nypd.dlu.model.Error();
+    public ResponseEntity<org.nnnn.ddd.model.Error> handleOptimisticLock(Exception ex) {
+        org.nnnn.ddd.model.Error error = new org.nnnn.ddd.model.Error();
         error.setMessage(ErrorCode.OPTIMISTIC_LOCK_ERR.getMessage());
         error.setCode(String.valueOf(ErrorCode.OPTIMISTIC_LOCK_ERR.getCode()));
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
