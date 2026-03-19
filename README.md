@@ -1,53 +1,6 @@
-package org.nnnn.ddd.actuator;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-import java.util.Properties;
-/**
- * Adds build time and version to the actuator health response.
- * Reads META-INF/build-info.properties from spring-boot-maven-plugin build-info goal.
- * Format matches UI: "Mar 9, 2026, 3:46 PM ET"
- */
-@Component
-public class BuildInfoHealthIndicator implements HealthIndicator {
-    private static final String BUILD_INFO_PATH = "META-INF/build-info.properties";
-    private static final DateTimeFormatter FORMATTER =
-            DateTimeFormatter.ofPattern("MMM d, yyyy, h:mm a 'ET'", Locale.US)
-                    .withZone(ZoneId.of("America/New_York"));
-    @Override
-    public Health health() {
-        Health.Builder builder = Health.up();
-        try {
-            ClassPathResource resource = new ClassPathResource(BUILD_INFO_PATH);
-            if (!resource.exists()) {
-                builder.withDetail("buildTime", null);
-                builder.withDetail("version", null);
-                return builder.build();
-            }
-            Properties props = new Properties();
-            try (InputStream is = resource.getInputStream()) {
-                props.load(is);
-            }
-            String timeStr = props.getProperty("build.time");
-            if (timeStr != null && !timeStr.isBlank()) {
-                // Unescape colons from properties format (e.g. 18\:16\:42)
-                String unescaped = timeStr.replace("\\:", ":");
-                Instant time = Instant.parse(unescaped);
-                builder.withDetail("buildTime", time.toString());
-                builder.withDetail("buildTimeDisplay", FORMATTER.format(time));
-            }
-            String version = props.getProperty("build.version");
-            builder.withDetail("version", version != null ? version : "unknown");
-        } catch (IOException e) {
-            builder.withDetail("version", "unknown");
-        }
-        return builder.build();
-    }
-}
+[ERROR] Failures: 
+[ERROR]   CaseFlowChartTest.getCaseById_caseSealed_notSupervisor_notInSealedGroup_returns403:352 Status expected:<403> but was:<500>
+[ERROR]   CaseFlowChartTest.getCaseById_noAcceptHeader_returns405:374 Status expected:<405> but was:<501>
+[ERROR]   CaseFlowChartTest.getCaseById_userNotAssigned_notSealed_notInOffice_returns403:302 Status expected:<403> but was:<500>
+[INFO]
+[ERROR] Tests run: 141, Failures: 3, Errors: 0, Skipped: 0
