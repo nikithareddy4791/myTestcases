@@ -1,13 +1,9 @@
-public ResponseEntity<dddCase> getCaseById(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<dddCase>(caseService.loadCase(caseId), HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<dddCase>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<dddCase>(HttpStatus.NOT_IMPLEMENTED);
-    }
+[ERROR] Failures: 
+[ERROR]   CaseServiceControllerTest.deleteCaseUploadById_noAcceptHeader_returns501:583 Status expected:<500> but was:<403>       
+[ERROR]   CaseServiceControllerTest.deleteCaseUploadById_noAuth_returns401:590 Status expected:<401> but was:<403>
+[ERROR]   CaseServiceControllerTest.deleteCaseUploadById_success_returnsOk:561 Status expected:<200> but was:<403>
+[ERROR] Errors: 
+[ERROR]   CaseServiceControllerTest.deleteCaseUploadById_ioException_returns500:572 NotAMock 
+Argument passed to when() is not a mock!
+Example of correct stubbing:
+    doThrow(new RuntimeException()).when(mock).someMethod();
