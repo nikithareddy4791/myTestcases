@@ -1,23 +1,25 @@
-Results:
-[INFO]
-[ERROR] Errors: 
-[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsAdaList:175 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return 
-value of "org.springframework.cache.CacheManager.getCache(String)" is null
-[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsAllReferenceCaches:238 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because 
-the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
-[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsCategoryList:210 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
-[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsItemList:203 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
-[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsStatusList:182 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
-[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsTagList:217 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return 
-value of "org.springframework.cache.CacheManager.getCache(String)" is null
-[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsUserdddCodeRef:231 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the 
-return value of "org.springframework.cache.CacheManager.getCache(String)" is null
-[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsUserdddOfficeList:196 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
-[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsdddCodeRef:224 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
-[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsdddOfficeList:189 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
-[ERROR]   CacheServiceTest.clearReferenceDataCache_doesNotClearUserCaches:254 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
-[INFO]
-[ERROR] Tests run: 176, Failures: 0, Errors: 11, Skipped: 0
-[INFO]
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
+grep "getCache" src/main/java/org/nnnn/ddd/service/CacheService.java
+
+
+
+grep -n "getCache" src/main/java/org/nnnn/ddd/service/CacheService.java
+```
+
+Paste the output here. It will look something like:
+```
+28:    cacheManager.getCache("adaList").clear();
+29:    cacheManager.getCache("statusList").clear();
+30:    cacheManager.getCache("dddOfficeList").clear();
+...
+
+
+
+mvn test -Dtest=CacheServiceTest -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+Look at the output — it will show something like:
+```
+Tests run: 15, Failures: 0, Errors: 11, Skipped: 0
+
+
+
