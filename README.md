@@ -1,314 +1,365 @@
-[INFO] -------------------------------------------------------------
-[INFO] -------------------------------------------------------------
-[ERROR] COMPILATION ERROR :
-[INFO] -------------------------------------------------------------
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[106,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[123,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[140,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[157,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[172,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[192,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[210,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[228,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[248,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[269,28] cannot find symbol
-  symbol:   class dluOfficeList
-  location: package org.nypd.dlu.entity
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[269,78] cannot find symbol
-  symbol:   class dluOfficeList
-  location: package org.nypd.dlu.entity
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[273,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[292,19] cannot find symbol
-  symbol:   method setdlu(<nulltype>)
-  location: variable entityCase of type org.nypd.dlu.model.DLUCase
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[294,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[313,28] cannot find symbol
-  symbol:   class dluOfficeList
-  location: package org.nypd.dlu.entity
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[313,78] cannot find symbol
-  symbol:   class dluOfficeList
-  location: package org.nypd.dlu.entity
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[317,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[345,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[364,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[386,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-    method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-      (argument mismatch; inference variable T has incompatible bounds
-          equality constraints: org.nypd.dlu.entity.DluCase
-          lower bounds: org.nypd.dlu.model.DLUCase)
-[INFO] 20 errors
-[INFO] -------------------------------------------------------------
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  10.564 s
-[INFO] Finished at: 2026-03-24T14:43:23-04:00
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:testCompile (default-testCompile) on project dlu-services: Compilation failure: Compilation failure: 
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[106,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[123,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[140,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[157,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[172,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[192,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[210,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[228,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[248,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[269,28] cannot find symbol
-[ERROR]   symbol:   class dluOfficeList
-[ERROR]   location: package org.nypd.dlu.entity
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[269,78] cannot find symbol
-[ERROR]   symbol:   class dluOfficeList
-[ERROR]   location: package org.nypd.dlu.entity
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[273,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[292,19] cannot find symbol
-[ERROR]   symbol:   method setdlu(<nulltype>)
-[ERROR]   location: variable entityCase of type org.nypd.dlu.model.DLUCase
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[294,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[313,28] cannot find symbol
-[ERROR]   symbol:   class dluOfficeList
-[ERROR]   location: package org.nypd.dlu.entity
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[313,78] cannot find symbol
-[ERROR]   symbol:   class dluOfficeList
-[ERROR]   location: package org.nypd.dlu.entity
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[317,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[345,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[364,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceLoadTest.java:[386,43] no suitable method found for thenReturn(java.util.Optional<org.nypd.dlu.model.DLUCase>)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR]     method org.mockito.stubbing.OngoingStubbing.thenReturn(java.util.Optional<org.nypd.dlu.entity.DluCase>,java.util.Optional<org.nypd.dlu.entity.DluCase>...) is not applicable
-[ERROR]       (argument mismatch; inference variable T has incompatible bounds
-[ERROR]           equality constraints: org.nypd.dlu.entity.DluCase
-[ERROR]           lower bounds: org.nypd.dlu.model.DLUCase)
-[ERROR] -> [Help 1]
+package org.nnnn.ddd.service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
+import org.nnnn.ddd.AppConstants;
+import org.nnnn.ddd.exceptions.CaseAccessException;
+import org.nnnn.ddd.exceptions.CaseNotFoundException;
+import org.nnnn.ddd.exceptions.SealedAccessException;
+import org.nnnn.ddd.model.ArrestInfo;
+import org.nnnn.ddd.model.Status;
+import org.nnnn.ddd.model.User;
+import org.nnnn.ddd.repository.CaseRepository;
+import org.nnnn.ddd.repository.CDWRepository;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("CaseService - loadCase Tests")
+class CaseServiceLoadCaseTest {
+
+    @Mock private CaseRepository caseRepository;
+    @Mock private CDWRepository cdwRepository;
+    @Mock private AuthenticationService authenticationService;
+    @Mock private ADSearchService adSearchService;
+    @Mock private ModelMapper modelMapper;
+
+    @InjectMocks
+    private CaseService caseService;
+
+    // Declare as entity type explicitly
+    private org.nnnn.ddd.entity.dddCase entityCase;
+    private org.nnnn.ddd.model.dddCase dtoCase;
+    private ArrestInfo arrestInfo;
+
+    @BeforeEach
+    void setUp() {
+        entityCase = new org.nnnn.ddd.entity.dddCase();
+        entityCase.setId(100);
+        entityCase.setArrId("ARR001");
+        entityCase.setAssignedNm("jdoe");
+
+        dtoCase = new org.nnnn.ddd.model.dddCase();
+        dtoCase.setId(100);
+        dtoCase.setArrId("ARR001");
+
+        arrestInfo = new ArrestInfo();
+        arrestInfo.setArrId("ARR001");
+        arrestInfo.setArrSealedFlg("N");
+        arrestInfo.setDeftFrstNm("John");
+        arrestInfo.setDeftLastNm("Doe");
+    }
+
+    /**
+     * KEY FIX: Use doReturn with raw/unchecked cast to bypass the
+     * compiler error caused by CaseRepository having both
+     * entity.dddCase and model.dddCase imported, making
+     * Optional<entity.dddCase> vs Optional<model.dddCase> ambiguous.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void mockFindById_found(int id) {
+        java.util.Optional opt = java.util.Optional.of(entityCase);
+        doReturn(opt).when(caseRepository).findById(id);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void mockFindById_empty(int id) {
+        java.util.Optional opt = java.util.Optional.empty();
+        doReturn(opt).when(caseRepository).findById(id);
+    }
+
+    private void mockMapper() {
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class))
+                .thenReturn(dtoCase);
+    }
+
+    private void mockArrestInfo() {
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+    }
+
+    // =========================================================================
+    // Case Not Found
+    // =========================================================================
+
+    @Test
+    @DisplayName("loadCase - throws CaseNotFoundException when case does not exist")
+    void loadCase_caseNotFound_throwsCaseNotFoundException() {
+        mockFindById_empty(999);
+
+        assertThatThrownBy(() -> caseService.loadCase(999))
+                .isInstanceOf(CaseNotFoundException.class)
+                .hasMessageContaining("999");
+
+        verify(caseRepository).findById(999);
+        verifyNoInteractions(cdwRepository);
+    }
+
+    // =========================================================================
+    // Active Flag Logic
+    // =========================================================================
+
+    @Test
+    @DisplayName("loadCase - sets activeFlg=1 when status is NOT_STARTED")
+    void loadCase_statusNotStarted_setsActiveFlg1() {
+        Status s = new Status();
+        s.setId(AppConstants.STATUS_NOT_STARTED);
+        dtoCase.setStatus(s);
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+
+        assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("loadCase - sets activeFlg=1 when status is IN_PROGRESS")
+    void loadCase_statusInProgress_setsActiveFlg1() {
+        Status s = new Status();
+        s.setId(AppConstants.STATUS_IN_PROGRESS);
+        dtoCase.setStatus(s);
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+
+        assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("loadCase - sets activeFlg=1 when status is WAITING")
+    void loadCase_statusWaiting_setsActiveFlg1() {
+        Status s = new Status();
+        s.setId(AppConstants.STATUS_WAITING);
+        dtoCase.setStatus(s);
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+
+        assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("loadCase - sets activeFlg=0 when status is COMPLETED")
+    void loadCase_statusCompleted_setsActiveFlg0() {
+        Status s = new Status();
+        s.setId(AppConstants.STATUS_COMPLETED);
+        dtoCase.setStatus(s);
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+
+        assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("loadCase - sets activeFlg=0 when status is null")
+    void loadCase_statusNull_setsActiveFlg0() {
+        dtoCase.setStatus(null);
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+
+        assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(0);
+    }
+
+    // =========================================================================
+    // Sealed Access Logic
+    // =========================================================================
+
+    @Test
+    @DisplayName("loadCase - unsealed arrest loads without sealed access check")
+    void loadCase_unsealedArrest_loadsSuccessfully() {
+        arrestInfo.setArrSealedFlg("N");
+        dtoCase.setStatus(null);
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+
+        assertThat(caseService.loadCase(100)).isNotNull();
+        verify(authenticationService, never()).hasSealedAccess();
+    }
+
+    @Test
+    @DisplayName("loadCase - sealed arrest, no sealed access throws SealedAccessException")
+    void loadCase_sealedArrest_noSealedAccess_throwsSealedAccessException() {
+        arrestInfo.setArrSealedFlg("Y");
+        dtoCase.setStatus(null);
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+        when(authenticationService.hasSealedAccess()).thenReturn(false);
+
+        assertThatThrownBy(() -> caseService.loadCase(100))
+                .isInstanceOf(SealedAccessException.class)
+                .hasMessageContaining("no sealed access");
+    }
+
+    @Test
+    @DisplayName("loadCase - sealed arrest, supervisor loads successfully")
+    void loadCase_sealedArrest_supervisor_loadsSuccessfully() {
+        arrestInfo.setArrSealedFlg("Y");
+        dtoCase.setStatus(null);
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+        when(authenticationService.isSupervisor()).thenReturn(true);
+
+        assertThat(caseService.loadCase(100)).isNotNull();
+        verify(authenticationService, never()).hasRole(any());
+    }
+
+    @Test
+    @DisplayName("loadCase - sealed arrest, non-supervisor assigned to case loads successfully")
+    void loadCase_sealedArrest_nonSupervisor_assignedToCase_loadsSuccessfully() {
+        arrestInfo.setArrSealedFlg("Y");
+        dtoCase.setStatus(null);
+        entityCase.setAssignedNm("jdoe");
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+        when(authenticationService.isSupervisor()).thenReturn(false);
+        when(authenticationService.getUsername()).thenReturn("jdoe");
+
+        assertThat(caseService.loadCase(100)).isNotNull();
+        verify(authenticationService, never()).hasRole(any());
+    }
+
+    @Test
+    @DisplayName("loadCase - sealed arrest, non-supervisor not assigned, no office throws CaseAccessException")
+    void loadCase_sealedArrest_nonSupervisor_noOffice_throwsCaseAccessException() {
+        arrestInfo.setArrSealedFlg("Y");
+        dtoCase.setStatus(null);
+        entityCase.setAssignedNm("otherUser");
+
+        // Use reflection to set ddd=null since entity class name may differ
+        try {
+            java.lang.reflect.Method setDdd = entityCase.getClass().getMethod("setddd", 
+                entityCase.getClass().getMethod("getddd").getReturnType());
+            setDdd.invoke(entityCase, (Object) null);
+        } catch (Exception e) {
+            // if setddd not found, field is already null by default — proceed
+        }
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+        when(authenticationService.isSupervisor()).thenReturn(false);
+        when(authenticationService.getUsername()).thenReturn("jdoe");
+
+        assertThatThrownBy(() -> caseService.loadCase(100))
+                .isInstanceOf(CaseAccessException.class)
+                .hasMessageContaining("no access to case");
+    }
+
+    @Test
+    @DisplayName("loadCase - sealed arrest, non-supervisor not assigned, wrong role throws CaseAccessException")
+    void loadCase_sealedArrest_nonSupervisor_wrongRole_throwsCaseAccessException() {
+        arrestInfo.setArrSealedFlg("Y");
+        dtoCase.setStatus(null);
+        entityCase.setAssignedNm("otherUser");
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+        when(authenticationService.isSupervisor()).thenReturn(false);
+        when(authenticationService.getUsername()).thenReturn("jdoe");
+        // hasRole returns false for any role = access denied
+        when(authenticationService.hasRole(anyString())).thenReturn(false);
+
+        assertThatThrownBy(() -> caseService.loadCase(100))
+                .isInstanceOf(CaseAccessException.class)
+                .hasMessageContaining("no access to case");
+    }
+
+    // =========================================================================
+    // AD User Lookup
+    // =========================================================================
+
+    @Test
+    @DisplayName("loadCase - populates assignedNmInfo when assignedNm is set")
+    void loadCase_withAssignedNm_populatesAssignedNmInfo() {
+        entityCase.setAssignedNm("jdoe");
+        dtoCase.setStatus(null);
+        arrestInfo.setArrSealedFlg("N");
+
+        User mockUser = new User();
+        mockUser.setUsername("jdoe");
+        mockUser.setFirstName("John");
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+        when(adSearchService.findUser("jdoe")).thenReturn(mockUser);
+
+        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+
+        assertThat(result.getAssignedNmInfo()).isNotNull();
+        assertThat(result.getAssignedNmInfo().getUsername()).isEqualTo("jdoe");
+        verify(adSearchService).findUser("jdoe");
+    }
+
+    @Test
+    @DisplayName("loadCase - skips AD lookup when assignedNm is null")
+    void loadCase_noAssignedNm_skipsAdLookup() {
+        entityCase.setAssignedNm(null);
+        dtoCase.setStatus(null);
+        arrestInfo.setArrSealedFlg("N");
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+
+        caseService.loadCase(100);
+
+        verifyNoInteractions(adSearchService);
+    }
+
+    // =========================================================================
+    // Arrest Info
+    // =========================================================================
+
+    @Test
+    @DisplayName("loadCase - arrest info is attached to returned DTO")
+    void loadCase_arrestInfoAttachedToDto() {
+        dtoCase.setStatus(null);
+        arrestInfo.setArrSealedFlg("N");
+        arrestInfo.setDeftFrstNm("Jane");
+        arrestInfo.setDeftLastNm("Smith");
+
+        mockFindById_found(100);
+        mockMapper();
+        mockArrestInfo();
+
+        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+
+        assertThat(result.getArrest()).isNotNull();
+        assertThat(result.getArrest().getDeftFrstNm()).isEqualTo("Jane");
+        assertThat(result.getArrest().getDeftLastNm()).isEqualTo("Smith");
+        verify(cdwRepository).getArrestInfo("ARR001");
+    }
+}
