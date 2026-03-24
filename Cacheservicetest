@@ -1,0 +1,200 @@
+package org.nnnn.ddd.service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+
+import java.util.Arrays;
+import java.util.Collections;
+
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("CacheService Tests")
+class CacheServiceTest {
+
+    @Mock
+    private CacheManager cacheManager;
+
+    @InjectMocks
+    private CacheService cacheService;
+
+    private Cache mockCache;
+
+    @BeforeEach
+    void setUp() {
+        mockCache = mock(Cache.class);
+    }
+
+    // =========================================================================
+    // clearAllCache()
+    // =========================================================================
+
+    @Test
+    @DisplayName("clearAllCache - clears all caches returned by CacheManager")
+    void clearAllCache_clearsAllCaches() {
+        Cache cache1 = mock(Cache.class);
+        Cache cache2 = mock(Cache.class);
+        Cache cache3 = mock(Cache.class);
+
+        when(cacheManager.getCacheNames())
+                .thenReturn(Arrays.asList("userList", "adaList", "statusList"));
+        when(cacheManager.getCache("userList")).thenReturn(cache1);
+        when(cacheManager.getCache("adaList")).thenReturn(cache2);
+        when(cacheManager.getCache("statusList")).thenReturn(cache3);
+
+        cacheService.clearAllCache();
+
+        verify(cache1).clear();
+        verify(cache2).clear();
+        verify(cache3).clear();
+    }
+
+    @Test
+    @DisplayName("clearAllCache - does nothing when no caches are registered")
+    void clearAllCache_noCaches_doesNothing() {
+        when(cacheManager.getCacheNames()).thenReturn(Collections.emptyList());
+
+        cacheService.clearAllCache();
+
+        verify(cacheManager, never()).getCache(anyString());
+    }
+
+    @Test
+    @DisplayName("clearAllCache - handles single cache correctly")
+    void clearAllCache_singleCache_clearsIt() {
+        Cache cache = mock(Cache.class);
+        when(cacheManager.getCacheNames()).thenReturn(Collections.singletonList("userList"));
+        when(cacheManager.getCache("userList")).thenReturn(cache);
+
+        cacheService.clearAllCache();
+
+        verify(cache, times(1)).clear();
+    }
+
+    // =========================================================================
+    // clearUserCache()
+    // =========================================================================
+
+    @Test
+    @DisplayName("clearUserCache - clears userList and sealedUserList caches")
+    void clearUserCache_clearsBothUserCaches() {
+        Cache userListCache = mock(Cache.class);
+        Cache sealedUserListCache = mock(Cache.class);
+
+        when(cacheManager.getCache("userList")).thenReturn(userListCache);
+        when(cacheManager.getCache("sealedUserList")).thenReturn(sealedUserListCache);
+
+        cacheService.clearUserCache();
+
+        verify(cacheManager).getCache("userList");
+        verify(cacheManager).getCache("sealedUserList");
+        verify(userListCache).clear();
+        verify(sealedUserListCache).clear();
+    }
+
+    @Test
+    @DisplayName("clearUserCache - only touches user-related caches, not reference caches")
+    void clearUserCache_doesNotTouchReferenceCaches() {
+        Cache userListCache = mock(Cache.class);
+        Cache sealedUserListCache = mock(Cache.class);
+
+        when(cacheManager.getCache("userList")).thenReturn(userListCache);
+        when(cacheManager.getCache("sealedUserList")).thenReturn(sealedUserListCache);
+
+        cacheService.clearUserCache();
+
+        // Reference data caches should NOT be touched
+        verify(cacheManager, never()).getCache("adaList");
+        verify(cacheManager, never()).getCache("statusList");
+        verify(cacheManager, never()).getCache("dddOfficeList");
+        verify(cacheManager, never()).getCache("itemList");
+        verify(cacheManager, never()).getCache("categoryList");
+    }
+
+    // =========================================================================
+    // clearReferenceDataCache()
+    // =========================================================================
+
+    @Test
+    @DisplayName("clearReferenceDataCache - clears all 9 reference data caches")
+    void clearReferenceDataCache_clearsAllReferenceCaches() {
+        Cache adaList          = mock(Cache.class);
+        Cache statusList       = mock(Cache.class);
+        Cache dddOfficeList    = mock(Cache.class);
+        Cache userdddOfficeList = mock(Cache.class);
+        Cache itemList         = mock(Cache.class);
+        Cache categoryList     = mock(Cache.class);
+        Cache tagList          = mock(Cache.class);
+        Cache dddCodeRef       = mock(Cache.class);
+        Cache userdddCodeRef   = mock(Cache.class);
+
+        when(cacheManager.getCache("adaList")).thenReturn(adaList);
+        when(cacheManager.getCache("statusList")).thenReturn(statusList);
+        when(cacheManager.getCache("dddOfficeList")).thenReturn(dddOfficeList);
+        when(cacheManager.getCache("userdddOfficeList")).thenReturn(userdddOfficeList);
+        when(cacheManager.getCache("itemList")).thenReturn(itemList);
+        when(cacheManager.getCache("categoryList")).thenReturn(categoryList);
+        when(cacheManager.getCache("tagList")).thenReturn(tagList);
+        when(cacheManager.getCache("dddCodeRef")).thenReturn(dddCodeRef);
+        when(cacheManager.getCache("userdddCodeRef")).thenReturn(userdddCodeRef);
+
+        cacheService.clearReferenceDataCache();
+
+        verify(adaList).clear();
+        verify(statusList).clear();
+        verify(dddOfficeList).clear();
+        verify(userdddOfficeList).clear();
+        verify(itemList).clear();
+        verify(categoryList).clear();
+        verify(tagList).clear();
+        verify(dddCodeRef).clear();
+        verify(userdddCodeRef).clear();
+    }
+
+    @Test
+    @DisplayName("clearReferenceDataCache - does not touch user caches")
+    void clearReferenceDataCache_doesNotTouchUserCaches() {
+        when(cacheManager.getCache("adaList")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("statusList")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("dddOfficeList")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("userdddOfficeList")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("itemList")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("categoryList")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("tagList")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("dddCodeRef")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("userdddCodeRef")).thenReturn(mock(Cache.class));
+
+        cacheService.clearReferenceDataCache();
+
+        // User caches should NOT be touched
+        verify(cacheManager, never()).getCache("userList");
+        verify(cacheManager, never()).getCache("sealedUserList");
+    }
+
+    @Test
+    @DisplayName("clearReferenceDataCache - each cache is cleared exactly once")
+    void clearReferenceDataCache_eachCacheClearedExactlyOnce() {
+        Cache adaList = mock(Cache.class);
+        when(cacheManager.getCache("adaList")).thenReturn(adaList);
+        when(cacheManager.getCache("statusList")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("dddOfficeList")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("userdddOfficeList")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("itemList")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("categoryList")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("tagList")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("dddCodeRef")).thenReturn(mock(Cache.class));
+        when(cacheManager.getCache("userdddCodeRef")).thenReturn(mock(Cache.class));
+
+        cacheService.clearReferenceDataCache();
+
+        // adaList.clear() should be called exactly once, not multiple times
+        verify(adaList, times(1)).clear();
+    }
+}
