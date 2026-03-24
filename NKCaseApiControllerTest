@@ -1,4 +1,1434 @@
-@Test
+package org.nnnn.ddd.service;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.modelmapper.ModelMapper;
+import org.nnnn.ddd.AppConstants;
+import org.nnnn.ddd.ErrorCode;
+import org.nnnn.ddd.entity.AdaList;
+import org.nnnn.ddd.entity.CaseItem;
+import org.nnnn.ddd.entity.CaseTag;
+import org.nnnn.ddd.entity.CaseUpload;
+import org.nnnn.ddd.entity.CategoryList;
+import org.nnnn.ddd.entity.dddCase;
+import org.nnnn.ddd.entity.dddOfficeList;
+import org.nnnn.ddd.entity.ItemList;
+import org.nnnn.ddd.entity.StatusList;
+import org.nnnn.ddd.entity.TagList;
+import org.nnnn.ddd.exceptions.CaseAccessException;
+import org.nnnn.ddd.exceptions.CaseNotFoundException;
+import org.nnnn.ddd.exceptions.FileDeleteException;
+import org.nnnn.ddd.exceptions.FileUploadException;
+import org.nnnn.ddd.exceptions.InvalidArrestException;
+import org.nnnn.ddd.exceptions.InvaliddddOfficeException;
+import org.nnnn.ddd.exceptions.SealedAccessException;
+import org.nnnn.ddd.model.ArrestInfo;
+import org.nnnn.ddd.model.CaseFilter;
+import org.nnnn.ddd.model.CaseListResponse;
+import org.nnnn.ddd.model.CreateCaseRequest;
+import org.nnnn.ddd.model.dddCase;
+import org.nnnn.ddd.model.dddCaseStats;
+import org.nnnn.ddd.model.dddCaseSummary;
+import org.nnnn.ddd.model.dddOffice;
+import org.nnnn.ddd.model.Status;
+import org.nnnn.ddd.repository.ADAListRepository;
+import org.nnnn.ddd.repository.CDWRepository;
+import org.nnnn.ddd.repository.CaseRepository;
+import org.nnnn.ddd.repository.CaseUploadRepository;
+import org.nnnn.ddd.repository.CategoryListRepository;
+import org.nnnn.ddd.repository.dddOfficeListRepository;
+import org.nnnn.ddd.repository.ItemListRepository;
+import org.nnnn.ddd.repository.StatusListRepository;
+import org.nnnn.ddd.repository.TagListRepository;
+import org.nnnn.ddd.repository.specs.CaseSpecifications;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.threeten.bp.DateTimeUtils;
+import org.threeten.bp.ZoneId;
+
+import jakarta.transaction.Transactional;
+
+@Service
+public class CaseService {
+    @Autowired
+    private CaseRepository caseRepository;
+
+    @Autowired
+    private CategoryListRepository categoryListRepository;
+
+    @Autowired
+    private ADAListRepository adaListRepository;
+
+    @Autowired
+    private CDWRepository cdwRepository;
+
+    @Autowired
+    private AuthenticationService authenticationService;
+
+    @Autowired
+    private dddOfficeListRepository dddOfficeListRepository;
+
+    @Autowired
+    private StatusListRepository statusListRepository;
+
+    @Autowired
+    private TagListRepository tagListRepository;
+
+    @Autowired
+    private ItemListRepository itemListRepository;
+
+    @Autowired
+    private CaseUploadRepository caseUploadRepository;
+
+    @Autowired
+    private ADSearchService adSearchService;
+
+    @Autowired
+    private ReferenceDataService referenceDataService;
+
+    @Autowired
+    private DellS3Service s3Service;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    private static final Logger log = LoggerFactory.getLogger(CaseService.class);
+
+    public dddCaseStats getCaseStats() {
+        dddCaseStats stats = new dddCaseStats();
+        LocalDate today = LocalDate.now();
+        LocalDate threeDaysLater = today.plusDays(3);
+        if (authenticationService.isSupervisor()) {
+            Integer overdue = caseRepository.countByDueDtBeforeAndStatus_IdNot(today, AppConstants.STATUS_COMPLETED);
+            stats.setOverdueCount(overdue);
+            Integer comingDue = caseRepository.countByDueDtBetweenAndStatus_IdNot(today, threeDaysLater, AppConstants.STATUS_COMPLETED);
+            stats.setComingDueCount(comingDue);
+        } else {
+            Integer overdue = caseRepository.countByDueDtBeforeAndAssignedNmAndStatus_IdNot(today,
+                    authenticationService.getUsername(), AppConstants.STATUS_COMPLETED);
+            stats.setOverdueCount(overdue);
+            Integer comingDue = caseRepository.countByDueDtBetweenAndAssignedNmAndStatus_IdNot(today, threeDaysLater,
+                    authenticationService.getUsername(), AppConstants.STATUS_COMPLETED);
+            stats.setComingDueCount(comingDue);
+        }
+        return stats;
+    }
+
+    public dddCaseStats getCaseStats(final Collection<Integer> dddOfficeIds) {
+        dddCaseStats stats = new dddCaseStats();
+        LocalDate today = LocalDate.now(); 
+        Integer overdue = caseRepository.countByDueDtBeforeAndddd_IdInAndStatus_IdNot(today, dddOfficeIds, AppConstants.STATUS_COMPLETED);
+        stats.setOverdueCount(overdue);
+        LocalDate threeDaysLater = today.plusDays(3);
+        Integer comingDue = caseRepository.countByDueDtBetweenAndddd_IdInAndStatus_IdNot(today, threeDaysLater, dddOfficeIds, AppConstants.STATUS_COMPLETED);
+        stats.setComingDueCount(comingDue);
+        return stats;
+    }
+
+    @Transactional
+    public dddCase createCase(final CreateCaseRequest request) {
+        String username = authenticationService.getUsername();
+        log.info("createCase for " + username + " " + request.getArrId().trim());
+        ArrestInfo arrInfo = null;
+        try {
+            arrInfo = cdwRepository.getArrestInfo(request.getArrId().trim());
+        } catch (Exception e){
+            throw new InvalidArrestException("Arrest "+request.getArrId().trim()+" not found");
+        }
+        log.info(arrInfo.toString());
+        if (!authenticationService.hasSealedAccess() && "Y".equals(arrInfo.getArrSealedFlg())) {
+            throw new SealedAccessException("User has no sealed access");
+        }
+        List<dddCase> existingParent = caseRepository.findByArrIdOrderByIdDesc(request.getArrId().trim());
+        if (request.getParentId()==null && existingParent != null && existingParent.size() > 0) {
+            log.info("Case Exists " + existingParent.get(0).toString());
+            dddCase json = new dddCase();
+            json.setId(existingParent.get(0).getId());
+            Status status = modelMapper.map(existingParent.get(0).getStatus(), Status.class);
+            json.setStatus(status);
+            return json;
+        } else {
+            dddOfficeList dddOffice = dddOfficeListRepository.findById(request.getdddOfficeId()).orElse(null);
+            if(dddOffice == null){
+                throw new InvaliddddOfficeException("ddd Office id " + request.getdddOfficeId() + " not found");
+            }
+            StatusList notStarted = statusListRepository.findById(AppConstants.STATUS_NOT_STARTED).orElse(null);
+            dddCase entityCase = new dddCase();
+            entityCase.setArrId(request.getArrId().trim());
+            entityCase.setddd(dddOffice);
+            entityCase.setStatus(notStarted);
+            entityCase.setProactiveFlg((short) request.getProactiveFlg().intValue());
+            if (request.getDueDt() != null) {
+                entityCase.setDueDt(
+                        DateTimeUtils.toDate(request.getDueDt().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            }
+            if (request.getRequestDt() != null) {
+                entityCase.setRequestDt(
+                        DateTimeUtils.toDate(request.getRequestDt().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            } else {
+                entityCase.setRequestDt(new Date());
+            }
+            entityCase.setDvFlg((short) arrInfo.getDvFlg().intValue());
+            entityCase.setIndexFlg((short) arrInfo.getIndexCrimeFlg().intValue());
+            entityCase.setFelonyFlg((short) arrInfo.getFelonyFlg().intValue());
+            caseRepository.save(entityCase);
+            log.info("Case Created " + entityCase.getId());
+            dddCase dtoCase = new dddCase();
+            dtoCase.setId(entityCase.getId());
+            dtoCase.setNew(true);
+            return dtoCase;
+        }
+    }
+
+    public dddCase loadCase(final int caseId) {
+        Optional<dddCase> entityOpt = caseRepository.findById(caseId);
+        if (entityOpt.isEmpty()) {
+            throw new CaseNotFoundException("Case not found with id: " + caseId);
+        }
+        dddCase entity = entityOpt.get();
+        //modelMapper.validate();
+        dddCase dto = modelMapper.map(entity, dddCase.class);
+        if (dto.getStatus() != null && dto.getStatus().getId() != AppConstants.STATUS_NOT_STARTED
+                && dto.getStatus().getId() != AppConstants.STATUS_IN_PROGRESS
+                && dto.getStatus().getId() != AppConstants.STATUS_WAITING) {
+            dto.setActiveFlg(0);
+        } else {
+            dto.setActiveFlg(1);
+        }
+        ArrestInfo arrInfo = cdwRepository.getArrestInfo(entity.getArrId());
+        // Arrest is sealed
+        if ("Y".equals(arrInfo.getArrSealedFlg())) {
+            if (!authenticationService.hasSealedAccess()) {
+                // User has no sealed access
+                throw new SealedAccessException("User has no sealed access");
+            } else if (!authenticationService.isSupervisor()
+                    && !authenticationService.getUsername().equals(entity.getAssignedNm())) {
+                // User has sealed access, but is not supervisor and is not assigned to the case
+                if (entity.getddd() == null || !authenticationService.hasRole(entity.getddd().getAdSgNm())) {
+                    // ... and User does not belong to the case's ddd office
+                    throw new CaseAccessException("User has no access to case");
+                }
+            }
+        }
+        dto.setArrest(arrInfo);
+        if (entity.getAssignedNm() != null) {
+            dto.setAssignedNmInfo(adSearchService.findUser(entity.getAssignedNm()));
+        }
+        return dto;
+    }
+
+    public dddCase saveCase(final dddCase dtoCase) {
+
+        Optional<dddCase> entityOpt = caseRepository.findById(dtoCase.getId());
+        if (entityOpt.isEmpty()) {
+            throw new CaseNotFoundException("Case not found with id: " + dtoCase.getId());
+        }
+        dddCase entityCase = entityOpt.get();
+        // Optimistic lock: client version must match DB version
+        if (dtoCase.getVersion() != null && entityCase.getVersion() != null
+                && !entityCase.getVersion().equals(dtoCase.getVersion())) {
+            throw new jakarta.persistence.OptimisticLockException(
+                    "Case " + dtoCase.getId() + " was modified by another user (expected version " + dtoCase.getVersion()
+                            + ", current " + entityCase.getVersion() + ")");
+        }
+        modelMapper.map(dtoCase, entityCase);
+
+        if (dtoCase.getCategory() != null) {
+            CategoryList newCategory = categoryListRepository.findById(dtoCase.getCategory().getId()).orElse(null);
+            entityCase.setCategory(newCategory);
+        } else if (entityCase.getCategory() != null) {
+            entityCase.setCategory(null);
+        }
+
+        if (dtoCase.getAda() != null) {
+            AdaList newAda = adaListRepository.findById(dtoCase.getAda().getId()).orElse(null);
+            entityCase.setAda(newAda);
+        } else if (entityCase.getAda() != null) {
+            entityCase.setAda(null);
+        }
+
+        if (dtoCase.getddd() != null) {
+            dddOfficeList newddd = dddOfficeListRepository.findById(dtoCase.getddd().getId()).orElse(null);
+            entityCase.setddd(newddd);
+        } else if (entityCase.getddd() != null) {
+            entityCase.setddd(null);
+        }
+
+        if (dtoCase.getStatus() != null) {
+            StatusList newStatus = statusListRepository.findById(dtoCase.getStatus().getId()).orElse(null);
+            entityCase.setStatus(newStatus);
+        } else if (entityCase.getStatus() != null) {
+            entityCase.setStatus(null);
+        }
+
+        List<CaseTag> updatedTags = new ArrayList<>();
+        List<org.nnnn.ddd.model.CaseTag> dtoTags = dtoCase.getTags() != null ? dtoCase.getTags() : List.of();
+
+        for (org.nnnn.ddd.model.CaseTag dtoTag : dtoTags) {
+            if (dtoTag.getTagId() == null) continue;
+            Optional<CaseTag> foundTag = entityCase.getTags().stream()
+                    .filter(entityTag -> entityTag.getTag() != null
+                            && dtoTag.getTagId().intValue() == entityTag.getTag().getId())
+                    .findFirst();
+            if (foundTag.isEmpty()) {
+                TagList tag = tagListRepository.findById(dtoTag.getTagId()).orElse(null);
+                if (tag != null) {
+                    CaseTag newTag = new CaseTag();
+                    newTag.setdddCase(entityCase);
+                    newTag.setTag(tag);
+                    updatedTags.add(newTag);
+                } else {
+                    log.error("Tag " + dtoTag.getTagId() + " not found for case " + entityCase.getId());
+                }
+            } else {
+                updatedTags.add(foundTag.get());
+            }
+        }
+
+        entityCase.getTags().clear();
+        entityCase.getTags().addAll(updatedTags);
+
+        List<CaseItem> updatedItems = new ArrayList<>();
+        List<org.nnnn.ddd.model.CaseItem> dtoItems = dtoCase.getItems() != null ? dtoCase.getItems() : List.of();
+
+        for (org.nnnn.ddd.model.CaseItem dtoItem : dtoItems) {
+            Optional<CaseItem> foundItem = Optional.empty();
+            if (dtoItem.getId() != null) {
+                foundItem = entityCase.getItems().stream()
+                        .filter(entityItem -> dtoItem.getId().intValue() == entityItem.getId())
+                        .findFirst();
+            }
+            if (foundItem.isEmpty()) {
+                ItemList item = itemListRepository.findById(dtoItem.getItemId()).orElse(null);
+                if (item != null) {
+                    CaseItem newItem = new CaseItem();
+                    newItem.setdddCase(entityCase);
+                    newItem.setItem(item);
+                    newItem.setNoteDesc(dtoItem.getNoteDesc());
+                    newItem.setQuantity(dtoItem.getQuantity());
+                    newItem.setStatusDesc(dtoItem.getStatusDesc());
+                    updatedItems.add(newItem);
+                } else {
+                    log.error("Item " + dtoItem.getItemId() + " not found for case " + entityCase.getId());
+                }
+            } else {
+                CaseItem existingItem = foundItem.get();
+                existingItem.setNoteDesc(dtoItem.getNoteDesc());
+                existingItem.setQuantity(dtoItem.getQuantity());
+                existingItem.setStatusDesc(dtoItem.getStatusDesc());
+                updatedItems.add(existingItem);
+            }
+        }
+
+        entityCase.getItems().clear();
+        entityCase.getItems().addAll(updatedItems);
+        entityCase.setRowUpdtTs(Timestamp.from(Instant.now()));
+
+        caseRepository.saveAndFlush(entityCase);
+        dtoCase.setVersion(entityCase.getVersion());
+        return dtoCase;
+    }
+
+    public CaseListResponse findCases(final CaseFilter filter) {
+        CaseListResponse response = new CaseListResponse();
+        List<Specification<dddCase>> filters = new ArrayList<>();
+        if (filter.getArrId() != null) {
+            filters.add(CaseSpecifications.hasArrId(filter.getArrId()));
+        }
+        if (filter.getRequestDtFrom() != null || filter.getRequestDtTo() != null) {
+            filters.add(CaseSpecifications.requestBetween(
+                    filter.getRequestDtFrom() != null ? LocalDate.parse(filter.getRequestDtFrom()) : null,
+                    filter.getRequestDtTo() != null ? LocalDate.parse(filter.getRequestDtTo()) : null));
+        }
+        if (filter.getDueDtFrom() != null || filter.getDueDtTo() != null) {
+            filters.add(CaseSpecifications.dueBetween(
+                    filter.getDueDtFrom() != null ? LocalDate.parse(filter.getDueDtFrom()) : null,
+                    filter.getDueDtTo() != null ? LocalDate.parse(filter.getDueDtTo()) : null));
+        }
+        if (filter.getCategoryIds() != null) {
+            filters.add(CaseSpecifications.hasCategories(filter.getCategoryIds()));
+        }
+        if (filter.getdddOfficeIds() != null && filter.getdddOfficeIds().size() > 0) {
+            filters.add(CaseSpecifications.hasdddOfficesIn(filter.getdddOfficeIds()));
+        } else if (!authenticationService.isSupervisor()) {
+            List<dddOffice> allowedOffices = referenceDataService.getdddOffices(authenticationService.getUsername());
+            List<Integer> allowedOfficeIds = allowedOffices.stream()
+                    .map(dddOffice::getId) // Map each object to its ID using a method reference
+                    .collect(Collectors.toList());
+            log.info("looking within " + allowedOfficeIds + " " + allowedOffices + " offices for "+authenticationService.getUsername());
+            filters.add(CaseSpecifications.hasdddOfficesIn(allowedOfficeIds).or(CaseSpecifications.hasAssignedNm(authenticationService.getUsername())));
+        }
+        if (filter.getStatusIds() != null && filter.getStatusIds().size() > 0) {
+            filters.add(CaseSpecifications.hasStatusesIn(filter.getStatusIds()));
+        }
+        if (filter.getTagIds() != null && filter.getTagIds().size() > 0) {
+            filters.add(CaseSpecifications.hasTagsIn(filter.getTagIds()));
+        }
+        if (filter.getAssignedNm() != null) {
+            filters.add(CaseSpecifications.hasAssignedNm(filter.getAssignedNm()));
+        }
+        if (filter.getProactiveFlg()!=null) {
+            filters.add(CaseSpecifications.hasProactiveFlg(filter.getProactiveFlg().shortValue()));
+        }
+        if (filters.isEmpty()) {
+            return response;
+        }
+        filters.add(CaseSpecifications.fetchDependencies());
+        
+        Sort sort = Sort.by("id").descending();
+        if (filter.getSortBy() != null && filter.getSortBy().size() > 0) {
+            int i = 0;
+            for (String sortBy : filter.getSortBy()) {
+                Sort thisSort = Sort.by(sortBy);
+                if (filter.getSortOrder() != null && filter.getSortOrder().size() > i) {
+                    if (filter.getSortOrder().get(i) == 0) {
+                        thisSort = thisSort.ascending();
+                    } else {
+                        thisSort = thisSort.descending();
+                    }
+                }
+                if (i == 0) {
+                    sort = thisSort;
+                } else {
+                    sort = sort.and(thisSort);
+                }
+            }
+        }
+
+        Pageable pageable = PageRequest.of(filter.getPageNumber() != null ? filter.getPageNumber() : 0,
+                filter.getPageSize() != null ? filter.getPageSize() : AppConstants.DEFAULT_PAGE_SIZE,
+                sort);
+
+        Page<dddCase> page = caseRepository.findAll(Specification.allOf(filters), pageable);
+
+        List<dddCase> entities = page.getContent();
+
+        List<dddCaseSummary> cases = entities.stream()
+                .map(entity -> modelMapper.map(entity, dddCaseSummary.class))
+                .toList();
+        List<String> arrIds = cases.stream()
+                .map(caseSummary -> caseSummary.getArrId())
+                .toList();
+       
+        List<ArrestInfo> arrInfos;
+
+        if (authenticationService.hasSealedAccess()) {
+            arrInfos = cdwRepository.getArrestInfoSummary(arrIds);
+        } else {
+            arrInfos = cdwRepository.getMaskedArrestInfoSummary(arrIds);
+        }
+
+        Map<String, ArrestInfo> arrInfoMap = arrInfos.stream()
+            .collect(Collectors.toMap(ArrestInfo::getArrId, Function.identity()));
+
+        for(dddCaseSummary caseSummary: cases){
+            if(arrInfoMap.get(caseSummary.getArrId().trim())!=null){
+                caseSummary.setArrest(arrInfoMap.get(caseSummary.getArrId()));
+            }
+        } 
+        response.setCaseSummaries(cases);
+        response.setPageNumber(page.getNumber());
+        response.setHasNext(page.hasNext());
+        response.setHasPrevious(page.hasPrevious());
+        response.setIsFirst(page.isFirst());
+        response.setIsLast(page.isLast());
+        response.setPageSize(page.getSize());
+        response.setTotalElements(page.getTotalElements());
+        response.setTotalPages(page.getTotalPages());
+        if (authenticationService.isSupervisor() && filter.getdddOfficeIds() != null
+                && filter.getdddOfficeIds().size() > 0) {
+            response.setCaseStats(getCaseStats(filter.getdddOfficeIds()));
+        } else {
+            response.setCaseStats(getCaseStats());
+        }
+        return response;
+    }
+
+    @Transactional
+    public dddCase saveNote(final Integer caseId, final String noteDesc, final String fileNm,
+            final MultipartFile fileContent) {
+        dddCase entityCase = caseRepository.findById(caseId).orElse(null);
+        
+        if (entityCase != null) {
+            CaseUpload entityUpload = null;
+            if (fileNm != null && fileContent != null) {
+                entityUpload = new CaseUpload();
+                entityUpload.setdddCase(entityCase);
+                entityUpload.setUserNm(authenticationService.getUsername());
+                entityUpload.setFileNm(fileNm);
+                entityUpload.setDeletedFlg((short) 0);
+                caseUploadRepository.saveAndFlush(entityUpload);
+                int uploadId = entityUpload.getId();
+                String s3Key = getS3Key(caseId, uploadId);
+                try {
+                    log.info("attempt to upload to S3 "+s3Key);
+                    s3Service.uploadMultipartFile(s3Key, fileContent);
+                } catch (Exception e) {
+                    throw new FileUploadException("Upload to S3 failed");
+                }
+                entityCase.getUploads().add(entityUpload);
+            }
+            org.nnnn.ddd.entity.CaseNote entityNote = new org.nnnn.ddd.entity.CaseNote();
+            entityNote.setNoteDesc(noteDesc);
+            entityNote.setUserNm(authenticationService.getUsername());
+            entityNote.setdddCase(entityCase);
+            if (entityUpload != null) {
+                entityNote.setUpload(entityUpload);
+            }
+            entityCase.getNotes().add(entityNote);
+            caseRepository.save(entityCase); 
+            return modelMapper.map(entityCase, dddCase.class);
+        } else {
+            throw new CaseNotFoundException("Case " + caseId + " not found");
+        }
+    }
+
+    public Object[] getFile(final int caseId, final int uploadId) {
+        CaseUpload caseUploadEntity = caseUploadRepository.findById(uploadId).orElse(null);
+        if (caseUploadEntity != null) {
+            return new Object[] { caseUploadEntity.getFileNm(), s3Service.downloadFile(getS3Key(caseId, uploadId)) };
+        }
+        return new Object[] {null, s3Service.downloadFile(getS3Key(caseId, uploadId))};
+    }
+
+    public void deleteFile(final int caseId, final int uploadId) {
+        CaseUpload caseUploadEntity = caseUploadRepository.findById(uploadId).orElse(null);
+        if (caseUploadEntity != null) {
+            caseUploadEntity.setDeletedFlg((short) 1);
+            caseUploadRepository.save(caseUploadEntity);
+        }
+        throw new FileDeleteException("Failed to delete file " + uploadId);
+    }
+
+    private String getS3Key(final int caseId, final int uploadId)
+    {
+        return "uploads/case/" + caseId + "/" + uploadId;
+    }
+}
+
+
+
+=================================================
+
+
+
+/**
+ * NOTE: This class is auto generated by the swagger code generator program (3.0.35).
+ * https://github.com/swagger-api/swagger-codegen
+ * Do not edit the class manually.
+ */
+package org.nnnn.ddd.api;
+
+import org.nnnn.ddd.model.CaseFilter;
+import org.nnnn.ddd.model.CaseListResponse;
+import org.nnnn.ddd.model.CreateCaseRequest;
+import org.nnnn.ddd.model.dddCase;
+import org.nnnn.ddd.model.dddCaseStats;
+import org.nnnn.ddd.model.dddCaseSummary;
+import org.nnnn.ddd.model.Error;
+import org.springframework.core.io.Resource;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.CookieValue;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import java.util.List;
+import java.util.Map;
+
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-19T09:45:33.409-05:00")
+@Validated
+public interface CaseApi {
+
+        @Operation(summary = "Create new ddd case.", description = "Create new ddd case.", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Case exists", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dddCase.class))),
+
+                        @ApiResponse(responseCode = "201", description = "Case created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dddCase.class))),
+
+                        @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case", produces = { "application/json" }, consumes = {
+                        "application/json" }, method = RequestMethod.POST)
+        ResponseEntity<dddCase> createCaseByArrest(
+                        @Parameter(in = ParameterIn.DEFAULT, description = "Object containing case creation criteria", required = true, schema = @Schema()) @Valid @RequestBody CreateCaseRequest body);
+
+        @Operation(summary = "Create new case note", description = "Create new case note", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "201", description = "Note created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dddCase.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/{caseId}/note", produces = { "application/json" }, consumes = {
+                        "multipart/form-data" }, method = RequestMethod.POST)
+        ResponseEntity<dddCase> createCaseNote(
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to update", required = true, schema = @Schema()) @PathVariable("caseId") Integer caseId,
+                        @Parameter(in = ParameterIn.DEFAULT, description = "", schema = @Schema()) @RequestParam(value = "noteDesc", required = false) String noteDesc,
+                        @Parameter(in = ParameterIn.DEFAULT, description = "", schema = @Schema()) @RequestParam(value = "fileNm", required = false) String fileNm,
+                        @Parameter(description = "file detail", required = false) @Valid @RequestPart("file") MultipartFile fileContent);
+
+        @Operation(summary = "Retrieve ddd case.", description = "Retrieve ddd case.", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dddCase.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/{caseId}", produces = { "application/json" }, method = RequestMethod.GET)
+        ResponseEntity<dddCase> getCaseById(
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required = true, schema = @Schema()) @PathVariable("caseId") Integer caseId);
+
+        @Operation(summary = "Retrieve ddd case list.", description = "Retrieve ddd case list.", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CaseListResponse.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/list", produces = { "application/json" }, consumes = {
+                        "application/json" }, method = RequestMethod.POST)
+        ResponseEntity<CaseListResponse> getCaseList(
+                        @Parameter(in = ParameterIn.DEFAULT, description = "Object containing case filter criteria", required = true, schema = @Schema()) @Valid @RequestBody CaseFilter body);
+
+        @Operation(summary = "Update ddd case.", description = "Update ddd case.", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Case updated", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dddCase.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/{caseId}", produces = { "application/json" }, consumes = {
+                        "application/json" }, method = RequestMethod.PUT)
+        ResponseEntity<dddCase> updateCase(
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to update", required = true, schema = @Schema()) @PathVariable("caseId") Integer caseId,
+                        @Parameter(in = ParameterIn.DEFAULT, description = "Updated Case object", required = true, schema = @Schema()) @Valid @RequestBody dddCase body);
+
+        @Operation(summary = "Retrieve ddd case stats", description = "Retrieve ddd case stats", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dddCaseStats.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/stats", produces = { "application/json" }, method = RequestMethod.GET)
+        ResponseEntity<dddCaseStats> getCaseStats();
+
+        @Operation(summary = "Retrieve ddd case file.", description = "Retrieve ddd case file.", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(mediaType = "application/octet-stream", schema = @Schema(implementation = Resource.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/{caseId}/file/{uploadId}", produces = { "application/octet-stream",
+                        "application/json" }, method = RequestMethod.GET)
+        ResponseEntity<Resource> getCaseUploadById(
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required = true, schema = @Schema()) @PathVariable("caseId") Integer caseId,
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the file to get", required = true, schema = @Schema()) @PathVariable("uploadId") Integer uploadId);
+
+        @Operation(summary = "Delete ddd case file.", description = "Delete ddd case file.", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(mediaType = "text/plain", schema = @Schema(implementation = String.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/{caseId}/file/{uploadId}", produces = { "text/plain",
+                        "application/json" }, method = RequestMethod.DELETE)
+        ResponseEntity<String> deleteCaseUploadById(
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required = true, schema = @Schema()) @PathVariable("caseId") Integer caseId,
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the file to get", required = true, schema = @Schema()) @PathVariable("uploadId") Integer uploadId);
+
+}
+
+
+=============================
+
+/**
+ * NOTE: This class is auto generated by the swagger code generator program (3.0.35).
+ * https://github.com/swagger-api/swagger-codegen
+ * Do not edit the class manually.
+ */
+package org.nnnn.ddd.api;
+
+import org.nnnn.ddd.model.CaseFilter;
+import org.nnnn.ddd.model.CaseListResponse;
+import org.nnnn.ddd.model.CreateCaseRequest;
+import org.nnnn.ddd.model.dddCase;
+import org.nnnn.ddd.model.dddCaseStats;
+import org.nnnn.ddd.model.dddCaseSummary;
+import org.nnnn.ddd.model.Error;
+import org.springframework.core.io.Resource;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.CookieValue;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import java.util.List;
+import java.util.Map;
+
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-19T09:45:33.409-05:00")
+@Validated
+public interface CaseApi {
+
+        @Operation(summary = "Create new ddd case.", description = "Create new ddd case.", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Case exists", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dddCase.class))),
+
+                        @ApiResponse(responseCode = "201", description = "Case created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dddCase.class))),
+
+                        @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case", produces = { "application/json" }, consumes = {
+                        "application/json" }, method = RequestMethod.POST)
+        ResponseEntity<dddCase> createCaseByArrest(
+                        @Parameter(in = ParameterIn.DEFAULT, description = "Object containing case creation criteria", required = true, schema = @Schema()) @Valid @RequestBody CreateCaseRequest body);
+
+        @Operation(summary = "Create new case note", description = "Create new case note", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "201", description = "Note created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dddCase.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/{caseId}/note", produces = { "application/json" }, consumes = {
+                        "multipart/form-data" }, method = RequestMethod.POST)
+        ResponseEntity<dddCase> createCaseNote(
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to update", required = true, schema = @Schema()) @PathVariable("caseId") Integer caseId,
+                        @Parameter(in = ParameterIn.DEFAULT, description = "", schema = @Schema()) @RequestParam(value = "noteDesc", required = false) String noteDesc,
+                        @Parameter(in = ParameterIn.DEFAULT, description = "", schema = @Schema()) @RequestParam(value = "fileNm", required = false) String fileNm,
+                        @Parameter(description = "file detail", required = false) @Valid @RequestPart("file") MultipartFile fileContent);
+
+        @Operation(summary = "Retrieve ddd case.", description = "Retrieve ddd case.", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dddCase.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/{caseId}", produces = { "application/json" }, method = RequestMethod.GET)
+        ResponseEntity<dddCase> getCaseById(
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required = true, schema = @Schema()) @PathVariable("caseId") Integer caseId);
+
+        @Operation(summary = "Retrieve ddd case list.", description = "Retrieve ddd case list.", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CaseListResponse.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/list", produces = { "application/json" }, consumes = {
+                        "application/json" }, method = RequestMethod.POST)
+        ResponseEntity<CaseListResponse> getCaseList(
+                        @Parameter(in = ParameterIn.DEFAULT, description = "Object containing case filter criteria", required = true, schema = @Schema()) @Valid @RequestBody CaseFilter body);
+
+        @Operation(summary = "Update ddd case.", description = "Update ddd case.", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Case updated", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dddCase.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/{caseId}", produces = { "application/json" }, consumes = {
+                        "application/json" }, method = RequestMethod.PUT)
+        ResponseEntity<dddCase> updateCase(
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to update", required = true, schema = @Schema()) @PathVariable("caseId") Integer caseId,
+                        @Parameter(in = ParameterIn.DEFAULT, description = "Updated Case object", required = true, schema = @Schema()) @Valid @RequestBody dddCase body);
+
+        @Operation(summary = "Retrieve ddd case stats", description = "Retrieve ddd case stats", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dddCaseStats.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/stats", produces = { "application/json" }, method = RequestMethod.GET)
+        ResponseEntity<dddCaseStats> getCaseStats();
+
+        @Operation(summary = "Retrieve ddd case file.", description = "Retrieve ddd case file.", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(mediaType = "application/octet-stream", schema = @Schema(implementation = Resource.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/{caseId}/file/{uploadId}", produces = { "application/octet-stream",
+                        "application/json" }, method = RequestMethod.GET)
+        ResponseEntity<Resource> getCaseUploadById(
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required = true, schema = @Schema()) @PathVariable("caseId") Integer caseId,
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the file to get", required = true, schema = @Schema()) @PathVariable("uploadId") Integer uploadId);
+
+        @Operation(summary = "Delete ddd case file.", description = "Delete ddd case file.", tags = { "case" })
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(mediaType = "text/plain", schema = @Schema(implementation = String.class))),
+
+                        @ApiResponse(responseCode = "200", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))) })
+        @RequestMapping(value = "/case/{caseId}/file/{uploadId}", produces = { "text/plain",
+                        "application/json" }, method = RequestMethod.DELETE)
+        ResponseEntity<String> deleteCaseUploadById(
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required = true, schema = @Schema()) @PathVariable("caseId") Integer caseId,
+                        @Parameter(in = ParameterIn.PATH, description = "Numeric ID of the file to get", required = true, schema = @Schema()) @PathVariable("uploadId") Integer uploadId);
+
+}
+
+=====================================================
+
+package org.nnnn.ddd.api;
+
+import org.nnnn.ddd.exceptions.CaseAccessException;
+import org.nnnn.ddd.exceptions.InvalidArrestException;
+import org.nnnn.ddd.exceptions.SealedAccessException;
+import org.nnnn.ddd.model.CaseFilter;
+import org.nnnn.ddd.model.CaseListResponse;
+import org.nnnn.ddd.model.CreateCaseRequest;
+import org.nnnn.ddd.model.dddCase;
+import org.nnnn.ddd.model.dddCaseStats;
+import org.nnnn.ddd.model.dddCaseSummary;
+import org.nnnn.ddd.model.Error;
+import org.nnnn.ddd.service.CaseService;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+import jakarta.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-13T15:15:08.918-05:00")
+@RestController
+public class CaseApiController implements CaseApi {
+
+    private static final Logger log = LoggerFactory.getLogger(CaseApiController.class);
+
+    private final ObjectMapper objectMapper;
+
+    private final HttpServletRequest request;
+
+    
+    @Autowired
+    private CaseService caseService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public CaseApiController(ObjectMapper objectMapper, HttpServletRequest request) {
+        this.objectMapper = objectMapper;
+        this.request = request;
+    }
+
+    public ResponseEntity<dddCase> createCaseByArrest(@Parameter(in = ParameterIn.DEFAULT, description = "Object containing case creation criteria", schema=@Schema()) @Valid @RequestBody CreateCaseRequest body) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                dddCase json = caseService.createCase(body);
+                if (json.isNew()) {
+                    return new ResponseEntity<dddCase>(json, HttpStatus.CREATED);
+                } else {
+                    return new ResponseEntity<dddCase>(json, HttpStatus.OK);
+                }
+            } catch (SealedAccessException sae){
+                log.error(sae.getMessage());
+                throw sae;
+            } catch (InvalidArrestException iae){
+                log.error(iae.getMessage());
+                throw iae;
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<dddCase>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<dddCase>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    public ResponseEntity<dddCase> getCaseById(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<dddCase>(caseService.loadCase(caseId), HttpStatus.OK);
+            } catch (SealedAccessException sae){
+                log.error(sae.getMessage());
+                throw sae;
+            } catch (CaseAccessException cae){
+                log.error(cae.getMessage());
+                throw cae;
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<dddCase>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<dddCase>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    public ResponseEntity<CaseListResponse> getCaseList(@Parameter(in = ParameterIn.DEFAULT, description = "Object containing case filter criteria", schema=@Schema()) @Valid @RequestBody CaseFilter body) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<CaseListResponse>(caseService.findCases(body), HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<CaseListResponse>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<CaseListResponse>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    public ResponseEntity<dddCase> updateCase(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to update", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.DEFAULT, description = "Updated Case object", required=true, schema=@Schema()) @Valid @RequestBody dddCase body) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<dddCase>(caseService.saveCase(body), HttpStatus.OK);
+            } catch (jakarta.persistence.OptimisticLockException | org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+                throw e; // Let GlobalExceptionHandler return 409
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<dddCase>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<dddCase>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    public ResponseEntity<dddCase> createCaseNote(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to update", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.DEFAULT, description = "",schema=@Schema()) @RequestParam(value="noteDesc", required=false)  String noteDesc,@Parameter(in = ParameterIn.DEFAULT, description = "",schema=@Schema()) @RequestParam(value="fileNm", required=false)  String fileNm,@Parameter(description = "file detail") @Valid @RequestPart(value = "file", required = false) MultipartFile fileContent) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<dddCase>(caseService.saveNote(caseId, noteDesc, fileNm, fileContent), HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<dddCase>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<dddCase>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    public ResponseEntity<dddCaseStats> getCaseStats() {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<dddCaseStats>(caseService.getCaseStats(), HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<dddCaseStats>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<dddCaseStats>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    public ResponseEntity<Resource> getCaseUploadById(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the file to get", required=true, schema=@Schema()) @PathVariable("uploadId") Integer uploadId) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                Object[] fileNameAndResource = caseService.getFile(caseId, uploadId);
+                
+                // Set headers including Content-Disposition with the filename
+                HttpHeaders headers = new HttpHeaders();
+                // "attachment" forces download, "inline" tries to display in browser
+                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileNameAndResource[0] + "\"");
+                // Expose the Content-Disposition header to the client, especially important for Swagger UI
+                headers.add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
+
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM) // Generic content type for files
+                        .body((Resource) fileNameAndResource[1]); 
+                //new ResponseEntity<Resource>((Resource)fileNameAndResource[1], HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<Resource>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<Resource>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    public ResponseEntity<String> deleteCaseUploadById(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the file to get", required=true, schema=@Schema()) @PathVariable("uploadId") Integer uploadId) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                caseService.deleteFile(caseId, uploadId);
+                return new ResponseEntity<String>(objectMapper.readValue("\"Success: The operation completed successfully.\"", String.class), HttpStatus.OK);
+            } catch (IOException e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<String>(HttpStatus.NOT_IMPLEMENTED);
+    }
+}
+
+
+=======================================
+
+package org.nnnn.ddd.service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
+import org.nnnn.ddd.TestConfig;
+import org.nnnn.ddd.api.CaseApiController;
+import org.nnnn.ddd.exceptions.CaseNotFoundException;
+import org.nnnn.ddd.exceptions.InvalidArrestException;
+import org.nnnn.ddd.exceptions.SealedAccessException;
+import org.nnnn.ddd.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Collections;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(controllers = CaseApiController.class)
+@Import({TestConfig.class, CaseApiController.class})
+public class CaseServiceControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    
+    @MockBean
+    private javax.sql.DataSource dataSource;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private ModelMapper modelMapper;
+
+    @MockBean
+    private CaseService caseService;
+
+    @MockBean
+    private AuthenticationService authenticationService;
+
+    @MockBean
+    private AuditService auditService;
+
+    private dddCase mockCaseDto;
+    private dddCaseStats mockStats;
+
+    @BeforeEach
+    void setUp() {
+        mockCaseDto = new dddCase();
+        mockCaseDto.setId(100);
+        mockCaseDto.setArrId("ARR001");
+
+        mockStats = new dddCaseStats();
+        mockStats.setOverdueCount(3);
+        mockStats.setComingDueCount(2);
+    }
+
+    // =========================================================================
+    // GET /case/stats
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void getCaseStats_returnsOkWithStats() throws Exception {
+        when(caseService.getCaseStats()).thenReturn(mockStats);
+
+        mockMvc.perform(get("/case/stats")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.overdueCount").value(3))
+                .andExpect(jsonPath("$.comingDueCount").value(2));
+
+        verify(caseService, times(1)).getCaseStats();
+    }
+
+    @Test
+    void getCaseStats_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/case/stats")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // GET /case/{caseId}
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void getCaseById_existingCase_returnsOk() throws Exception {
+        when(caseService.loadCase(100)).thenReturn(mockCaseDto);
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100))
+                .andExpect(jsonPath("$.arrId").value("ARR001"));
+
+        verify(caseService, times(1)).loadCase(100);
+    }
+
+    @Test
+    @WithMockUser
+    void getCaseById_caseNotFound_returns500() throws Exception {
+        when(caseService.loadCase(999)).thenThrow(new CaseNotFoundException("Case not found"));
+
+        mockMvc.perform(get("/case/999")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @WithMockUser
+    void getCaseById_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(get("/case/100"))
+                .andExpect(status().isNotImplemented());
+    }
+
+    @Test
+    void getCaseById_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // POST /case  (createCaseByArrest)
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void createCaseByArrest_newCase_returns201() throws Exception {
+        CreateCaseRequest request = new CreateCaseRequest();
+        request.setArrId("ARR002");
+        request.setdddOfficeId(1);
+        request.setProactiveFlg(0);
+
+        dddCase newCase = new dddCase();
+        newCase.setId(101);
+        newCase.setNew(true);
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(newCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(101));
+    }
+
+    @Test
+    @WithMockUser
+    void createCaseByArrest_existingCase_returns200() throws Exception {
+        CreateCaseRequest request = new CreateCaseRequest();
+        request.setArrId("ARR001");
+        request.setdddOfficeId(1);
+        request.setProactiveFlg(0);
+
+        dddCase existingCase = new dddCase();
+        existingCase.setId(100);
+        existingCase.setNew(false);
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(existingCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100));
+    }
+
+    @Test
+    @WithMockUser
+    void createCaseByArrest_sealedAccessException_throws() throws Exception {
+        CreateCaseRequest request = new CreateCaseRequest();
+        request.setArrId("ARR001");
+        request.setdddOfficeId(1);
+        request.setProactiveFlg(0);
+
+        when(caseService.createCase(any(CreateCaseRequest.class)))
+                .thenThrow(new SealedAccessException("No sealed access"));
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser
+    void createCaseByArrest_serviceThrowsException_returns500() throws Exception {
+        CreateCaseRequest request = new CreateCaseRequest();
+        request.setArrId("ARR001");
+        request.setdddOfficeId(1);
+        request.setProactiveFlg(0);
+
+        when(caseService.createCase(any(CreateCaseRequest.class)))
+                .thenThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void createCaseByArrest_noAuth_returns401() throws Exception {
+        CreateCaseRequest request = new CreateCaseRequest();
+        request.setArrId("ARR001");
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // PUT /case/{caseId}  (updateCase)
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void updateCase_validCase_returnsOk() throws Exception {
+        when(caseService.saveCase(any(dddCase.class))).thenReturn(mockCaseDto);
+
+        mockMvc.perform(put("/case/100")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(mockCaseDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100));
+
+        verify(caseService, times(1)).saveCase(any(dddCase.class));
+    }
+
+    @Test
+    @WithMockUser
+    void updateCase_caseNotFound_returns500() throws Exception {
+        when(caseService.saveCase(any(dddCase.class)))
+                .thenThrow(new CaseNotFoundException("Case not found"));
+
+        mockMvc.perform(put("/case/100")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(mockCaseDto)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void updateCase_noAuth_returns401() throws Exception {
+        mockMvc.perform(put("/case/100")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(mockCaseDto)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // POST /case/list  (getCaseList)
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void getCaseList_validFilter_returnsOk() throws Exception {
+        CaseFilter filter = new CaseFilter();
+        filter.setArrId("ARR001");
+        filter.setPageNumber(0);
+        filter.setPageSize(10);
+
+        CaseListResponse response = new CaseListResponse();
+        response.setTotalElements(1L);
+        response.setCaseSummaries(Collections.emptyList());
+
+        when(caseService.findCases(any(CaseFilter.class))).thenReturn(response);
+
+        mockMvc.perform(post("/case/list")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(filter)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1));
+
+        verify(caseService, times(1)).findCases(any(CaseFilter.class));
+    }
+
+    @Test
+    @WithMockUser
+    void getCaseList_serviceThrowsException_returns500() throws Exception {
+        CaseFilter filter = new CaseFilter();
+        filter.setArrId("ARR001");
+
+        when(caseService.findCases(any(CaseFilter.class)))
+                .thenThrow(new RuntimeException("DB error"));
+
+        mockMvc.perform(post("/case/list")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(filter)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void getCaseList_noAuth_returns401() throws Exception {
+        mockMvc.perform(post("/case/list")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new CaseFilter())))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // POST /case/{caseId}/note  (createCaseNote)
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void createCaseNote_validNote_returnsOk() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "PDF content".getBytes());
+
+        when(caseService.saveNote(eq(100), eq("Test note"), eq("test.pdf"), any()))
+                .thenReturn(mockCaseDto);
+
+        mockMvc.perform(multipart("/case/100/note")
+                .file(file)
+                .param("noteDesc", "Test note")
+                .param("fileNm", "test.pdf")
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100));
+    }
+
+    @Test
+    @WithMockUser
+    void createCaseNote_caseNotFound_returns500() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "PDF content".getBytes());
+
+        when(caseService.saveNote(eq(999), any(), any(), any()))
+                .thenThrow(new CaseNotFoundException("Case not found"));
+
+        mockMvc.perform(multipart("/case/999/note")
+                .file(file)
+                .param("noteDesc", "Note")
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @WithMockUser
+    void createCaseNote_withoutFile_returnsOk() throws Exception {
+        when(caseService.saveNote(eq(100), eq("Note only"), isNull(), isNull()))
+                .thenReturn(mockCaseDto);
+
+        mockMvc.perform(multipart("/case/100/note")
+                .param("noteDesc", "Note only")
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void createCaseNote_noAuth_returns401() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "content".getBytes());
+
+        mockMvc.perform(multipart("/case/100/note")
+                .file(file)
+                .param("noteDesc", "Note")
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
 @WithMockUser
 void getCaseUploadById_validIds_returnsFileWithHeaders() throws Exception {
     byte[] fileContent = "PDF content".getBytes();
@@ -53,4 +1483,67 @@ void getCaseUploadById_noAuth_returns401() throws Exception {
     mockMvc.perform(get("/case/100/file/1")
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
+}
+
+@Test
+@WithMockUser
+void createCaseByArrest_invalidArrestException_returns500() throws Exception {
+        CreateCaseRequest request= new CreateCaseRequest();
+        request.setArrId("ARR001");
+        request.setdddOfficeId(1);
+        request.setProactiveFlg(0);
+    when(caseService.createCase(any(CreateCaseRequest.class)))
+            .thenThrow(new InvalidArrestException("Invalid arrest"));
+
+    mockMvc.perform(post("/case")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isInternalServerError());
+}
+
+@Test
+@WithMockUser
+void createCaseByArrest_noAcceptHeader_returns501() throws Exception {
+        CreateCaseRequest request= new CreateCaseRequest();
+        request.setArrId("ARR001");
+        request.setdddOfficeId(1);
+        request.setProactiveFlg(0);
+
+    mockMvc.perform(post("/case")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isNotImplemented());
+}
+
+@Test
+@WithMockUser
+void getCaseStats_serviceThrowsException_returns500() throws Exception {
+    when(caseService.getCaseStats()).thenThrow(new RuntimeException("DB error"));
+
+    mockMvc.perform(get("/case/stats")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
+}
+
+@Test
+@WithMockUser
+void createCaseByArrest_sealedAccessException_returns403() throws Exception {
+         CreateCaseRequest request= new CreateCaseRequest();
+        request.setArrId("ARR001");
+        request.setdddOfficeId(1);
+        request.setProactiveFlg(0);
+    when(caseService.createCase(any(CreateCaseRequest.class)))
+            .thenThrow(new SealedAccessException("Sealed access"));
+
+    mockMvc.perform(post("/case")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON)            
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isForbidden());
+}
+
 }
