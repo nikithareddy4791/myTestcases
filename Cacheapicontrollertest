@@ -1,0 +1,158 @@
+package org.nnnn.ddd.api;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.nnnn.ddd.TestConfig;
+import org.nnnn.ddd.service.AuditService;
+import org.nnnn.ddd.service.AuthenticationService;
+import org.nnnn.ddd.service.CacheService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(controllers = CacheApiController.class)
+@Import({TestConfig.class, CacheApiController.class})
+@DisplayName("CacheApiController Tests")
+class CacheApiControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private CacheService cacheService;
+
+    @MockBean
+    private AuthenticationService authenticationService;
+
+    @MockBean
+    private AuditService auditService;
+
+    @MockBean
+    private javax.sql.DataSource dataSource;
+
+    // =========================================================================
+    // GET /cache/clear
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /cache/clear - returns 200 with success message")
+    void clearCache_success_returns200() throws Exception {
+        doNothing().when(cacheService).clearAllCache();
+
+        mockMvc.perform(get("/cache/clear")
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("\"Success: The operation completed successfully.\""));
+
+        verify(cacheService, times(1)).clearAllCache();
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /cache/clear - returns 500 when CacheService throws exception")
+    void clearCache_serviceThrowsException_returns500() throws Exception {
+        doThrow(new RuntimeException("Cache eviction failed"))
+                .when(cacheService).clearAllCache();
+
+        mockMvc.perform(get("/cache/clear")
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+
+        verify(cacheService, times(1)).clearAllCache();
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /cache/clear - returns 501 when Accept header is not application/json")
+    void clearCache_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(get("/cache/clear")
+                .with(csrf()))
+                .andExpect(status().isNotImplemented());
+
+        // cacheService should NOT be called when Accept header is missing
+        verify(cacheService, never()).clearAllCache();
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /cache/clear - returns 501 when Accept is text/plain only")
+    void clearCache_textPlainAccept_returns501() throws Exception {
+        mockMvc.perform(get("/cache/clear")
+                .with(csrf())
+                .accept(MediaType.TEXT_PLAIN))
+                .andExpect(status().isNotImplemented());
+
+        verify(cacheService, never()).clearAllCache();
+    }
+
+    @Test
+    @DisplayName("GET /cache/clear - returns 401 when user is not authenticated")
+    void clearCache_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/cache/clear")
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+
+        verify(cacheService, never()).clearAllCache();
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /cache/clear - response body is valid JSON string")
+    void clearCache_responseBodyIsValidJson() throws Exception {
+        doNothing().when(cacheService).clearAllCache();
+
+        mockMvc.perform(get("/cache/clear")
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Success")));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("GET /cache/clear - admin user can clear cache successfully")
+    void clearCache_adminUser_returns200() throws Exception {
+        doNothing().when(cacheService).clearAllCache();
+
+        mockMvc.perform(get("/cache/clear")
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(cacheService, times(1)).clearAllCache();
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /cache/clear - cacheService.clearAllCache is called exactly once per request")
+    void clearCache_calledExactlyOnce() throws Exception {
+        doNothing().when(cacheService).clearAllCache();
+
+        mockMvc.perform(get("/cache/clear")
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        // Ensure no double-invocation
+        verify(cacheService, times(1)).clearAllCache();
+        verifyNoMoreInteractions(cacheService);
+    }
+}
