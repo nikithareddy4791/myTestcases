@@ -1,1 +1,394 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="jacoco-resources/report.gif" type="image/gif"/><title>dlu-services</title><script type="text/javascript" src="jacoco-resources/sort.js"></script></head><body onload="initialSort(['breadcrumb', 'coveragetable'])"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="jacoco-sessions.html" class="el_session">Sessions</a></span><span class="el_report">dlu-services</span></div><h1>dlu-services</h1><table class="coverage" cellspacing="0" id="coveragetable"><thead><tr><td class="sortable" id="a" onclick="toggleSort(this)">Element</td><td class="down sortable bar" id="b" onclick="toggleSort(this)">Missed Instructions</td><td class="sortable ctr2" id="c" onclick="toggleSort(this)">Cov.</td><td class="sortable bar" id="d" onclick="toggleSort(this)">Missed Branches</td><td class="sortable ctr2" id="e" onclick="toggleSort(this)">Cov.</td><td class="sortable ctr1" id="f" onclick="toggleSort(this)">Missed</td><td class="sortable ctr2" id="g" onclick="toggleSort(this)">Cxty</td><td class="sortable ctr1" id="h" onclick="toggleSort(this)">Missed</td><td class="sortable ctr2" id="i" onclick="toggleSort(this)">Lines</td><td class="sortable ctr1" id="j" onclick="toggleSort(this)">Missed</td><td class="sortable ctr2" id="k" onclick="toggleSort(this)">Methods</td><td class="sortable ctr1" id="l" onclick="toggleSort(this)">Missed</td><td class="sortable ctr2" id="m" onclick="toggleSort(this)">Classes</td></tr></thead><tfoot><tr><td>Total</td><td class="bar">11,931 of 13,904</td><td class="ctr2">14%</td><td class="bar">905 of 964</td><td class="ctr2">6%</td><td class="ctr1">1,357</td><td class="ctr2">1,599</td><td class="ctr1">2,739</td><td class="ctr2">3,316</td><td class="ctr1">886</td><td class="ctr2">1,114</td><td class="ctr1">70</td><td class="ctr2">105</td></tr></tfoot><tbody><tr><td id="a10"><a href="org.nypd.dlu.model/index.html" class="el_package">org.nypd.dlu.model</a></td><td class="bar" id="b0"><img src="jacoco-resources/redbar.gif" width="107" height="10" title="7,053" alt="7,053"/><img src="jacoco-resources/greenbar.gif" width="12" height="10" title="832" alt="832"/></td><td class="ctr2" id="c5">10%</td><td class="bar" id="d0"><img src="jacoco-resources/redbar.gif" width="120" height="10" title="568" alt="568"/></td><td class="ctr2" id="e3">0%</td><td class="ctr1" id="f0">755</td><td class="ctr2" id="g0">912</td><td class="ctr1" id="h0">1,451</td><td class="ctr2" id="i0">1,759</td><td class="ctr1" id="j0">471</td><td class="ctr2" id="k0">628</td><td class="ctr1" id="l2">8</td><td class="ctr2" id="m0">22</td></tr><tr><td id="a14"><a href="org.nypd.dlu.service/index.html" class="el_package">org.nypd.dlu.service</a></td><td class="bar" id="b1"><img src="jacoco-resources/redbar.gif" width="33" height="10" title="2,184" alt="2,184"/><img src="jacoco-resources/greenbar.gif" width="1" height="10" title="110" alt="110"/></td><td class="ctr2" id="c7">4%</td><td class="bar" id="d1"><img src="jacoco-resources/redbar.gif" width="43" height="10" title="205" alt="205"/><img src="jacoco-resources/greenbar.gif" width="1" height="10" title="5" alt="5"/></td><td class="ctr2" id="e2">2%</td><td class="ctr1" id="f2">157</td><td class="ctr2" id="g2">174</td><td class="ctr1" id="h1">463</td><td class="ctr2" id="i1">490</td><td class="ctr1" id="j2">54</td><td class="ctr2" id="k2">69</td><td class="ctr1" id="l3">6</td><td class="ctr2" id="m3">11</td></tr><tr><td id="a8"><a href="org.nypd.dlu.entity/index.html" class="el_package">org.nypd.dlu.entity</a></td><td class="bar" id="b2"><img src="jacoco-resources/redbar.gif" width="11" height="10" title="770" alt="770"/></td><td class="ctr2" id="c8">0%</td><td class="bar" id="d12"/><td class="ctr2" id="e12">n/a</td><td class="ctr1" id="f1">216</td><td class="ctr2" id="g1">217</td><td class="ctr1" id="h2">334</td><td class="ctr2" id="i2">336</td><td class="ctr1" id="j1">216</td><td class="ctr2" id="k1">217</td><td class="ctr1" id="l1">12</td><td class="ctr2" id="m2">13</td></tr><tr><td id="a2"><a href="org.nypd.dlu/index.html" class="el_package">org.nypd.dlu</a></td><td class="bar" id="b3"><img src="jacoco-resources/redbar.gif" width="8" height="10" title="584" alt="584"/><img src="jacoco-resources/greenbar.gif" width="1" height="10" title="77" alt="77"/></td><td class="ctr2" id="c4">11%</td><td class="bar" id="d5"><img src="jacoco-resources/redbar.gif" width="2" height="10" title="12" alt="12"/></td><td class="ctr2" id="e4">0%</td><td class="ctr1" id="f5">34</td><td class="ctr2" id="g5">40</td><td class="ctr1" id="h3">161</td><td class="ctr2" id="i4">176</td><td class="ctr1" id="j4">28</td><td class="ctr2" id="k5">34</td><td class="ctr1" id="l4">6</td><td class="ctr2" id="m5">8</td></tr><tr><td id="a1"><a href="io.swagger.configuration/index.html" class="el_package">io.swagger.configuration</a></td><td class="bar" id="b4"><img src="jacoco-resources/redbar.gif" width="7" height="10" title="501" alt="501"/></td><td class="ctr2" id="c9">0%</td><td class="bar" id="d3"><img src="jacoco-resources/redbar.gif" width="5" height="10" title="26" alt="26"/></td><td class="ctr2" id="e5">0%</td><td class="ctr1" id="f3">61</td><td class="ctr2" id="g4">61</td><td class="ctr1" id="h4">121</td><td class="ctr2" id="i5">121</td><td class="ctr1" id="j3">47</td><td class="ctr2" id="k4">47</td><td class="ctr1" id="l0">21</td><td class="ctr2" id="m1">21</td></tr><tr><td id="a12"><a href="org.nypd.dlu.repository.specs/index.html" class="el_package">org.nypd.dlu.repository.specs</a></td><td class="bar" id="b5"><img src="jacoco-resources/redbar.gif" width="3" height="10" title="211" alt="211"/></td><td class="ctr2" id="c10">0%</td><td class="bar" id="d4"><img src="jacoco-resources/redbar.gif" width="5" height="10" title="26" alt="26"/></td><td class="ctr2" id="e6">0%</td><td class="ctr1" id="f6">34</td><td class="ctr2" id="g6">34</td><td class="ctr1" id="h6">41</td><td class="ctr2" id="i7">41</td><td class="ctr1" id="j5">21</td><td class="ctr2" id="k6">21</td><td class="ctr1" id="l9">1</td><td class="ctr2" id="m9">1</td></tr><tr><td id="a4"><a href="org.nypd.dlu.api/index.html" class="el_package">org.nypd.dlu.api</a></td><td class="bar" id="b6"><img src="jacoco-resources/redbar.gif" width="3" height="10" title="209" alt="209"/><img src="jacoco-resources/greenbar.gif" width="12" height="10" title="790" alt="790"/></td><td class="ctr2" id="c2">79%</td><td class="bar" id="d2"><img src="jacoco-resources/redbar.gif" width="8" height="10" title="40" alt="40"/><img src="jacoco-resources/greenbar.gif" width="10" height="10" title="52" alt="52"/></td><td class="ctr2" id="e1">56%</td><td class="ctr1" id="f4">55</td><td class="ctr2" id="g3">96</td><td class="ctr1" id="h5">66</td><td class="ctr2" id="i3">245</td><td class="ctr1" id="j6">18</td><td class="ctr2" id="k3">48</td><td class="ctr1" id="l5">5</td><td class="ctr2" id="m4">10</td></tr><tr><td id="a3"><a href="org.nypd.dlu.actuator/index.html" class="el_package">org.nypd.dlu.actuator</a></td><td class="bar" id="b7"><img src="jacoco-resources/redbar.gif" width="1" height="10" title="97" alt="97"/></td><td class="ctr2" id="c11">0%</td><td class="bar" id="d6"><img src="jacoco-resources/redbar.gif" width="1" height="10" title="8" alt="8"/></td><td class="ctr2" id="e7">0%</td><td class="ctr1" id="f10">7</td><td class="ctr2" id="g11">7</td><td class="ctr1" id="h7">25</td><td class="ctr2" id="i8">25</td><td class="ctr1" id="j12">3</td><td class="ctr2" id="k12">3</td><td class="ctr1" id="l10">1</td><td class="ctr2" id="m10">1</td></tr><tr><td id="a11"><a href="org.nypd.dlu.repository/index.html" class="el_package">org.nypd.dlu.repository</a></td><td class="bar" id="b8"><img src="jacoco-resources/redbar.gif" width="1" height="10" title="95" alt="95"/></td><td class="ctr2" id="c12">0%</td><td class="bar" id="d10"/><td class="ctr2" id="e8">0%</td><td class="ctr1" id="f12">5</td><td class="ctr2" id="g12">5</td><td class="ctr1" id="h9">16</td><td class="ctr2" id="i10">16</td><td class="ctr1" id="j11">4</td><td class="ctr2" id="k11">4</td><td class="ctr1" id="l11">1</td><td class="ctr2" id="m11">1</td></tr><tr><td id="a13"><a href="org.nypd.dlu.security/index.html" class="el_package">org.nypd.dlu.security</a></td><td class="bar" id="b9"><img src="jacoco-resources/redbar.gif" width="1" height="10" title="75" alt="75"/></td><td class="ctr2" id="c13">0%</td><td class="bar" id="d7"><img src="jacoco-resources/redbar.gif" width="1" height="10" title="8" alt="8"/></td><td class="ctr2" id="e9">0%</td><td class="ctr1" id="f7">9</td><td class="ctr2" id="g9">9</td><td class="ctr1" id="h11">15</td><td class="ctr2" id="i11">15</td><td class="ctr1" id="j10">5</td><td class="ctr2" id="k10">5</td><td class="ctr1" id="l12">1</td><td class="ctr2" id="m12">1</td></tr><tr><td id="a9"><a href="org.nypd.dlu.exceptions/index.html" class="el_package">org.nypd.dlu.exceptions</a></td><td class="bar" id="b10"><img src="jacoco-resources/greenbar.gif" width="1" height="10" title="115" alt="115"/></td><td class="ctr2" id="c3">67%</td><td class="bar" id="d13"/><td class="ctr2" id="e13">n/a</td><td class="ctr1" id="f11">6</td><td class="ctr2" id="g7">19</td><td class="ctr1" id="h10">16</td><td class="ctr2" id="i6">49</td><td class="ctr1" id="j8">6</td><td class="ctr2" id="k7">19</td><td class="ctr1" id="l8">2</td><td class="ctr2" id="m6">7</td></tr><tr><td id="a0"><a href="io.swagger/index.html" class="el_package">io.swagger</a></td><td class="bar" id="b11"/><td class="ctr2" id="c6">5%</td><td class="bar" id="d9"/><td class="ctr2" id="e10">0%</td><td class="ctr1" id="f8">9</td><td class="ctr2" id="g8">10</td><td class="ctr1" id="h12">13</td><td class="ctr2" id="i12">14</td><td class="ctr1" id="j7">7</td><td class="ctr2" id="k8">8</td><td class="ctr1" id="l6">3</td><td class="ctr2" id="m7">4</td></tr><tr><td id="a7"><a href="org.nypd.dlu.converter/index.html" class="el_package">org.nypd.dlu.converter</a></td><td class="bar" id="b12"/><td class="ctr2" id="c14">0%</td><td class="bar" id="d8"><img src="jacoco-resources/redbar.gif" width="1" height="10" title="6" alt="6"/></td><td class="ctr2" id="e11">0%</td><td class="ctr1" id="f9">9</td><td class="ctr2" id="g10">9</td><td class="ctr1" id="h8">17</td><td class="ctr2" id="i9">17</td><td class="ctr1" id="j9">6</td><td class="ctr2" id="k9">6</td><td class="ctr1" id="l7">3</td><td class="ctr2" id="m8">3</td></tr><tr><td id="a6"><a href="org.nypd.dlu.audit.listener/index.html" class="el_package">org.nypd.dlu.audit.listener</a></td><td class="bar" id="b13"/><td class="ctr2" id="c0">100%</td><td class="bar" id="d11"/><td class="ctr2" id="e0">100%</td><td class="ctr1" id="f13">0</td><td class="ctr2" id="g13">3</td><td class="ctr1" id="h13">0</td><td class="ctr2" id="i13">8</td><td class="ctr1" id="j13">0</td><td class="ctr2" id="k14">2</td><td class="ctr1" id="l13">0</td><td class="ctr2" id="m13">1</td></tr><tr><td id="a5"><a href="org.nypd.dlu.audit.entity/index.html" class="el_package">org.nypd.dlu.audit.entity</a></td><td class="bar" id="b14"/><td class="ctr2" id="c1">100%</td><td class="bar" id="d14"/><td class="ctr2" id="e14">n/a</td><td class="ctr1" id="f14">0</td><td class="ctr2" id="g14">3</td><td class="ctr1" id="h14">0</td><td class="ctr2" id="i14">4</td><td class="ctr1" id="j14">0</td><td class="ctr2" id="k13">3</td><td class="ctr1" id="l14">0</td><td class="ctr2" id="m14">1</td></tr></tbody></table><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
+package org.nnnn.ddd.service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
+import org.nnnn.ddd.AppConstants;
+import org.nnnn.ddd.entity.dddCase;
+import org.nnnn.ddd.exceptions.CaseAccessException;
+import org.nnnn.ddd.exceptions.CaseNotFoundException;
+import org.nnnn.ddd.exceptions.SealedAccessException;
+import org.nnnn.ddd.model.ArrestInfo;
+import org.nnnn.ddd.model.Status;
+import org.nnnn.ddd.model.User;
+import org.nnnn.ddd.repository.CaseRepository;
+import org.nnnn.ddd.repository.CDWRepository;
+
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("CaseService - loadCase Tests")
+class CaseServiceLoadCaseTest {
+
+    @Mock
+    private CaseRepository caseRepository;
+
+    @Mock
+    private CDWRepository cdwRepository;
+
+    @Mock
+    private AuthenticationService authenticationService;
+
+    @Mock
+    private ADSearchService adSearchService;
+
+    @Mock
+    private ModelMapper modelMapper;
+
+    @InjectMocks
+    private CaseService caseService;
+
+    private dddCase entityCase;
+    private org.nnnn.ddd.model.dddCase dtoCase;
+    private ArrestInfo arrestInfo;
+
+    @BeforeEach
+    void setUp() {
+        // Entity (DB row)
+        entityCase = new dddCase();
+        entityCase.setId(100);
+        entityCase.setArrId("ARR001");
+        entityCase.setAssignedNm("jdoe");
+
+        // DTO (what gets returned to the client)
+        dtoCase = new org.nnnn.ddd.model.dddCase();
+        dtoCase.setId(100);
+        dtoCase.setArrId("ARR001");
+
+        // Arrest info from CDW
+        arrestInfo = new ArrestInfo();
+        arrestInfo.setArrId("ARR001");
+        arrestInfo.setArrSealedFlg("N");  // not sealed by default
+        arrestInfo.setDeftFrstNm("John");
+        arrestInfo.setDeftLastNm("Doe");
+    }
+
+    // =========================================================================
+    // Case Not Found
+    // =========================================================================
+
+    @Test
+    @DisplayName("loadCase - throws CaseNotFoundException when case does not exist")
+    void loadCase_caseNotFound_throwsCaseNotFoundException() {
+        when(caseRepository.findById(999)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> caseService.loadCase(999))
+                .isInstanceOf(CaseNotFoundException.class)
+                .hasMessageContaining("999");
+
+        verify(caseRepository, times(1)).findById(999);
+        verifyNoInteractions(cdwRepository);
+    }
+
+    // =========================================================================
+    // Active Flag Logic — covers the status branch in loadCase
+    // =========================================================================
+
+    @Test
+    @DisplayName("loadCase - sets activeFlg=1 when status is NOT_STARTED")
+    void loadCase_statusNotStarted_setsActiveFlg1() {
+        Status status = new Status();
+        status.setId(AppConstants.STATUS_NOT_STARTED);
+        dtoCase.setStatus(status);
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+
+        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+
+        assertThat(result.getActiveFlg()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("loadCase - sets activeFlg=1 when status is IN_PROGRESS")
+    void loadCase_statusInProgress_setsActiveFlg1() {
+        Status status = new Status();
+        status.setId(AppConstants.STATUS_IN_PROGRESS);
+        dtoCase.setStatus(status);
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+
+        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+
+        assertThat(result.getActiveFlg()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("loadCase - sets activeFlg=1 when status is WAITING")
+    void loadCase_statusWaiting_setsActiveFlg1() {
+        Status status = new Status();
+        status.setId(AppConstants.STATUS_WAITING);
+        dtoCase.setStatus(status);
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+
+        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+
+        assertThat(result.getActiveFlg()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("loadCase - sets activeFlg=0 when status is COMPLETED")
+    void loadCase_statusCompleted_setsActiveFlg0() {
+        Status status = new Status();
+        status.setId(AppConstants.STATUS_COMPLETED);
+        dtoCase.setStatus(status);
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+
+        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+
+        assertThat(result.getActiveFlg()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("loadCase - sets activeFlg=0 when status is null")
+    void loadCase_statusNull_setsActiveFlg0() {
+        dtoCase.setStatus(null);  // null status → falls into the "else" branch → activeFlg=0
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+
+        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+
+        assertThat(result.getActiveFlg()).isEqualTo(0);
+    }
+
+    // =========================================================================
+    // Sealed Access Logic — the most complex branch in loadCase
+    // =========================================================================
+
+    @Test
+    @DisplayName("loadCase - unsealed arrest loads successfully without sealed access check")
+    void loadCase_unsealedArrest_loadsSuccessfully() {
+        arrestInfo.setArrSealedFlg("N");
+        dtoCase.setStatus(null);
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+
+        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getArrest()).isEqualTo(arrestInfo);
+        // hasSealedAccess should NOT be called for unsealed cases
+        verify(authenticationService, never()).hasSealedAccess();
+    }
+
+    @Test
+    @DisplayName("loadCase - sealed arrest throws SealedAccessException when user has no sealed access")
+    void loadCase_sealedArrest_noSealedAccess_throwsSealedAccessException() {
+        arrestInfo.setArrSealedFlg("Y");
+        dtoCase.setStatus(null);
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+        when(authenticationService.hasSealedAccess()).thenReturn(false);  // no sealed access
+
+        assertThatThrownBy(() -> caseService.loadCase(100))
+                .isInstanceOf(SealedAccessException.class)
+                .hasMessageContaining("no sealed access");
+
+        verify(authenticationService, times(1)).hasSealedAccess();
+    }
+
+    @Test
+    @DisplayName("loadCase - sealed arrest, supervisor with sealed access loads successfully")
+    void loadCase_sealedArrest_supervisorWithSealedAccess_loadsSuccessfully() {
+        arrestInfo.setArrSealedFlg("Y");
+        dtoCase.setStatus(null);
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+        when(authenticationService.isSupervisor()).thenReturn(true);  // supervisor skips further checks
+
+        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+
+        assertThat(result).isNotNull();
+        // isSupervisor=true means no CaseAccessException is thrown
+        verify(authenticationService, never()).hasRole(any());
+    }
+
+    @Test
+    @DisplayName("loadCase - sealed arrest, non-supervisor assigned to case loads successfully")
+    void loadCase_sealedArrest_nonSupervisor_assignedToCase_loadsSuccessfully() {
+        arrestInfo.setArrSealedFlg("Y");
+        dtoCase.setStatus(null);
+        entityCase.setAssignedNm("jdoe");
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+        when(authenticationService.isSupervisor()).thenReturn(false);
+        when(authenticationService.getUsername()).thenReturn("jdoe");  // user IS the assigned person
+
+        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+
+        assertThat(result).isNotNull();
+        // assigned user — no CaseAccessException
+        verify(authenticationService, never()).hasRole(any());
+    }
+
+    @Test
+    @DisplayName("loadCase - sealed arrest, non-supervisor not assigned, belongs to ddd office loads successfully")
+    void loadCase_sealedArrest_nonSupervisor_notAssigned_hasOfficeRole_loadsSuccessfully() {
+        arrestInfo.setArrSealedFlg("Y");
+        dtoCase.setStatus(null);
+        entityCase.setAssignedNm("otherUser");
+
+        org.nnnn.ddd.entity.dddOfficeList dddOffice = new org.nnnn.ddd.entity.dddOfficeList();
+        dddOffice.setAdSgNm("ROLE_MANHATTAN");
+        entityCase.setddd(dddOffice);
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+        when(authenticationService.isSupervisor()).thenReturn(false);
+        when(authenticationService.getUsername()).thenReturn("jdoe");  // not assigned
+        when(authenticationService.hasRole("ROLE_MANHATTAN")).thenReturn(true);  // but has office role
+
+        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    @DisplayName("loadCase - sealed arrest, non-supervisor not assigned, no ddd office set throws CaseAccessException")
+    void loadCase_sealedArrest_nonSupervisor_notAssigned_noDddOffice_throwsCaseAccessException() {
+        arrestInfo.setArrSealedFlg("Y");
+        dtoCase.setStatus(null);
+        entityCase.setAssignedNm("otherUser");
+        entityCase.setddd(null);  // no ddd office on the case
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+        when(authenticationService.isSupervisor()).thenReturn(false);
+        when(authenticationService.getUsername()).thenReturn("jdoe");  // not assigned
+
+        assertThatThrownBy(() -> caseService.loadCase(100))
+                .isInstanceOf(CaseAccessException.class)
+                .hasMessageContaining("no access to case");
+    }
+
+    @Test
+    @DisplayName("loadCase - sealed arrest, non-supervisor not assigned, wrong ddd office throws CaseAccessException")
+    void loadCase_sealedArrest_nonSupervisor_notAssigned_wrongOfficeRole_throwsCaseAccessException() {
+        arrestInfo.setArrSealedFlg("Y");
+        dtoCase.setStatus(null);
+        entityCase.setAssignedNm("otherUser");
+
+        org.nnnn.ddd.entity.dddOfficeList dddOffice = new org.nnnn.ddd.entity.dddOfficeList();
+        dddOffice.setAdSgNm("ROLE_MANHATTAN");
+        entityCase.setddd(dddOffice);
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+        when(authenticationService.hasSealedAccess()).thenReturn(true);
+        when(authenticationService.isSupervisor()).thenReturn(false);
+        when(authenticationService.getUsername()).thenReturn("jdoe");  // not assigned
+        when(authenticationService.hasRole("ROLE_MANHATTAN")).thenReturn(false);  // wrong office
+
+        assertThatThrownBy(() -> caseService.loadCase(100))
+                .isInstanceOf(CaseAccessException.class)
+                .hasMessageContaining("no access to case");
+    }
+
+    // =========================================================================
+    // AssignedNm / AD User lookup
+    // =========================================================================
+
+    @Test
+    @DisplayName("loadCase - populates assignedNmInfo when assignedNm is set")
+    void loadCase_withAssignedNm_populatesAssignedNmInfo() {
+        entityCase.setAssignedNm("jdoe");
+        dtoCase.setStatus(null);
+        arrestInfo.setArrSealedFlg("N");
+
+        User mockUser = new User();
+        mockUser.setUsername("jdoe");
+        mockUser.setFirstName("John");
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+        when(adSearchService.findUser("jdoe")).thenReturn(mockUser);
+
+        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+
+        assertThat(result.getAssignedNmInfo()).isNotNull();
+        assertThat(result.getAssignedNmInfo().getUsername()).isEqualTo("jdoe");
+        verify(adSearchService, times(1)).findUser("jdoe");
+    }
+
+    @Test
+    @DisplayName("loadCase - skips AD lookup when assignedNm is null")
+    void loadCase_noAssignedNm_skipsAdLookup() {
+        entityCase.setAssignedNm(null);
+        dtoCase.setStatus(null);
+        arrestInfo.setArrSealedFlg("N");
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+
+        caseService.loadCase(100);
+
+        // AD service should NOT be called if no assignedNm
+        verifyNoInteractions(adSearchService);
+    }
+
+    // =========================================================================
+    // Arrest Info
+    // =========================================================================
+
+    @Test
+    @DisplayName("loadCase - arrest info is set on the returned DTO")
+    void loadCase_arrestInfoIsAttachedToDto() {
+        dtoCase.setStatus(null);
+        arrestInfo.setArrSealedFlg("N");
+        arrestInfo.setDeftFrstNm("Jane");
+        arrestInfo.setDeftLastNm("Smith");
+
+        when(caseRepository.findById(100)).thenReturn(Optional.of(entityCase));
+        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
+        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+
+        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+
+        assertThat(result.getArrest()).isNotNull();
+        assertThat(result.getArrest().getDeftFrstNm()).isEqualTo("Jane");
+        assertThat(result.getArrest().getDeftLastNm()).isEqualTo("Smith");
+        verify(cdwRepository, times(1)).getArrestInfo("ARR001");
+    }
+}
