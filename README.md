@@ -1,239 +1,38 @@
-package org.nnnn.ddd.service;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.cache.concurrent.ConcurrentMapCache;
-import org.springframework.cache.support.SimpleCacheManager;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.Arrays;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-@DisplayName("CacheService Tests")
-class CacheServiceTest {
-
-    private CacheService cacheService;
-    private SimpleCacheManager cacheManager;
-
-    // All 11 real cache instances
-    private ConcurrentMapCache userListCache;
-    private ConcurrentMapCache sealedUserListCache;
-    private ConcurrentMapCache adaListCache;
-    private ConcurrentMapCache statusListCache;
-    private ConcurrentMapCache dddOfficeListCache;
-    private ConcurrentMapCache userdddOfficeListCache;
-    private ConcurrentMapCache itemListCache;
-    private ConcurrentMapCache categoryListCache;
-    private ConcurrentMapCache tagListCache;
-    private ConcurrentMapCache dddCodeRefCache;
-    private ConcurrentMapCache userdddCodeRefCache;
-
-    @BeforeEach
-    void setUp() {
-        userListCache           = new ConcurrentMapCache("userList");
-        sealedUserListCache     = new ConcurrentMapCache("sealedUserList");
-        adaListCache            = new ConcurrentMapCache("adaList");
-        statusListCache         = new ConcurrentMapCache("statusList");
-        dddOfficeListCache      = new ConcurrentMapCache("dddOfficeList");
-        userdddOfficeListCache  = new ConcurrentMapCache("userdddOfficeList");
-        itemListCache           = new ConcurrentMapCache("itemList");
-        categoryListCache       = new ConcurrentMapCache("categoryList");
-        tagListCache            = new ConcurrentMapCache("tagList");
-        dddCodeRefCache         = new ConcurrentMapCache("dddCodeRef");
-        userdddCodeRefCache     = new ConcurrentMapCache("userdddCodeRef");
-
-        cacheManager = new SimpleCacheManager();
-        cacheManager.setCaches(Arrays.asList(
-                userListCache, sealedUserListCache,
-                adaListCache, statusListCache,
-                dddOfficeListCache, userdddOfficeListCache,
-                itemListCache, categoryListCache,
-                tagListCache, dddCodeRefCache, userdddCodeRefCache
-        ));
-        cacheManager.afterPropertiesSet();
-
-        cacheService = new CacheService();
-        ReflectionTestUtils.setField(cacheService, "cacheManager", cacheManager);
-
-        // Pre-populate all caches with test data
-        userListCache.put("key1", "value1");
-        sealedUserListCache.put("key1", "value1");
-        adaListCache.put("key1", "value1");
-        statusListCache.put("key1", "value1");
-        dddOfficeListCache.put("key1", "value1");
-        userdddOfficeListCache.put("key1", "value1");
-        itemListCache.put("key1", "value1");
-        categoryListCache.put("key1", "value1");
-        tagListCache.put("key1", "value1");
-        dddCodeRefCache.put("key1", "value1");
-        userdddCodeRefCache.put("key1", "value1");
-    }
-
-    // =========================================================================
-    // clearAllCache() — iterates getCacheNames() and clears each
-    // =========================================================================
-
-    @Test
-    @DisplayName("clearAllCache - clears all registered caches")
-    void clearAllCache_clearsAllCaches() {
-        cacheService.clearAllCache();
-
-        assertThat(userListCache.get("key1")).isNull();
-        assertThat(sealedUserListCache.get("key1")).isNull();
-        assertThat(adaListCache.get("key1")).isNull();
-        assertThat(statusListCache.get("key1")).isNull();
-        assertThat(dddOfficeListCache.get("key1")).isNull();
-        assertThat(userdddOfficeListCache.get("key1")).isNull();
-        assertThat(itemListCache.get("key1")).isNull();
-        assertThat(categoryListCache.get("key1")).isNull();
-        assertThat(tagListCache.get("key1")).isNull();
-        assertThat(dddCodeRefCache.get("key1")).isNull();
-        assertThat(userdddCodeRefCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearAllCache - data is gone after clearing")
-    void clearAllCache_dataGoneAfterClearing() {
-        assertThat(userListCache.get("key1")).isNotNull();
-        cacheService.clearAllCache();
-        assertThat(userListCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearAllCache - can put new data after clearing")
-    void clearAllCache_canPutDataAfterClearing() {
-        cacheService.clearAllCache();
-        userListCache.put("newKey", "newValue");
-        assertThat(userListCache.get("newKey")).isNotNull();
-    }
-
-    // =========================================================================
-    // clearUserCache()
-    // =========================================================================
-
-    @Test
-    @DisplayName("clearUserCache - clears userList")
-    void clearUserCache_clearsUserList() {
-        cacheService.clearUserCache();
-        assertThat(userListCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearUserCache - clears sealedUserList")
-    void clearUserCache_clearsSealedUserList() {
-        cacheService.clearUserCache();
-        assertThat(sealedUserListCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearUserCache - does not clear reference caches")
-    void clearUserCache_doesNotClearReferenceCaches() {
-        cacheService.clearUserCache();
-
-        assertThat(adaListCache.get("key1")).isNotNull();
-        assertThat(statusListCache.get("key1")).isNotNull();
-        assertThat(dddOfficeListCache.get("key1")).isNotNull();
-        assertThat(userdddOfficeListCache.get("key1")).isNotNull();
-        assertThat(itemListCache.get("key1")).isNotNull();
-        assertThat(categoryListCache.get("key1")).isNotNull();
-        assertThat(tagListCache.get("key1")).isNotNull();
-        assertThat(dddCodeRefCache.get("key1")).isNotNull();
-        assertThat(userdddCodeRefCache.get("key1")).isNotNull();
-    }
-
-    // =========================================================================
-    // clearReferenceDataCache()
-    // NOTE: actual implementation uses forEach internally — SimpleCacheManager
-    // handles getCache() lookups so no stubbing needed
-    // =========================================================================
-
-    @Test
-    @DisplayName("clearReferenceDataCache - clears adaList")
-    void clearReferenceDataCache_clearsAdaList() {
-        cacheService.clearReferenceDataCache();
-        assertThat(adaListCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearReferenceDataCache - clears statusList")
-    void clearReferenceDataCache_clearsStatusList() {
-        cacheService.clearReferenceDataCache();
-        assertThat(statusListCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearReferenceDataCache - clears dddOfficeList")
-    void clearReferenceDataCache_clearsDddOfficeList() {
-        cacheService.clearReferenceDataCache();
-        assertThat(dddOfficeListCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearReferenceDataCache - clears userdddOfficeList")
-    void clearReferenceDataCache_clearsUserdddOfficeList() {
-        cacheService.clearReferenceDataCache();
-        assertThat(userdddOfficeListCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearReferenceDataCache - clears itemList")
-    void clearReferenceDataCache_clearsItemList() {
-        cacheService.clearReferenceDataCache();
-        assertThat(itemListCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearReferenceDataCache - clears categoryList")
-    void clearReferenceDataCache_clearsCategoryList() {
-        cacheService.clearReferenceDataCache();
-        assertThat(categoryListCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearReferenceDataCache - clears tagList")
-    void clearReferenceDataCache_clearsTagList() {
-        cacheService.clearReferenceDataCache();
-        assertThat(tagListCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearReferenceDataCache - clears dddCodeRef")
-    void clearReferenceDataCache_clearsDddCodeRef() {
-        cacheService.clearReferenceDataCache();
-        assertThat(dddCodeRefCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearReferenceDataCache - clears userdddCodeRef")
-    void clearReferenceDataCache_clearsUserdddCodeRef() {
-        cacheService.clearReferenceDataCache();
-        assertThat(userdddCodeRefCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearReferenceDataCache - clears all 9 reference caches")
-    void clearReferenceDataCache_clearsAllReferenceCaches() {
-        cacheService.clearReferenceDataCache();
-
-        assertThat(adaListCache.get("key1")).isNull();
-        assertThat(statusListCache.get("key1")).isNull();
-        assertThat(dddOfficeListCache.get("key1")).isNull();
-        assertThat(userdddOfficeListCache.get("key1")).isNull();
-        assertThat(itemListCache.get("key1")).isNull();
-        assertThat(categoryListCache.get("key1")).isNull();
-        assertThat(tagListCache.get("key1")).isNull();
-        assertThat(dddCodeRefCache.get("key1")).isNull();
-        assertThat(userdddCodeRefCache.get("key1")).isNull();
-    }
-
-    @Test
-    @DisplayName("clearReferenceDataCache - does not clear user caches")
-    void clearReferenceDataCache_doesNotClearUserCaches() {
-        cacheService.clearReferenceDataCache();
-
-        assertThat(userListCache.get("key1")).isNotNull();
-        assertThat(sealedUserListCache.get("key1")).isNotNull();
-    }
-}
+Results:
+[INFO]
+[ERROR] Errors: 
+[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsAdaList:155 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return 
+value of "org.springframework.cache.CacheManager.getCache(String)" is null
+[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsAllReferenceCaches:218 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because 
+the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
+[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsCategoryList:190 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
+[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsItemList:183 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
+[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsStatusList:162 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
+[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsTagList:197 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return 
+value of "org.springframework.cache.CacheManager.getCache(String)" is null
+[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsUserdddCodeRef:211 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the 
+return value of "org.springframework.cache.CacheManager.getCache(String)" is null
+[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsUserdddOfficeList:176 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
+[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsdddCodeRef:204 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
+[ERROR]   CacheServiceTest.clearReferenceDataCache_clearsdddOfficeList:169 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
+[ERROR]   CacheServiceTest.clearReferenceDataCache_doesNotClearUserCaches:234 » NullPointer Cannot invoke "org.springframework.cache.Cache.clear()" because the return value of "org.springframework.cache.CacheManager.getCache(String)" is null
+[INFO]
+[ERROR] Tests run: 175, Failures: 0, Errors: 11, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  30.150 s
+[INFO] Finished at: 2026-03-24T18:31:28-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.3:test (default-test) on project ddd-services:
+[ERROR]
+[ERROR] See F:\project\ddd-services\target\surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
