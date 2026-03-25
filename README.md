@@ -1,2 +1,1 @@
-CaseFlowChartTest.getCaseById_caseSealed_notSupervisor_notInSealedGroup_returns500:352 Status expected:<500> but was:<403>
-30292 [ERROR]   CaseFlowChartTest.getCaseById_userNotAssigned_notSealed_notInOffice_returns500:302 Status expected:<500> but was:<403>
+http://sps2-wisegw01d:9000/code?id=org.nypd%3Adlu-services&selected=org.nypd%3Adlu-services%3Asrc%2Fmain%2Fjava%2Forg%2Fnypd%2Fdlu
