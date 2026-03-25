@@ -1,11 +1,11 @@
 package org.nnnn.ddd.service;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,34 +13,38 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
-import org.modelmapper.ValidationException;
 import org.nnnn.ddd.AppConstants;
+import org.nnnn.ddd.ErrorCode;
 import org.nnnn.ddd.entity.AdaList;
 import org.nnnn.ddd.entity.CaseItem;
 import org.nnnn.ddd.entity.CaseTag;
+import org.nnnn.ddd.entity.CaseUpload;
 import org.nnnn.ddd.entity.CategoryList;
 import org.nnnn.ddd.entity.dddCase;
 import org.nnnn.ddd.entity.dddOfficeList;
 import org.nnnn.ddd.entity.ItemList;
 import org.nnnn.ddd.entity.StatusList;
 import org.nnnn.ddd.entity.TagList;
-import org.nnnn.ddd.exceptions.CaseExistsException;
+import org.nnnn.ddd.exceptions.CaseAccessException;
 import org.nnnn.ddd.exceptions.CaseNotFoundException;
+import org.nnnn.ddd.exceptions.FileDeleteException;
+import org.nnnn.ddd.exceptions.FileUploadException;
+import org.nnnn.ddd.exceptions.InvalidArrestException;
 import org.nnnn.ddd.exceptions.InvaliddddOfficeException;
 import org.nnnn.ddd.exceptions.SealedAccessException;
 import org.nnnn.ddd.model.ArrestInfo;
 import org.nnnn.ddd.model.CaseFilter;
 import org.nnnn.ddd.model.CaseListResponse;
-import org.nnnn.ddd.model.CaseNote;
 import org.nnnn.ddd.model.CreateCaseRequest;
 import org.nnnn.ddd.model.dddCase;
 import org.nnnn.ddd.model.dddCaseStats;
 import org.nnnn.ddd.model.dddCaseSummary;
-import org.nnnn.ddd.model.Item;
-import org.nnnn.ddd.model.Tag;
+import org.nnnn.ddd.model.dddOffice;
+import org.nnnn.ddd.model.Status;
 import org.nnnn.ddd.repository.ADAListRepository;
 import org.nnnn.ddd.repository.CDWRepository;
 import org.nnnn.ddd.repository.CaseRepository;
+import org.nnnn.ddd.repository.CaseUploadRepository;
 import org.nnnn.ddd.repository.CategoryListRepository;
 import org.nnnn.ddd.repository.dddOfficeListRepository;
 import org.nnnn.ddd.repository.ItemListRepository;
@@ -50,7 +54,7 @@ import org.nnnn.ddd.repository.specs.CaseSpecifications;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -61,8 +65,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.threeten.bp.DateTimeUtils;
 import org.threeten.bp.ZoneId;
 
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -95,7 +97,16 @@ public class CaseService {
     private ItemListRepository itemListRepository;
 
     @Autowired
+    private CaseUploadRepository caseUploadRepository;
+
+    @Autowired
     private ADSearchService adSearchService;
+
+    @Autowired
+    private ReferenceDataService referenceDataService;
+
+    @Autowired
+    private DellS3Service s3Service;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -134,28 +145,35 @@ public class CaseService {
     }
 
     @Transactional
-    public dddCase createCase(final CreateCaseRequest request) throws CaseExistsException {
+    public dddCase createCase(final CreateCaseRequest request) {
         String username = authenticationService.getUsername();
-        log.info("createCase for " + username + " " + request.getArrId());
-        ArrestInfo arrInfo = cdwRepository.getArrestInfo(request.getArrId());
-        log.info(arrInfo.toString());
-        if (!authenticationService.hasSealedAccess()) {
-            // throw new SealedAccessException("User does not have sealed access");
+        log.info("createCase for " + username + " " + request.getArrId().trim());
+        ArrestInfo arrInfo = null;
+        try {
+            arrInfo = cdwRepository.getArrestInfo(request.getArrId().trim());
+        } catch (Exception e){
+            throw new InvalidArrestException("Arrest "+request.getArrId().trim()+" not found");
         }
-        List<dddCase> existingParent = caseRepository.findByArrIdAndParentIdIsNull(request.getArrId());
-        if (existingParent != null && existingParent.size() > 0) {
+        log.info(arrInfo.toString());
+        if (!authenticationService.hasSealedAccess() && "Y".equals(arrInfo.getArrSealedFlg())) {
+            throw new SealedAccessException("User has no sealed access");
+        }
+        List<dddCase> existingParent = caseRepository.findByArrIdOrderByIdDesc(request.getArrId().trim());
+        if (request.getParentId()==null && existingParent != null && existingParent.size() > 0) {
             log.info("Case Exists " + existingParent.get(0).toString());
             dddCase json = new dddCase();
             json.setId(existingParent.get(0).getId());
+            Status status = modelMapper.map(existingParent.get(0).getStatus(), Status.class);
+            json.setStatus(status);
             return json;
         } else {
-            dddOfficeList dddOffice = dddOfficeListRepository.findById(request.getdddOfficeId()).orElseGet(null);
+            dddOfficeList dddOffice = dddOfficeListRepository.findById(request.getdddOfficeId()).orElse(null);
             if(dddOffice == null){
                 throw new InvaliddddOfficeException("ddd Office id " + request.getdddOfficeId() + " not found");
             }
             StatusList notStarted = statusListRepository.findById(AppConstants.STATUS_NOT_STARTED).orElse(null);
             dddCase entityCase = new dddCase();
-            entityCase.setArrId(request.getArrId());
+            entityCase.setArrId(request.getArrId().trim());
             entityCase.setddd(dddOffice);
             entityCase.setStatus(notStarted);
             entityCase.setProactiveFlg((short) request.getProactiveFlg().intValue());
@@ -169,6 +187,9 @@ public class CaseService {
             } else {
                 entityCase.setRequestDt(new Date());
             }
+            entityCase.setDvFlg((short) arrInfo.getDvFlg().intValue());
+            entityCase.setIndexFlg((short) arrInfo.getIndexCrimeFlg().intValue());
+            entityCase.setFelonyFlg((short) arrInfo.getFelonyFlg().intValue());
             caseRepository.save(entityCase);
             log.info("Case Created " + entityCase.getId());
             dddCase dtoCase = new dddCase();
@@ -194,6 +215,19 @@ public class CaseService {
             dto.setActiveFlg(1);
         }
         ArrestInfo arrInfo = cdwRepository.getArrestInfo(entity.getArrId());
+        // Arrest is sealed
+        if ("Y".equals(arrInfo.getArrSealedFlg()) && !authenticationService.hasSealedAccess()) {
+            // User has no sealed access
+            throw new SealedAccessException("User has no sealed access");
+        }
+        if (!authenticationService.isSupervisor()
+                    && !authenticationService.getUsername().equals(entity.getAssignedNm())) {
+                // User has sealed access, but is not supervisor and is not assigned to the case
+            if (entity.getddd() == null || !authenticationService.hasRole(entity.getddd().getAdSgNm())) {
+                    // ... and User does not belong to the case's ddd office
+                throw new CaseAccessException("User has no access to case");
+            }
+        }
         dto.setArrest(arrInfo);
         if (entity.getAssignedNm() != null) {
             dto.setAssignedNmInfo(adSearchService.findUser(entity.getAssignedNm()));
@@ -208,6 +242,13 @@ public class CaseService {
             throw new CaseNotFoundException("Case not found with id: " + dtoCase.getId());
         }
         dddCase entityCase = entityOpt.get();
+        // Optimistic lock: client version must match DB version
+        if (dtoCase.getVersion() != null && entityCase.getVersion() != null
+                && !entityCase.getVersion().equals(dtoCase.getVersion())) {
+            throw new jakarta.persistence.OptimisticLockException(
+                    "Case " + dtoCase.getId() + " was modified by another user (expected version " + dtoCase.getVersion()
+                            + ", current " + entityCase.getVersion() + ")");
+        }
         modelMapper.map(dtoCase, entityCase);
 
         if (dtoCase.getCategory() != null) {
@@ -228,24 +269,27 @@ public class CaseService {
             dddOfficeList newddd = dddOfficeListRepository.findById(dtoCase.getddd().getId()).orElse(null);
             entityCase.setddd(newddd);
         } else if (entityCase.getddd() != null) {
-            entityCase.setAda(null);
+            entityCase.setddd(null);
         }
 
         if (dtoCase.getStatus() != null) {
             StatusList newStatus = statusListRepository.findById(dtoCase.getStatus().getId()).orElse(null);
             entityCase.setStatus(newStatus);
         } else if (entityCase.getStatus() != null) {
-            entityCase.setAda(null);
+            entityCase.setStatus(null);
         }
 
         List<CaseTag> updatedTags = new ArrayList<>();
+        List<org.nnnn.ddd.model.CaseTag> dtoTags = dtoCase.getTags() != null ? dtoCase.getTags() : List.of();
 
-        for (org.nnnn.ddd.model.CaseTag dtoTag : dtoCase.getTags()) {
+        for (org.nnnn.ddd.model.CaseTag dtoTag : dtoTags) {
+            if (dtoTag.getTagId() == null) continue;
             Optional<CaseTag> foundTag = entityCase.getTags().stream()
-                    .filter(entityTag -> dtoTag.getTagId().intValue() == entityTag.getTag().getId())
+                    .filter(entityTag -> entityTag.getTag() != null
+                            && dtoTag.getTagId().intValue() == entityTag.getTag().getId())
                     .findFirst();
             if (foundTag.isEmpty()) {
-                TagList tag = tagListRepository.findById(dtoTag.getTagId()).orElseGet(null);
+                TagList tag = tagListRepository.findById(dtoTag.getTagId()).orElse(null);
                 if (tag != null) {
                     CaseTag newTag = new CaseTag();
                     newTag.setdddCase(entityCase);
@@ -263,13 +307,17 @@ public class CaseService {
         entityCase.getTags().addAll(updatedTags);
 
         List<CaseItem> updatedItems = new ArrayList<>();
+        List<org.nnnn.ddd.model.CaseItem> dtoItems = dtoCase.getItems() != null ? dtoCase.getItems() : List.of();
 
-        for (org.nnnn.ddd.model.CaseItem dtoItem : dtoCase.getItems()) {
-            Optional<CaseItem> foundItem = entityCase.getItems().stream()
-                    .filter(entityItem -> dtoItem.getId().intValue() == entityItem.getId())
-                    .findFirst();
+        for (org.nnnn.ddd.model.CaseItem dtoItem : dtoItems) {
+            Optional<CaseItem> foundItem = Optional.empty();
+            if (dtoItem.getId() != null) {
+                foundItem = entityCase.getItems().stream()
+                        .filter(entityItem -> dtoItem.getId().intValue() == entityItem.getId())
+                        .findFirst();
+            }
             if (foundItem.isEmpty()) {
-                ItemList item = itemListRepository.findById(dtoItem.getItemId()).orElseGet(null);
+                ItemList item = itemListRepository.findById(dtoItem.getItemId()).orElse(null);
                 if (item != null) {
                     CaseItem newItem = new CaseItem();
                     newItem.setdddCase(entityCase);
@@ -292,16 +340,10 @@ public class CaseService {
 
         entityCase.getItems().clear();
         entityCase.getItems().addAll(updatedItems);
+        entityCase.setRowUpdtTs(Timestamp.from(Instant.now()));
 
-        caseRepository.save(entityCase);
-        /*
-         * modelMapper.createTypeMap(dddCase.class, dddCase.class);
-         * try {
-         * modelMapper.validate();
-         * } catch (ValidationException e) {
-         * log.error(e.getMessage(), e);
-         * }
-         */
+        caseRepository.saveAndFlush(entityCase);
+        dtoCase.setVersion(entityCase.getVersion());
         return dtoCase;
     }
 
@@ -324,18 +366,56 @@ public class CaseService {
         if (filter.getCategoryIds() != null) {
             filters.add(CaseSpecifications.hasCategories(filter.getCategoryIds()));
         }
-        if (filter.getdddOfficeIds() != null) {
+        if (filter.getdddOfficeIds() != null && filter.getdddOfficeIds().size() > 0) {
             filters.add(CaseSpecifications.hasdddOfficesIn(filter.getdddOfficeIds()));
+        } else if (!authenticationService.isSupervisor()) {
+            List<dddOffice> allowedOffices = referenceDataService.getdddOffices(authenticationService.getUsername());
+            List<Integer> allowedOfficeIds = allowedOffices.stream()
+                    .map(dddOffice::getId) // Map each object to its ID using a method reference
+                    .collect(Collectors.toList());
+            log.info("looking within " + allowedOfficeIds + " " + allowedOffices + " offices for "+authenticationService.getUsername());
+            filters.add(CaseSpecifications.hasdddOfficesIn(allowedOfficeIds).or(CaseSpecifications.hasAssignedNm(authenticationService.getUsername())));
         }
-        if (filter.getStatusIds() != null) {
+        if (filter.getStatusIds() != null && filter.getStatusIds().size() > 0) {
             filters.add(CaseSpecifications.hasStatusesIn(filter.getStatusIds()));
+        }
+        if (filter.getTagIds() != null && filter.getTagIds().size() > 0) {
+            filters.add(CaseSpecifications.hasTagsIn(filter.getTagIds()));
+        }
+        if (filter.getAssignedNm() != null) {
+            filters.add(CaseSpecifications.hasAssignedNm(filter.getAssignedNm()));
+        }
+        if (filter.getProactiveFlg()!=null) {
+            filters.add(CaseSpecifications.hasProactiveFlg(filter.getProactiveFlg().shortValue()));
         }
         if (filters.isEmpty()) {
             return response;
         }
         filters.add(CaseSpecifications.fetchDependencies());
+        
+        Sort sort = Sort.by("id").descending();
+        if (filter.getSortBy() != null && filter.getSortBy().size() > 0) {
+            int i = 0;
+            for (String sortBy : filter.getSortBy()) {
+                Sort thisSort = Sort.by(sortBy);
+                if (filter.getSortOrder() != null && filter.getSortOrder().size() > i) {
+                    if (filter.getSortOrder().get(i) == 0) {
+                        thisSort = thisSort.ascending();
+                    } else {
+                        thisSort = thisSort.descending();
+                    }
+                }
+                if (i == 0) {
+                    sort = thisSort;
+                } else {
+                    sort = sort.and(thisSort);
+                }
+            }
+        }
 
-        Pageable pageable = PageRequest.of(filter.getPageNumber()!=null?filter.getPageNumber():0, filter.getPageSize()!=null?filter.getPageSize():AppConstants.DEFAULT_PAGE_SIZE, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(filter.getPageNumber() != null ? filter.getPageNumber() : 0,
+                filter.getPageSize() != null ? filter.getPageSize() : AppConstants.DEFAULT_PAGE_SIZE,
+                sort);
 
         Page<dddCase> page = caseRepository.findAll(Specification.allOf(filters), pageable);
 
@@ -347,7 +427,14 @@ public class CaseService {
         List<String> arrIds = cases.stream()
                 .map(caseSummary -> caseSummary.getArrId())
                 .toList();
-        List<ArrestInfo> arrInfos = cdwRepository.getArrestInfoSummary(arrIds);
+       
+        List<ArrestInfo> arrInfos;
+
+        if (authenticationService.hasSealedAccess()) {
+            arrInfos = cdwRepository.getArrestInfoSummary(arrIds);
+        } else {
+            arrInfos = cdwRepository.getMaskedArrestInfoSummary(arrIds);
+        }
 
         Map<String, ArrestInfo> arrInfoMap = arrInfos.stream()
             .collect(Collectors.toMap(ArrestInfo::getArrId, Function.identity()));
@@ -366,7 +453,8 @@ public class CaseService {
         response.setPageSize(page.getSize());
         response.setTotalElements(page.getTotalElements());
         response.setTotalPages(page.getTotalPages());
-        if(authenticationService.isSupervisor() && filter.getdddOfficeIds()!=null){
+        if (authenticationService.isSupervisor() && filter.getdddOfficeIds() != null
+                && filter.getdddOfficeIds().size() > 0) {
             response.setCaseStats(getCaseStats(filter.getdddOfficeIds()));
         } else {
             response.setCaseStats(getCaseStats());
@@ -378,17 +466,60 @@ public class CaseService {
     public dddCase saveNote(final Integer caseId, final String noteDesc, final String fileNm,
             final MultipartFile fileContent) {
         dddCase entityCase = caseRepository.findById(caseId).orElse(null);
+        
         if (entityCase != null) {
+            CaseUpload entityUpload = null;
+            if (fileNm != null && fileContent != null) {
+                entityUpload = new CaseUpload();
+                entityUpload.setdddCase(entityCase);
+                entityUpload.setUserNm(authenticationService.getUsername());
+                entityUpload.setFileNm(fileNm);
+                entityUpload.setDeletedFlg((short) 0);
+                caseUploadRepository.saveAndFlush(entityUpload);
+                int uploadId = entityUpload.getId();
+                String s3Key = getS3Key(caseId, uploadId);
+                try {
+                    log.info("attempt to upload to S3 "+s3Key);
+                    s3Service.uploadMultipartFile(s3Key, fileContent);
+                } catch (Exception e) {
+                    throw new FileUploadException("Upload to S3 failed");
+                }
+                entityCase.getUploads().add(entityUpload);
+            }
             org.nnnn.ddd.entity.CaseNote entityNote = new org.nnnn.ddd.entity.CaseNote();
             entityNote.setNoteDesc(noteDesc);
             entityNote.setUserNm(authenticationService.getUsername());
             entityNote.setdddCase(entityCase);
+            if (entityUpload != null) {
+                entityNote.setUpload(entityUpload);
+            }
             entityCase.getNotes().add(entityNote);
-            caseRepository.save(entityCase);
+            caseRepository.save(entityCase); 
             return modelMapper.map(entityCase, dddCase.class);
         } else {
             throw new CaseNotFoundException("Case " + caseId + " not found");
         }
     }
 
+    public Object[] getFile(final int caseId, final int uploadId) {
+        CaseUpload caseUploadEntity = caseUploadRepository.findById(uploadId).orElse(null);
+        if (caseUploadEntity != null) {
+            return new Object[] { caseUploadEntity.getFileNm(), s3Service.downloadFile(getS3Key(caseId, uploadId)) };
+        }
+        return new Object[] {null, s3Service.downloadFile(getS3Key(caseId, uploadId))};
+    }
+
+    public void deleteFile(final int caseId, final int uploadId) {
+        CaseUpload caseUploadEntity = caseUploadRepository.findById(uploadId).orElse(null);
+        if (caseUploadEntity != null) {
+            caseUploadEntity.setDeletedFlg((short) 1);
+            caseUploadRepository.save(caseUploadEntity);
+        }
+        throw new FileDeleteException("Failed to delete file " + uploadId);
+    }
+
+    private String getS3Key(final int caseId, final int uploadId)
+    {
+        return "uploads/case/" + caseId + "/" + uploadId;
+    }
 }
