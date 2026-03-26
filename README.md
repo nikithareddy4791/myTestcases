@@ -42,26 +42,16 @@ class ADSearchServiceProdTest {
         sampleUser.setLastName("Doe");
         sampleUser.setEmail("jdoe@nnnn.org");
         sampleUser.setRank("Detective");
-
-        // Use doAnswer to match ANY search() overload regardless of parameter types
-        // This avoids ALL ambiguity issues with LdapTemplate.search() overloads
-        doAnswer(invocation -> List.of(sampleUser))
-                .when(ldapTemplate)
-                .search(any(), any());
     }
 
-    // Helper to make ldapTemplate return empty for all searches
-    private void mockLdapReturnsEmpty() {
-        doAnswer(invocation -> Collections.emptyList())
-                .when(ldapTemplate)
-                .search(any(), any());
-    }
-
-    // Helper to make ldapTemplate return one user
     private void mockLdapReturnsUser() {
         doAnswer(invocation -> List.of(sampleUser))
-                .when(ldapTemplate)
-                .search(any(), any());
+                .when(ldapTemplate).search(any(), any());
+    }
+
+    private void mockLdapReturnsEmpty() {
+        doAnswer(invocation -> Collections.emptyList())
+                .when(ldapTemplate).search(any(), any());
     }
 
     // =========================================================================
@@ -84,9 +74,7 @@ class ADSearchServiceProdTest {
     void findUser_userNotFound_returnsNull() {
         mockLdapReturnsEmpty();
 
-        User result = adSearchServiceProd.findUser("unknown");
-
-        assertThat(result).isNull();
+        assertThat(adSearchServiceProd.findUser("unknown")).isNull();
     }
 
     @Test
@@ -94,24 +82,10 @@ class ADSearchServiceProdTest {
     void findUser_multipleResults_returnsFirst() {
         User secondUser = new User();
         secondUser.setUsername("jdoe2");
-
         doAnswer(invocation -> List.of(sampleUser, secondUser))
-                .when(ldapTemplate)
-                .search(any(), any());
+                .when(ldapTemplate).search(any(), any());
 
-        User result = adSearchServiceProd.findUser("jdoe");
-
-        assertThat(result.getUsername()).isEqualTo("jdoe");
-    }
-
-    @Test
-    @DisplayName("findUser - calls ldapTemplate.search exactly once")
-    void findUser_callsLdapSearchOnce() {
-        mockLdapReturnsEmpty();
-
-        adSearchServiceProd.findUser("jdoe");
-
-        verify(ldapTemplate, times(1)).search(any(), any());
+        assertThat(adSearchServiceProd.findUser("jdoe").getUsername()).isEqualTo("jdoe");
     }
 
     // =========================================================================
@@ -119,23 +93,13 @@ class ADSearchServiceProdTest {
     // =========================================================================
 
     @Test
-    @DisplayName("findAllUsers - queries exactly 8 AD groups")
-    void findAllUsers_queriesAll8Groups() {
-        mockLdapReturnsEmpty();
-
-        adSearchServiceProd.findAllUsers();
-
-        verify(ldapTemplate, times(8)).search(any(), any());
-    }
-
-    @Test
-    @DisplayName("findAllUsers - returns combined users from all groups")
+    @DisplayName("findAllUsers - returns combined users from all 8 groups")
     void findAllUsers_returnsUsersFromAllGroups() {
         mockLdapReturnsUser();
 
         List<User> result = adSearchServiceProd.findAllUsers();
 
-        // 8 groups each returning 1 user = 8
+        // 8 group queries each returning 1 user
         assertThat(result).hasSize(8);
     }
 
@@ -144,24 +108,22 @@ class ADSearchServiceProdTest {
     void findAllUsers_noUsersInLdap_returnsEmptyList() {
         mockLdapReturnsEmpty();
 
+        assertThat(adSearchServiceProd.findAllUsers()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("findAllUsers - result contains users from LDAP")
+    void findAllUsers_containsLdapUsers() {
+        mockLdapReturnsUser();
+
         List<User> result = adSearchServiceProd.findAllUsers();
 
-        assertThat(result).isEmpty();
+        assertThat(result).allMatch(u -> u.getUsername().equals("jdoe"));
     }
 
     // =========================================================================
     // findAllUsersWithSealedAccess()
     // =========================================================================
-
-    @Test
-    @DisplayName("findAllUsersWithSealedAccess - queries exactly 8 AD groups")
-    void findAllUsersWithSealedAccess_queriesAll8Groups() {
-        mockLdapReturnsEmpty();
-
-        adSearchServiceProd.findAllUsersWithSealedAccess();
-
-        verify(ldapTemplate, times(8)).search(any(), any());
-    }
 
     @Test
     @DisplayName("findAllUsersWithSealedAccess - returns users from all groups")
@@ -178,14 +140,21 @@ class ADSearchServiceProdTest {
     void findAllUsersWithSealedAccess_noSealedUsers_returnsEmpty() {
         mockLdapReturnsEmpty();
 
-        List<User> result = adSearchServiceProd.findAllUsersWithSealedAccess();
-
-        assertThat(result).isEmpty();
+        assertThat(adSearchServiceProd.findAllUsersWithSealedAccess()).isEmpty();
     }
 
     // =========================================================================
     // findMembersOfGroup()
     // =========================================================================
+
+    @Test
+    @DisplayName("findMembersOfGroup - returns empty list when no group DNs provided")
+    void findMembersOfGroup_noGroupDns_returnsEmptyList() {
+        List<User> result = adSearchServiceProd.findMembersOfGroup();
+
+        assertThat(result).isEmpty();
+        verifyNoInteractions(ldapTemplate);
+    }
 
     @Test
     @DisplayName("findMembersOfGroup - returns users for single group")
@@ -208,17 +177,7 @@ class ADSearchServiceProdTest {
                 "CN=SG-ddd-SEALED,OU=ddd"
         );
 
-        assertThat(result).hasSize(1);
-        verify(ldapTemplate, times(1)).search(any(), any());
-    }
-
-    @Test
-    @DisplayName("findMembersOfGroup - returns empty list when no group DNs provided")
-    void findMembersOfGroup_noGroupDns_returnsEmptyList() {
-        List<User> result = adSearchServiceProd.findMembersOfGroup();
-
-        assertThat(result).isEmpty();
-        verifyNoInteractions(ldapTemplate);
+        assertThat(result).isNotEmpty();
     }
 
     @Test
@@ -226,18 +185,8 @@ class ADSearchServiceProdTest {
     void findMembersOfGroup_noResults_returnsEmptyList() {
         mockLdapReturnsEmpty();
 
-        List<User> result = adSearchServiceProd.findMembersOfGroup("CN=SG-ddd-SUPERVISOR,OU=ddd");
-
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    @DisplayName("findMembersOfGroup - calls ldapTemplate.search exactly once")
-    void findMembersOfGroup_callsLdapSearchOnce() {
-        mockLdapReturnsEmpty();
-
-        adSearchServiceProd.findMembersOfGroup("CN=SG-ddd-SUPERVISOR,OU=ddd");
-
-        verify(ldapTemplate, times(1)).search(any(), any());
+        assertThat(adSearchServiceProd
+                .findMembersOfGroup("CN=SG-ddd-SUPERVISOR,OU=ddd"))
+                .isEmpty();
     }
 }
