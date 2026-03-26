@@ -1,162 +1,140 @@
 package org.nnnn.ddd.service;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.nnnn.ddd.entity.dddAudit;
-import org.nnnn.ddd.repository.AuditRepository;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import org.nnnn.ddd.AppConstants;
+import org.nnnn.ddd.entity.dddCase;
+import org.nnnn.ddd.model.User;
+import org.nnnn.ddd.repository.CaseRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("AuditService Tests")
-class AuditServiceTest {
+import jakarta.mail.Session;
 
-    @Mock
-    private AuditRepository auditRepository;
+@Service
+@Profile({ "local", "dev", "uat" })
+public class EmailService {
+    @Autowired
+    CaseRepository caseRepository;
 
-    @Mock
-    private AuthenticationService authenticationService;
+    @Autowired
+    ADSearchService adSearchService;
 
-    @InjectMocks
-    private AuditService auditService;
+    @Autowired
+    private JavaMailSender mailSender;
 
-    @BeforeEach
-    void setUp() {
-        when(authenticationService.getUsername()).thenReturn("jdoe");
+    @Autowired
+    private Environment env;
+
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    //@Scheduled(cron = "0 * * * * ?")
+    public void sendOverdueEmail() {
+        LocalDate today = LocalDate.now();
+        LocalDate threeDaysLater = today.plusDays(3);
+        List<dddCase> overdueList = caseRepository.findByDueDtBeforeAndStatus_IdNotAndAssignedNmNotNull(today,
+                AppConstants.STATUS_COMPLETED);
+        List<dddCase> comingDueList = caseRepository.findByDueDtBetweenAndStatus_IdNotAndAssignedNmNotNull(today,
+                threeDaysLater,
+                AppConstants.STATUS_COMPLETED);
+        Map<String, List<dddCase>> overdueMap = overdueList.stream()
+                .collect(Collectors.groupingBy(dddCase::getAssignedNm));
+        Map<String, List<dddCase>> comingDueMap = comingDueList.stream()
+                .collect(Collectors.groupingBy(dddCase::getAssignedNm));
+        for (String username : overdueMap.keySet()) {
+            User user = adSearchService.findUser(username);
+            if (user != null) {
+                sendMail(user, generateEmailBody(user, overdueMap.get(username), comingDueMap.get(username)));
+            }
+        }
+        for (String username : comingDueMap.keySet()) {
+            if (overdueMap.get(username) == null) {
+                User user = adSearchService.findUser(username);
+                if (user != null) {
+                    sendMail(user, generateEmailBody(user, overdueMap.get(username), comingDueMap.get(username)));
+                }
+            }
+        }
     }
 
-    // =========================================================================
-    // auditAction(String actionType, String actionDetail)
-    // =========================================================================
-
-    @Test
-    @DisplayName("auditAction - saves audit record with correct fields")
-    void auditAction_twoArgs_savesAuditWithCorrectFields() {
-        auditService.auditAction("LOGIN", "User logged in");
-
-        ArgumentCaptor<dddAudit> captor = ArgumentCaptor.forClass(dddAudit.class);
-        verify(auditRepository, times(1)).save(captor.capture());
-
-        dddAudit saved = captor.getValue();
-        assertThat(saved.getUserNm()).isEqualTo("jdoe");
-        assertThat(saved.getActionType()).isEqualTo("LOGIN");
-        assertThat(saved.getActionDetail()).isEqualTo("User logged in");
-        assertThat(saved.getCaseId()).isNull(); // no caseId for this overload
+    private void sendMail(final User user, final String body) {
+        boolean isTest = user.getUsername().startsWith("T-SG") || user.getUsername().startsWith("V-");
+        if (env.acceptsProfiles(Profiles.of("local"))) {
+            log.info("Sending mail to " + user.getEmail());
+            log.info(body);
+        } else {
+            Session session = ((JavaMailSenderImpl) mailSender).getSession();
+            // session.setDebug(true);
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("ddd-Notification@nnnn.org");
+            if (isTest) {
+                message.setTo("rtcc_support_applications@nnnn.org");
+            } else {
+                message.setTo(user.getEmail());
+                message.setCc("rtcc_support_applications@nnnn.org");
+            }
+            if (env.acceptsProfiles(Profiles.of("prod"))) {
+                message.setSubject("ddd Case Due Notification");
+            } else {
+                message.setSubject("[NON-PROD] ddd Case Due Notification");
+            }
+            message.setText(body);
+            mailSender.send(message);
+        }
     }
 
-    @Test
-    @DisplayName("auditAction - calls getUsername to set userNm")
-    void auditAction_twoArgs_callsGetUsername() {
-        auditService.auditAction("VIEW", "Viewed dashboard");
-
-        verify(authenticationService, times(1)).getUsername();
+    private String generateEmailBody(final User user, List<dddCase> overdueCases, List<dddCase> comingDueCases) {
+        boolean isTest = user.getUsername().startsWith("T-SG") || user.getUsername().startsWith("V-");
+        StringBuilder body = new StringBuilder();
+        if (!isTest) {
+            body.append(user.getRank() + " " + user.getLastName());
+        }
+        if (overdueCases != null) {
+            if (overdueCases.size() > 1) {
+                body.append("You have " + overdueCases.size() + " overdue cases:").append("\n\n");
+            } else {
+                body.append("You have " + overdueCases.size() + " overdue case:").append("\n\n");
+            }
+            for (dddCase overdue : overdueCases) {
+                appendCaseInfo(body, overdue);
+                body.append("\n");
+            }
+        }
+        if (comingDueCases != null) {
+            if (comingDueCases.size() > 1) {
+                body.append("\n").append("You have " + comingDueCases.size() + " cases coming due:").append("\n\n");
+            } else {
+                body.append("\n").append("You have " + comingDueCases.size() + " case coming due:").append("\n\n");
+            }
+            for (dddCase comingDue : comingDueCases) {
+                appendCaseInfo(body, comingDue);
+                body.append("\n");
+            }
+        }
+        return body.toString();
     }
 
-    @Test
-    @DisplayName("auditAction - saves exactly once")
-    void auditAction_twoArgs_savesExactlyOnce() {
-        auditService.auditAction("LOGOUT", "User logged out");
-
-        verify(auditRepository, times(1)).save(any(dddAudit.class));
-    }
-
-    @Test
-    @DisplayName("auditAction - works with null actionDetail")
-    void auditAction_twoArgs_nullActionDetail_savesSuccessfully() {
-        auditService.auditAction("VIEW", null);
-
-        ArgumentCaptor<dddAudit> captor = ArgumentCaptor.forClass(dddAudit.class);
-        verify(auditRepository).save(captor.capture());
-
-        assertThat(captor.getValue().getActionDetail()).isNull();
-        assertThat(captor.getValue().getActionType()).isEqualTo("VIEW");
-    }
-
-    @Test
-    @DisplayName("auditAction - works with empty strings")
-    void auditAction_twoArgs_emptyStrings_savesSuccessfully() {
-        auditService.auditAction("", "");
-
-        ArgumentCaptor<dddAudit> captor = ArgumentCaptor.forClass(dddAudit.class);
-        verify(auditRepository).save(captor.capture());
-
-        assertThat(captor.getValue().getActionType()).isEmpty();
-        assertThat(captor.getValue().getActionDetail()).isEmpty();
-    }
-
-    // =========================================================================
-    // auditAction(String actionType, String actionDetail, Integer caseId)
-    // =========================================================================
-
-    @Test
-    @DisplayName("auditAction - saves audit record with caseId")
-    void auditAction_threeArgs_savesAuditWithCaseId() {
-        auditService.auditAction("CASE_VIEW", "Viewed case details", 100);
-
-        ArgumentCaptor<dddAudit> captor = ArgumentCaptor.forClass(dddAudit.class);
-        verify(auditRepository, times(1)).save(captor.capture());
-
-        dddAudit saved = captor.getValue();
-        assertThat(saved.getUserNm()).isEqualTo("jdoe");
-        assertThat(saved.getActionType()).isEqualTo("CASE_VIEW");
-        assertThat(saved.getActionDetail()).isEqualTo("Viewed case details");
-        assertThat(saved.getCaseId()).isEqualTo(100);
-    }
-
-    @Test
-    @DisplayName("auditAction - calls getUsername to set userNm when caseId provided")
-    void auditAction_threeArgs_callsGetUsername() {
-        auditService.auditAction("CASE_UPDATE", "Updated case", 100);
-
-        verify(authenticationService, times(1)).getUsername();
-    }
-
-    @Test
-    @DisplayName("auditAction - saves exactly once when caseId provided")
-    void auditAction_threeArgs_savesExactlyOnce() {
-        auditService.auditAction("CASE_CREATE", "Created case", 101);
-
-        verify(auditRepository, times(1)).save(any(dddAudit.class));
-    }
-
-    @Test
-    @DisplayName("auditAction - works with null caseId")
-    void auditAction_threeArgs_nullCaseId_savesSuccessfully() {
-        auditService.auditAction("CASE_VIEW", "Viewed case", null);
-
-        ArgumentCaptor<dddAudit> captor = ArgumentCaptor.forClass(dddAudit.class);
-        verify(auditRepository).save(captor.capture());
-
-        assertThat(captor.getValue().getCaseId()).isNull();
-        assertThat(captor.getValue().getActionType()).isEqualTo("CASE_VIEW");
-    }
-
-    @Test
-    @DisplayName("auditAction - different users produce different userNm values")
-    void auditAction_differentUsers_setsCorrectUserNm() {
-        when(authenticationService.getUsername()).thenReturn("asmith");
-
-        auditService.auditAction("LOGIN", "User logged in");
-
-        ArgumentCaptor<dddAudit> captor = ArgumentCaptor.forClass(dddAudit.class);
-        verify(auditRepository).save(captor.capture());
-
-        assertThat(captor.getValue().getUserNm()).isEqualTo("asmith");
-    }
-
-    @Test
-    @DisplayName("auditAction - two overloads create separate audit records")
-    void auditAction_bothOverloads_createSeparateRecords() {
-        auditService.auditAction("LOGIN", "User logged in");
-        auditService.auditAction("CASE_VIEW", "Viewed case", 100);
-
-        verify(auditRepository, times(2)).save(any(dddAudit.class));
+    private void appendCaseInfo(StringBuilder body, dddCase caseInfo) {
+        body.append("Case ID: " + caseInfo.getId()).append("\n");
+        body.append("Arrest ID: " + caseInfo.getArrId()).append("\n");
+        if (caseInfo.getAda() != null) {
+            body.append("ADA: " + caseInfo.getAda().getJobTitleDesc() + " " + caseInfo.getAda().getFrstNm()
+                    + " " + caseInfo.getAda().getLastNm()).append("\n");
+        }
+        body.append("Request Dt: " + caseInfo.getRequestDt()).append("\n");
+        body.append("Due Dt: " + caseInfo.getDueDt()).append("\n");
     }
 }
