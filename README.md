@@ -1,215 +1,29 @@
-package org.nnnn.ddd.api;
+// In CaseServiceControllerTest.java
 
-import org.nnnn.ddd.exceptions.CaseAccessException;
-import org.nnnn.ddd.exceptions.InvalidArrestException;
-import org.nnnn.ddd.exceptions.SealedAccessException;
-import org.nnnn.ddd.model.CaseFilter;
-import org.nnnn.ddd.model.CaseListResponse;
-import org.nnnn.ddd.model.CreateCaseRequest;
-import org.nnnn.ddd.model.dddCase;
-import org.nnnn.ddd.model.dddCaseStats;
-import org.nnnn.ddd.model.dddCaseSummary;
-import org.nnnn.ddd.model.Error;
-import org.nnnn.ddd.service.CaseService;
+@Test
+@WithMockUser
+void deleteCaseUploadById_success_returns200() throws Exception {
+    doNothing().when(caseService).deleteFile(100, 1);
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+    mockMvc.perform(delete("/case/100/upload/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+}
 
-import jakarta.validation.constraints.*;
-import jakarta.validation.Valid;
-import jakarta.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+@Test
+@WithMockUser
+void deleteCaseUploadById_noAcceptHeader_returns501() throws Exception {
+    mockMvc.perform(delete("/case/100/upload/1"))
+            .andExpect(status().isNotImplemented());
+}
 
-@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-13T15:15:08.918-05:00")
-@RestController
-public class CaseApiController implements CaseApi {
+@Test
+@WithMockUser
+void deleteCaseUploadById_serviceThrowsException_returns500() throws Exception {
+    doThrow(new RuntimeException("unexpected error"))
+            .when(caseService).deleteFile(100, 1);
 
-    private static final Logger log = LoggerFactory.getLogger(CaseApiController.class);
-
-    private final ObjectMapper objectMapper;
-
-    private final HttpServletRequest request;
-
-    
-    @Autowired
-    private CaseService caseService;
-
-    @org.springframework.beans.factory.annotation.Autowired
-    public CaseApiController(ObjectMapper objectMapper, HttpServletRequest request) {
-        this.objectMapper = objectMapper;
-        this.request = request;
-    }
-
-    public ResponseEntity<dddCase> createCaseByArrest(@Parameter(in = ParameterIn.DEFAULT, description = "Object containing case creation criteria", schema=@Schema()) @Valid @RequestBody CreateCaseRequest body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                dddCase json = caseService.createCase(body);
-                if (json.isNew()) {
-                    return new ResponseEntity<dddCase>(json, HttpStatus.CREATED);
-                } else {
-                    return new ResponseEntity<dddCase>(json, HttpStatus.OK);
-                }
-            } catch (SealedAccessException sae){
-                log.error(sae.getMessage());
-                throw sae;
-            } catch (InvalidArrestException iae){
-                log.error(iae.getMessage());
-                throw iae;
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<dddCase>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<dddCase>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<dddCase> getCaseById(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<dddCase>(caseService.loadCase(caseId), HttpStatus.OK);
-            } catch (SealedAccessException sae){
-                log.error(sae.getMessage());
-                throw sae;
-            } catch (CaseAccessException cae){
-                log.error(cae.getMessage());
-                throw cae;
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<dddCase>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<dddCase>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<CaseListResponse> getCaseList(@Parameter(in = ParameterIn.DEFAULT, description = "Object containing case filter criteria", schema=@Schema()) @Valid @RequestBody CaseFilter body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<CaseListResponse>(caseService.findCases(body), HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<CaseListResponse>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<CaseListResponse>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<dddCase> updateCase(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to update", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.DEFAULT, description = "Updated Case object", required=true, schema=@Schema()) @Valid @RequestBody dddCase body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<dddCase>(caseService.saveCase(body), HttpStatus.OK);
-            } catch (jakarta.persistence.OptimisticLockException | org.springframework.orm.ObjectOptimisticLockingFailureException e) {
-                throw e; // Let GlobalExceptionHandler return 409
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<dddCase>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<dddCase>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<dddCase> createCaseNote(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to update", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.DEFAULT, description = "",schema=@Schema()) @RequestParam(value="noteDesc", required=false)  String noteDesc,@Parameter(in = ParameterIn.DEFAULT, description = "",schema=@Schema()) @RequestParam(value="fileNm", required=false)  String fileNm,@Parameter(description = "file detail") @Valid @RequestPart(value = "file", required = false) MultipartFile fileContent) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<dddCase>(caseService.saveNote(caseId, noteDesc, fileNm, fileContent), HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<dddCase>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<dddCase>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<dddCaseStats> getCaseStats() {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<dddCaseStats>(caseService.getCaseStats(), HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<dddCaseStats>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<dddCaseStats>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<Resource> getCaseUploadById(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the file to get", required=true, schema=@Schema()) @PathVariable("uploadId") Integer uploadId) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                Object[] fileNameAndResource = caseService.getFile(caseId, uploadId);
-                
-                // Set headers including Content-Disposition with the filename
-                HttpHeaders headers = new HttpHeaders();
-                // "attachment" forces download, "inline" tries to display in browser
-                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileNameAndResource[0] + "\"");
-                // Expose the Content-Disposition header to the client, especially important for Swagger UI
-                headers.add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
-
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .contentType(MediaType.APPLICATION_OCTET_STREAM) // Generic content type for files
-                        .body((Resource) fileNameAndResource[1]); 
-                //new ResponseEntity<Resource>((Resource)fileNameAndResource[1], HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<Resource>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<Resource>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<String> deleteCaseUploadById(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the file to get", required=true, schema=@Schema()) @PathVariable("uploadId") Integer uploadId) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                caseService.deleteFile(caseId, uploadId);
-                return new ResponseEntity<String>(objectMapper.readValue("\"Success: The operation completed successfully.\"", String.class), HttpStatus.OK);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<String>(HttpStatus.NOT_IMPLEMENTED);
-    }
+    mockMvc.perform(delete("/case/100/upload/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
 }
