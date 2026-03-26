@@ -1,0 +1,60 @@
+package org.nnnn.ddd;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
+import software.amazon.awssdk.services.s3.S3Client;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DisplayName("DellS3Config Tests")
+class DellS3ConfigTest {
+
+    @Test
+    @DisplayName("s3Client bean is created successfully with valid config")
+    void s3Client_beanCreatedSuccessfully() {
+        DellS3Config config = new DellS3Config();
+        ReflectionTestUtils.setField(config, "endpoint", "https://s3.example.com");
+        ReflectionTestUtils.setField(config, "accessKey", "test-access-key");
+        ReflectionTestUtils.setField(config, "secretKey", "test-secret-key");
+
+        S3Client client = config.s3Client();
+
+        assertThat(client).isNotNull();
+        client.close();
+    }
+
+    @Test
+    @DisplayName("s3Client bean is created with different endpoint")
+    void s3Client_createdWithDifferentEndpoint() {
+        DellS3Config config = new DellS3Config();
+        ReflectionTestUtils.setField(config, "endpoint", "http://localhost:9000");
+        ReflectionTestUtils.setField(config, "accessKey", "minioadmin");
+        ReflectionTestUtils.setField(config, "secretKey", "minioadmin");
+
+        S3Client client = config.s3Client();
+
+        assertThat(client).isNotNull();
+        client.close();
+    }
+
+    @Test
+    @DisplayName("s3Client creates a new instance on each call")
+    void s3Client_createsNewInstanceEachCall() {
+        DellS3Config config = new DellS3Config();
+        ReflectionTestUtils.setField(config, "endpoint", "https://s3.example.com");
+        ReflectionTestUtils.setField(config, "accessKey", "key1");
+        ReflectionTestUtils.setField(config, "secretKey", "secret1");
+
+        S3Client client1 = config.s3Client();
+        S3Client client2 = config.s3Client();
+
+        assertThat(client1).isNotNull();
+        assertThat(client2).isNotNull();
+        // Each call creates a new instance
+        assertThat(client1).isNotSameAs(client2);
+
+        client1.close();
+        client2.close();
+    }
+}
