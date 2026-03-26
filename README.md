@@ -1,1589 +1,598 @@
 package org.nnnn.ddd.entity;
 
-import java.io.Serializable;
-import jakarta.persistence.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import java.sql.Timestamp;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
-import org.springframework.data.annotation.LastModifiedDate;
-
-
-/**
- * The persistent class for the ADA_LIST database table.
- * 
- */
-@Entity
-@Audited
-@Table(name="ADA_LIST", schema = "ddd")
-@NamedQuery(name="AdaList.findAll", query="SELECT a FROM AdaList a")
-public class AdaList implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@Column(name="ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
-	@Column(name="ARCHIVE_FLG")
-	private Short archiveFlg;
-
-	@Column(name="BOROUGH_NM")
-	private String boroughNm;
-
-	@Column(name="BUS_PHONE_NUM")
-	private String busPhoneNum;
-
-	@Column(name="CELL_PHONE_NUM")
-	private String cellPhoneNum;
-
-	@Column(name="EMAIL_ADDR_DESC")
-	private String emailAddrDesc;
-
-	@Column(name="FAX_NUM")
-	private String faxNum;
-
-	@Column(name="FRST_NM")
-	private String frstNm;
-
-	@Column(name="INACTIVE_FLG")
-	private short inactiveFlg;
-
-	@Column(name="JOB_TITLE_DESC")
-	private String jobTitleDesc;
-
-	@Column(name="LAST_NM")
-	private String lastNm;
-
-	@Column(name="NOTE_DESC")
-	private String noteDesc;
-
-	@Column(name = "ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
-
-	@LastModifiedDate
-	@UpdateTimestamp
-	@Column(name = "ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
-	private Timestamp rowUpdtTs;
-
-	public AdaList() {
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public Short getArchiveFlg() {
-		return this.archiveFlg;
-	}
-
-	public void setArchiveFlg(Short archiveFlg) {
-		this.archiveFlg = archiveFlg;
-	}
-
-	public String getBoroughNm() {
-		return this.boroughNm;
-	}
-
-	public void setBoroughNm(String boroughNm) {
-		this.boroughNm = boroughNm;
-	}
-
-	public String getBusPhoneNum() {
-		return this.busPhoneNum;
-	}
-
-	public void setBusPhoneNum(String busPhoneNum) {
-		this.busPhoneNum = busPhoneNum;
-	}
-
-	public String getCellPhoneNum() {
-		return this.cellPhoneNum;
-	}
-
-	public void setCellPhoneNum(String cellPhoneNum) {
-		this.cellPhoneNum = cellPhoneNum;
-	}
-
-	public String getEmailAddrDesc() {
-		return this.emailAddrDesc;
-	}
-
-	public void setEmailAddrDesc(String emailAddrDesc) {
-		this.emailAddrDesc = emailAddrDesc;
-	}
-
-	public String getFaxNum() {
-		return this.faxNum;
-	}
-
-	public void setFaxNum(String faxNum) {
-		this.faxNum = faxNum;
-	}
-
-	public String getFrstNm() {
-		return this.frstNm;
-	}
-
-	public void setFrstNm(String frstNm) {
-		this.frstNm = frstNm;
-	}
-
-	public short getInactiveFlg() {
-		return this.inactiveFlg;
-	}
-
-	public void setInactiveFlg(short inactiveFlg) {
-		this.inactiveFlg = inactiveFlg;
-	}
-
-	public String getJobTitleDesc() {
-		return this.jobTitleDesc;
-	}
-
-	public void setJobTitleDesc(String jobTitleDesc) {
-		this.jobTitleDesc = jobTitleDesc;
-	}
-
-	public String getLastNm() {
-		return this.lastNm;
-	}
-
-	public void setLastNm(String lastNm) {
-		this.lastNm = lastNm;
-	}
-
-	public String getNoteDesc() {
-		return this.noteDesc;
-	}
-
-	public void setNoteDesc(String noteDesc) {
-		this.noteDesc = noteDesc;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public Timestamp getRowUpdtTs() {
-		return this.rowUpdtTs;
-	}
-
-	public void setRowUpdtTs(Timestamp rowUpdtTs) {
-		this.rowUpdtTs = rowUpdtTs;
-	}
-
-}
-===================
-
-
-package org.nnnn.ddd.entity;
-
-import java.io.Serializable;
-import jakarta.persistence.*;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
-import org.springframework.data.annotation.LastModifiedDate;
-
-import java.sql.Timestamp;
-
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The persistent class for the ddd_CASE database table.
- * 
+ * Unit tests for all entity classes.
+ * Tests getter/setter, constructor, collections, and field defaults.
  */
-@Entity
-@Audited
-@Table(name="ddd_CASE", schema = "ddd")
-@NamedQuery(name="dddCase.findAll", query="SELECT d FROM dddCase d")
-public class dddCase implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Version
-	@Column(name = "VERSION")
-    private Long version; 
-
-	@Id
-	@Column(name="ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
-	//@Column(name="ADA_ID")
-	//private Integer adaId;
-
-	@Column(name="ARR_ID")
-	private String arrId;
-
-	@Column(name="ASSIGNED_NM")
-	private String assignedNm;
-
-	//@Column(name="CATEGORY_ID")
-	//private int categoryId;
-
-	@Temporal(TemporalType.DATE)
-	@Column(name="COMPLETE_DT")
-	private Date completeDt;
-
-	//@Column(name="ddd_DESC")
-	//private String dddDesc;
-
-	@Temporal(TemporalType.DATE)
-	@Column(name="DUE_DT")
-	private Date dueDt;
-
-	@Column(name="DV_FLG")
-	private short dvFlg;
-
-	@Column(name="FELONY_FLG")
-	private short felonyFlg;
-
-	@Column(name="INDEX_FLG")
-	private short indexFlg;
-
-	@Column(name="PARENT_ID")
-	private Integer parentId;
-
-	@Column(name="PROACTIVE_FLG")
-	private Short proactiveFlg;
-
-	@Temporal(TemporalType.DATE)
-	@Column(name="REQUEST_DT")
-	private Date requestDt;
-
-	@Column(name = "ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
-
-	//@LastModifiedDate
-	//@UpdateTimestamp
-	//@Column(name = "ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
-	@Column(name = "ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false)
-	private Timestamp rowUpdtTs;
-
-	//@Column(name="STATUS_DESC")
-	//private String statusDesc;
-
-	@OneToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "category_id", nullable = true) 
-    private CategoryList category;
-
-	@OneToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "ada_id", nullable = true) 
-    private AdaList ada;
-
-	@OneToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "case_status_id", nullable = true) 
-    private StatusList status;
-
-	@OneToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "ddd_office_id", nullable = true) 
-    private dddOfficeList ddd;
-
-	@OneToMany(mappedBy = "dddCase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<CaseItem> items = new HashSet<>();
-
-	@OneToMany(mappedBy = "dddCase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@OrderBy("id DESC")
-    private Set<CaseNote> notes = new HashSet<>();
-
-	@OneToMany(mappedBy = "dddCase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<CaseTag> tags = new HashSet<>();
-
-	@OneToMany(mappedBy = "dddCase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<CaseUpload> uploads = new HashSet<>();
-
-	public Long getVersion() {
-		return version;
-	}
-	public void setVersion(Long version) {
-    	this.version = version;
-	}
-
-	public Set<CaseUpload> getUploads() {
-		return uploads;
-	}
-
-	public void setUploads(Set<CaseUpload> uploads) {
-		this.uploads = uploads;
-	}
-
-	public Set<CaseItem> getItems() {
-		return items;
-	}
-
-	public void setItems(Set<CaseItem> items) {
-		this.items = items;
-	}
-
-	public Set<CaseNote> getNotes() {
-		return notes;
-	}
-
-	public void setNotes(Set<CaseNote> notes) {
-		this.notes = notes;
-	}
-
-	public Set<CaseTag> getTags() {
-		return tags;
-	}
-
-	public void setTags(Set<CaseTag> tags) {
-		this.tags = tags;
-	}
-
-	public CategoryList getCategory() {
-		return category;
-	}
-
-	public void setCategory(CategoryList category) {
-		this.category = category;
-	}
-
-	public AdaList getAda() {
-		return ada;
-	}
-
-	public void setAda(AdaList ada) {
-		this.ada = ada;
-	}
-
-	public dddCase() {
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	/*
-	public Integer getAdaId() {
-		return this.adaId;
-	}
-
-	public void setAdaId(Integer adaId) {
-		this.adaId = adaId;
-	} 
-	*/
-
-	public String getArrId() {
-		return this.arrId;
-	}
-
-	public void setArrId(String arrId) {
-		this.arrId = arrId;
-	}
-
-	public String getAssignedNm() {
-		return this.assignedNm;
-	}
-
-	public void setAssignedNm(String assignedNm) {
-		this.assignedNm = assignedNm;
-	}
-
-	/*
-	public int getCategoryId() {
-		return this.categoryId;
-	}
-
-	public void setCategoryId(int categoryId) {
-		this.categoryId = categoryId;
-	}
- 	*/
-
-	public Date getCompleteDt() {
-		return this.completeDt;
-	}
-
-	public void setCompleteDt(Date completeDt) {
-		this.completeDt = completeDt;
-	}
-
-	public dddOfficeList getddd() {
-		return this.ddd;
-	}
-
-	public void setddd(dddOfficeList dddDesc) {
-		this.ddd = dddDesc;
-	}
-
-	public Date getDueDt() {
-		return this.dueDt;
-	}
-
-	public void setDueDt(Date dueDt) {
-		this.dueDt = dueDt;
-	}
-
-	public short getDvFlg() {
-		return this.dvFlg;
-	}
-
-	public void setDvFlg(short dvFlg) {
-		this.dvFlg = dvFlg;
-	}
-
-	public short getFelonyFlg() {
-		return this.felonyFlg;
-	}
-
-	public void setFelonyFlg(short felonyFlg) {
-		this.felonyFlg = felonyFlg;
-	}
-
-	public short getIndexFlg() {
-		return this.indexFlg;
-	}
-
-	public void setIndexFlg(short indexFlg) {
-		this.indexFlg = indexFlg;
-	}
-
-	public Integer getParentId() {
-		return this.parentId;
-	}
-
-	public void setParentId(Integer parentId) {
-		this.parentId = parentId;
-	}
-
-	public Short getProactiveFlg() {
-		return this.proactiveFlg;
-	}
-
-	public void setProactiveFlg(Short proactiveFlg) {
-		this.proactiveFlg = proactiveFlg;
-	}
-
-	public Date getRequestDt() {
-		return this.requestDt;
-	}
-
-	public void setRequestDt(Date requestDt) {
-		this.requestDt = requestDt;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public Timestamp getRowUpdtTs() {
-		return this.rowUpdtTs;
-	}
-
-	public void setRowUpdtTs(Timestamp rowUpdtTs) {
-		this.rowUpdtTs = rowUpdtTs;
-	}
-
-	public StatusList getStatus() {
-		return this.status;
-	}
-
-	public void setStatus(StatusList statusDesc) {
-		this.status = statusDesc;
-	}
-
+@DisplayName("Entity Tests")
+class EntityTests {
+
+    // =========================================================================
+    // AdaList
+    // =========================================================================
+
+    @Nested
+    @DisplayName("AdaList Entity")
+    class AdaListTests {
+
+        @Test
+        @DisplayName("default constructor creates instance")
+        void defaultConstructor_createsInstance() {
+            AdaList ada = new AdaList();
+            assertThat(ada).isNotNull();
+        }
+
+        @Test
+        @DisplayName("getters and setters work correctly")
+        void gettersAndSetters_workCorrectly() {
+            Timestamp ts = new Timestamp(System.currentTimeMillis());
+            AdaList ada = new AdaList();
+            ada.setId(1);
+            ada.setFrstNm("John");
+            ada.setLastNm("Doe");
+            ada.setEmailAddrDesc("jdoe@nnnn.org");
+            ada.setBoroughNm("Manhattan");
+            ada.setBusPhoneNum("555-1234");
+            ada.setCellPhoneNum("555-5678");
+            ada.setFaxNum("555-9999");
+            ada.setJobTitleDesc("ADA");
+            ada.setNoteDesc("Note here");
+            ada.setArchiveFlg((short) 0);
+            ada.setInactiveFlg((short) 0);
+            ada.setRowInsertTs(ts);
+            ada.setRowUpdtTs(ts);
+
+            assertThat(ada.getId()).isEqualTo(1);
+            assertThat(ada.getFrstNm()).isEqualTo("John");
+            assertThat(ada.getLastNm()).isEqualTo("Doe");
+            assertThat(ada.getEmailAddrDesc()).isEqualTo("jdoe@nnnn.org");
+            assertThat(ada.getBoroughNm()).isEqualTo("Manhattan");
+            assertThat(ada.getBusPhoneNum()).isEqualTo("555-1234");
+            assertThat(ada.getCellPhoneNum()).isEqualTo("555-5678");
+            assertThat(ada.getFaxNum()).isEqualTo("555-9999");
+            assertThat(ada.getJobTitleDesc()).isEqualTo("ADA");
+            assertThat(ada.getNoteDesc()).isEqualTo("Note here");
+            assertThat(ada.getArchiveFlg()).isEqualTo((short) 0);
+            assertThat(ada.getInactiveFlg()).isEqualTo((short) 0);
+            assertThat(ada.getRowInsertTs()).isEqualTo(ts);
+            assertThat(ada.getRowUpdtTs()).isEqualTo(ts);
+        }
+
+        @Test
+        @DisplayName("fields are null by default")
+        void fields_areNullByDefault() {
+            AdaList ada = new AdaList();
+            assertThat(ada.getFrstNm()).isNull();
+            assertThat(ada.getLastNm()).isNull();
+            assertThat(ada.getEmailAddrDesc()).isNull();
+        }
+    }
+
+    // =========================================================================
+    // dddCase
+    // =========================================================================
+
+    @Nested
+    @DisplayName("dddCase Entity")
+    class DddCaseTests {
+
+        @Test
+        @DisplayName("default constructor creates instance with empty collections")
+        void defaultConstructor_createsInstanceWithEmptyCollections() {
+            dddCase c = new dddCase();
+            assertThat(c).isNotNull();
+            assertThat(c.getItems()).isNotNull().isEmpty();
+            assertThat(c.getNotes()).isNotNull().isEmpty();
+            assertThat(c.getTags()).isNotNull().isEmpty();
+            assertThat(c.getUploads()).isNotNull().isEmpty();
+        }
+
+        @Test
+        @DisplayName("getters and setters work correctly")
+        void gettersAndSetters_workCorrectly() {
+            Date now = new Date();
+            Timestamp ts = new Timestamp(System.currentTimeMillis());
+            dddCase c = new dddCase();
+
+            c.setId(100);
+            c.setArrId("ARR001");
+            c.setAssignedNm("jdoe");
+            c.setDueDt(now);
+            c.setRequestDt(now);
+            c.setCompleteDt(now);
+            c.setDvFlg((short) 1);
+            c.setFelonyFlg((short) 1);
+            c.setIndexFlg((short) 0);
+            c.setProactiveFlg((short) 0);
+            c.setParentId(50);
+            c.setVersion(1L);
+            c.setRowInsertTs(ts);
+            c.setRowUpdtTs(ts);
+
+            assertThat(c.getId()).isEqualTo(100);
+            assertThat(c.getArrId()).isEqualTo("ARR001");
+            assertThat(c.getAssignedNm()).isEqualTo("jdoe");
+            assertThat(c.getDueDt()).isEqualTo(now);
+            assertThat(c.getRequestDt()).isEqualTo(now);
+            assertThat(c.getCompleteDt()).isEqualTo(now);
+            assertThat(c.getDvFlg()).isEqualTo((short) 1);
+            assertThat(c.getFelonyFlg()).isEqualTo((short) 1);
+            assertThat(c.getIndexFlg()).isEqualTo((short) 0);
+            assertThat(c.getProactiveFlg()).isEqualTo((short) 0);
+            assertThat(c.getParentId()).isEqualTo(50);
+            assertThat(c.getVersion()).isEqualTo(1L);
+            assertThat(c.getRowInsertTs()).isEqualTo(ts);
+            assertThat(c.getRowUpdtTs()).isEqualTo(ts);
+        }
+
+        @Test
+        @DisplayName("setCategory and setAda and setStatus and setddd work")
+        void relationships_setAndGetCorrectly() {
+            dddCase c = new dddCase();
+            CategoryList cat = new CategoryList();
+            cat.setId(1);
+            AdaList ada = new AdaList();
+            ada.setId(2);
+            StatusList status = new StatusList();
+            status.setId(3);
+            dddOfficeList office = new dddOfficeList();
+            office.setId(4);
+
+            c.setCategory(cat);
+            c.setAda(ada);
+            c.setStatus(status);
+            c.setddd(office);
+
+            assertThat(c.getCategory().getId()).isEqualTo(1);
+            assertThat(c.getAda().getId()).isEqualTo(2);
+            assertThat(c.getStatus().getId()).isEqualTo(3);
+            assertThat(c.getddd().getId()).isEqualTo(4);
+        }
+
+        @Test
+        @DisplayName("can add items to collections")
+        void collections_canAddElements() {
+            dddCase c = new dddCase();
+            CaseItem item = new CaseItem();
+            CaseNote note = new CaseNote();
+            CaseTag tag = new CaseTag();
+            CaseUpload upload = new CaseUpload();
+
+            c.getItems().add(item);
+            c.getNotes().add(note);
+            c.getTags().add(tag);
+            c.getUploads().add(upload);
+
+            assertThat(c.getItems()).hasSize(1);
+            assertThat(c.getNotes()).hasSize(1);
+            assertThat(c.getTags()).hasSize(1);
+            assertThat(c.getUploads()).hasSize(1);
+        }
+    }
+
+    // =========================================================================
+    // dddCodeRef
+    // =========================================================================
+
+    @Nested
+    @DisplayName("dddCodeRef Entity")
+    class DddCodeRefTests {
+
+        @Test
+        @DisplayName("default constructor creates instance")
+        void defaultConstructor_createsInstance() {
+            dddCodeRef ref = new dddCodeRef();
+            assertThat(ref).isNotNull();
+        }
+
+        @Test
+        @DisplayName("getters and setters work correctly")
+        void gettersAndSetters_workCorrectly() {
+            Timestamp ts = new Timestamp(System.currentTimeMillis());
+            dddCodeRef ref = new dddCodeRef();
+
+            ref.setId(1);
+            ref.setCodeType("CHARGE_TYPE");
+            ref.setCodeVal("F");
+            ref.setCodeDesc("Felony");
+            ref.setRowInsertTs(ts);
+            ref.setRowUpdtTs(ts);
+
+            assertThat(ref.getId()).isEqualTo(1);
+            assertThat(ref.getCodeType()).isEqualTo("CHARGE_TYPE");
+            assertThat(ref.getCodeVal()).isEqualTo("F");
+            assertThat(ref.getCodeDesc()).isEqualTo("Felony");
+            assertThat(ref.getRowInsertTs()).isEqualTo(ts);
+            assertThat(ref.getRowUpdtTs()).isEqualTo(ts);
+        }
+    }
+
+    // =========================================================================
+    // dddOfficeList
+    // =========================================================================
+
+    @Nested
+    @DisplayName("dddOfficeList Entity")
+    class DddOfficeListTests {
+
+        @Test
+        @DisplayName("default constructor creates instance")
+        void defaultConstructor_createsInstance() {
+            dddOfficeList office = new dddOfficeList();
+            assertThat(office).isNotNull();
+        }
+
+        @Test
+        @DisplayName("getters and setters work correctly")
+        void gettersAndSetters_workCorrectly() {
+            Timestamp ts = new Timestamp(System.currentTimeMillis());
+            dddOfficeList office = new dddOfficeList();
+
+            office.setId(1);
+            office.setdddOfficeDesc("Manhattan");
+            office.setAdSgNm("ROLE_SG-ddd-ANALYST-MANHATTAN");
+            office.setInactiveFlg((short) 0);
+            office.setRowInsertTs(ts);
+            office.setRowUpdtTs(ts);
+
+            assertThat(office.getId()).isEqualTo(1);
+            assertThat(office.getdddOfficeDesc()).isEqualTo("Manhattan");
+            assertThat(office.getAdSgNm()).isEqualTo("ROLE_SG-ddd-ANALYST-MANHATTAN");
+            assertThat(office.getInactiveFlg()).isEqualTo((short) 0);
+            assertThat(office.getRowInsertTs()).isEqualTo(ts);
+            assertThat(office.getRowUpdtTs()).isEqualTo(ts);
+        }
+    }
+
+    // =========================================================================
+    // CaseNote
+    // =========================================================================
+
+    @Nested
+    @DisplayName("CaseNote Entity")
+    class CaseNoteTests {
+
+        @Test
+        @DisplayName("default constructor creates instance")
+        void defaultConstructor_createsInstance() {
+            CaseNote note = new CaseNote();
+            assertThat(note).isNotNull();
+        }
+
+        @Test
+        @DisplayName("getters and setters work correctly")
+        void gettersAndSetters_workCorrectly() {
+            Timestamp ts = new Timestamp(System.currentTimeMillis());
+            CaseNote note = new CaseNote();
+            dddCase c = new dddCase();
+            CaseUpload upload = new CaseUpload();
+
+            note.setId(1);
+            note.setNoteDesc("Test note");
+            note.setUserNm("jdoe");
+            note.setdddCase(c);
+            note.setUpload(upload);
+            note.setRowInsertTs(ts);
+            note.setRowUpdtTs(ts);
+
+            assertThat(note.getId()).isEqualTo(1);
+            assertThat(note.getNoteDesc()).isEqualTo("Test note");
+            assertThat(note.getUserNm()).isEqualTo("jdoe");
+            assertThat(note.getdddCase()).isEqualTo(c);
+            assertThat(note.getUpload()).isEqualTo(upload);
+            assertThat(note.getRowInsertTs()).isEqualTo(ts);
+            assertThat(note.getRowUpdtTs()).isEqualTo(ts);
+        }
+
+        @Test
+        @DisplayName("upload is null by default")
+        void upload_isNullByDefault() {
+            CaseNote note = new CaseNote();
+            assertThat(note.getUpload()).isNull();
+        }
+    }
+
+    // =========================================================================
+    // CategoryList
+    // =========================================================================
+
+    @Nested
+    @DisplayName("CategoryList Entity")
+    class CategoryListTests {
+
+        @Test
+        @DisplayName("default constructor creates instance")
+        void defaultConstructor_createsInstance() {
+            CategoryList cat = new CategoryList();
+            assertThat(cat).isNotNull();
+        }
+
+        @Test
+        @DisplayName("getters and setters work correctly")
+        void gettersAndSetters_workCorrectly() {
+            Timestamp ts = new Timestamp(System.currentTimeMillis());
+            CategoryList cat = new CategoryList();
+
+            cat.setId(1);
+            cat.setCategoryDesc("Shootings");
+            cat.setInactiveFlg((short) 0);
+            cat.setRowInsertTs(ts);
+            cat.setRowUpdtTs(ts);
+
+            assertThat(cat.getId()).isEqualTo(1);
+            assertThat(cat.getCategoryDesc()).isEqualTo("Shootings");
+            assertThat(cat.getInactiveFlg()).isEqualTo((short) 0);
+            assertThat(cat.getRowInsertTs()).isEqualTo(ts);
+            assertThat(cat.getRowUpdtTs()).isEqualTo(ts);
+        }
+    }
+
+    // =========================================================================
+    // ItemList
+    // =========================================================================
+
+    @Nested
+    @DisplayName("ItemList Entity")
+    class ItemListTests {
+
+        @Test
+        @DisplayName("default constructor creates instance")
+        void defaultConstructor_createsInstance() {
+            ItemList item = new ItemList();
+            assertThat(item).isNotNull();
+        }
+
+        @Test
+        @DisplayName("getters and setters work correctly")
+        void gettersAndSetters_workCorrectly() {
+            Timestamp ts = new Timestamp(System.currentTimeMillis());
+            ItemList item = new ItemList();
+
+            item.setId(1);
+            item.setItemDesc("ECMS");
+            item.setInactiveFlg((short) 0);
+            item.setRowInsertTs(ts);
+            item.setRowUpdtTs(ts);
+
+            assertThat(item.getId()).isEqualTo(1);
+            assertThat(item.getItemDesc()).isEqualTo("ECMS");
+            assertThat(item.getInactiveFlg()).isEqualTo((short) 0);
+            assertThat(item.getRowInsertTs()).isEqualTo(ts);
+            assertThat(item.getRowUpdtTs()).isEqualTo(ts);
+        }
+    }
+
+    // =========================================================================
+    // StatusList
+    // =========================================================================
+
+    @Nested
+    @DisplayName("StatusList Entity")
+    class StatusListTests {
+
+        @Test
+        @DisplayName("default constructor creates instance")
+        void defaultConstructor_createsInstance() {
+            StatusList status = new StatusList();
+            assertThat(status).isNotNull();
+        }
+
+        @Test
+        @DisplayName("getters and setters work correctly")
+        void gettersAndSetters_workCorrectly() {
+            Timestamp ts = new Timestamp(System.currentTimeMillis());
+            StatusList status = new StatusList();
+
+            status.setId(1);
+            status.setStatusDesc("Completed");
+            status.setInactiveFlg((short) 0);
+            status.setRowInsertTs(ts);
+            status.setRowUpdtTs(ts);
+
+            assertThat(status.getId()).isEqualTo(1);
+            assertThat(status.getStatusDesc()).isEqualTo("Completed");
+            assertThat(status.getInactiveFlg()).isEqualTo((short) 0);
+            assertThat(status.getRowInsertTs()).isEqualTo(ts);
+            assertThat(status.getRowUpdtTs()).isEqualTo(ts);
+        }
+    }
+
+    // =========================================================================
+    // TagList
+    // =========================================================================
+
+    @Nested
+    @DisplayName("TagList Entity")
+    class TagListTests {
+
+        @Test
+        @DisplayName("default constructor creates instance")
+        void defaultConstructor_createsInstance() {
+            TagList tag = new TagList();
+            assertThat(tag).isNotNull();
+        }
+
+        @Test
+        @DisplayName("getters and setters work correctly")
+        void gettersAndSetters_workCorrectly() {
+            Timestamp ts = new Timestamp(System.currentTimeMillis());
+            TagList tag = new TagList();
+
+            tag.setId(1);
+            tag.setTagDesc("Gun");
+            tag.setInactiveFlg((short) 0);
+            tag.setRowInsertTs(ts);
+            tag.setRowUpdtTs(ts);
+
+            assertThat(tag.getId()).isEqualTo(1);
+            assertThat(tag.getTagDesc()).isEqualTo("Gun");
+            assertThat(tag.getInactiveFlg()).isEqualTo((short) 0);
+            assertThat(tag.getRowInsertTs()).isEqualTo(ts);
+            assertThat(tag.getRowUpdtTs()).isEqualTo(ts);
+        }
+    }
+
+    // =========================================================================
+    // CaseTag
+    // =========================================================================
+
+    @Nested
+    @DisplayName("CaseTag Entity")
+    class CaseTagTests {
+
+        @Test
+        @DisplayName("default constructor creates instance")
+        void defaultConstructor_createsInstance() {
+            CaseTag caseTag = new CaseTag();
+            assertThat(caseTag).isNotNull();
+        }
+
+        @Test
+        @DisplayName("getters and setters work correctly")
+        void gettersAndSetters_workCorrectly() {
+            Timestamp ts = new Timestamp(System.currentTimeMillis());
+            CaseTag caseTag = new CaseTag();
+            TagList tag = new TagList();
+            tag.setId(1);
+            dddCase c = new dddCase();
+            c.setId(100);
+
+            caseTag.setId(1);
+            caseTag.setTag(tag);
+            caseTag.setdddCase(c);
+            caseTag.setRowInsertTs(ts);
+            caseTag.setRowUpdtTs(ts);
+
+            assertThat(caseTag.getId()).isEqualTo(1);
+            assertThat(caseTag.getTag().getId()).isEqualTo(1);
+            assertThat(caseTag.getdddCase().getId()).isEqualTo(100);
+            assertThat(caseTag.getRowInsertTs()).isEqualTo(ts);
+            assertThat(caseTag.getRowUpdtTs()).isEqualTo(ts);
+        }
+
+        @Test
+        @DisplayName("tag is null by default")
+        void tag_isNullByDefault() {
+            CaseTag caseTag = new CaseTag();
+            assertThat(caseTag.getTag()).isNull();
+        }
+    }
+
+    // =========================================================================
+    // CaseItem
+    // =========================================================================
+
+    @Nested
+    @DisplayName("CaseItem Entity")
+    class CaseItemTests {
+
+        @Test
+        @DisplayName("default constructor creates instance")
+        void defaultConstructor_createsInstance() {
+            CaseItem item = new CaseItem();
+            assertThat(item).isNotNull();
+        }
+
+        @Test
+        @DisplayName("getters and setters work correctly")
+        void gettersAndSetters_workCorrectly() {
+            Timestamp ts = new Timestamp(System.currentTimeMillis());
+            CaseItem item = new CaseItem();
+            ItemList itemList = new ItemList();
+            itemList.setId(1);
+            dddCase c = new dddCase();
+            c.setId(100);
+
+            item.setId(1);
+            item.setNoteDesc("Evidence collected");
+            item.setQuantity(3);
+            item.setStatusDesc("Active");
+            item.setItem(itemList);
+            item.setdddCase(c);
+            item.setRowInsertTs(ts);
+            item.setRowUpdtTs(ts);
+
+            assertThat(item.getId()).isEqualTo(1);
+            assertThat(item.getNoteDesc()).isEqualTo("Evidence collected");
+            assertThat(item.getQuantity()).isEqualTo(3);
+            assertThat(item.getStatusDesc()).isEqualTo("Active");
+            assertThat(item.getItem().getId()).isEqualTo(1);
+            assertThat(item.getdddCase().getId()).isEqualTo(100);
+            assertThat(item.getRowInsertTs()).isEqualTo(ts);
+            assertThat(item.getRowUpdtTs()).isEqualTo(ts);
+        }
+
+        @Test
+        @DisplayName("quantity is null by default")
+        void quantity_isNullByDefault() {
+            CaseItem item = new CaseItem();
+            assertThat(item.getQuantity()).isNull();
+        }
+    }
+
+    // =========================================================================
+    // CaseUpload
+    // =========================================================================
+
+    @Nested
+    @DisplayName("CaseUpload Entity")
+    class CaseUploadTests {
+
+        @Test
+        @DisplayName("default constructor creates instance")
+        void defaultConstructor_createsInstance() {
+            CaseUpload upload = new CaseUpload();
+            assertThat(upload).isNotNull();
+        }
+
+        @Test
+        @DisplayName("getters and setters work correctly")
+        void gettersAndSetters_workCorrectly() {
+            Timestamp ts = new Timestamp(System.currentTimeMillis());
+            CaseUpload upload = new CaseUpload();
+            dddCase c = new dddCase();
+            c.setId(100);
+
+            upload.setId(1);
+            upload.setFileNm("evidence.pdf");
+            upload.setUserNm("jdoe");
+            upload.setDeletedFlg((short) 0);
+            upload.setdddCase(c);
+            upload.setRowInsertTs(ts);
+            upload.setRowUpdtTs(ts);
+
+            assertThat(upload.getId()).isEqualTo(1);
+            assertThat(upload.getFileNm()).isEqualTo("evidence.pdf");
+            assertThat(upload.getUserNm()).isEqualTo("jdoe");
+            assertThat(upload.getDeletedFlg()).isEqualTo((short) 0);
+            assertThat(upload.getdddCase().getId()).isEqualTo(100);
+            assertThat(upload.getRowInsertTs()).isEqualTo(ts);
+            assertThat(upload.getRowUpdtTs()).isEqualTo(ts);
+        }
+
+        @Test
+        @DisplayName("deletedFlg defaults to 0")
+        void deletedFlg_defaultsToZero() {
+            CaseUpload upload = new CaseUpload();
+            assertThat(upload.getDeletedFlg()).isEqualTo((short) 0);
+        }
+
+        @Test
+        @DisplayName("mark as deleted sets deletedFlg to 1")
+        void markAsDeleted_setsFlagToOne() {
+            CaseUpload upload = new CaseUpload();
+            upload.setDeletedFlg((short) 1);
+            assertThat(upload.getDeletedFlg()).isEqualTo((short) 1);
+        }
+    }
 }
-
-=================
-
-
-package org.nnnn.ddd.entity;
-
-import java.io.Serializable;
-import jakarta.persistence.*;
-import java.sql.Timestamp;
-
-import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.LastModifiedDate;
-
-
-/**y
- * The persistent class for the ddd_CODE_REF database table.
- * 
- */
-@Entity
-@Table(name="ddd_CODE_REF", schema = "ddd")
-@NamedQuery(name="dddCodeRef.findAll", query="SELECT d FROM dddCodeRef d")
-public class dddCodeRef implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@Column(name="ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
-	@Column(name="CODE_DESC")
-	private String codeDesc;
-
-	@Column(name="CODE_TYPE")
-	private String codeType;
-
-	@Column(name="CODE_VAL")
-	private String codeVal;
-
-	@Column(name = "ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
-
-	@LastModifiedDate
-	@UpdateTimestamp
-	@Column(name = "ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
-	private Timestamp rowUpdtTs;
-
-	public dddCodeRef() {
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public String getCodeDesc() {
-		return this.codeDesc;
-	}
-
-	public void setCodeDesc(String codeDesc) {
-		this.codeDesc = codeDesc;
-	}
-
-	public String getCodeType() {
-		return this.codeType;
-	}
-
-	public void setCodeType(String codeType) {
-		this.codeType = codeType;
-	}
-
-	public String getCodeVal() {
-		return this.codeVal;
-	}
-
-	public void setCodeVal(String codeVal) {
-		this.codeVal = codeVal;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public Timestamp getRowUpdtTs() {
-		return this.rowUpdtTs;
-	}
-
-	public void setRowUpdtTs(Timestamp rowUpdtTs) {
-		this.rowUpdtTs = rowUpdtTs;
-	}
-
-}
-
-==================4
-
-
-
-package org.nnnn.ddd.entity;
-
-import java.io.Serializable;
-import jakarta.persistence.*;
-import java.sql.Timestamp;
-
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
-import org.springframework.data.annotation.LastModifiedDate;
-
-
-/**
- * The persistent class for the ddd_OFFICE_LIST database table.
- * 
- */
-@Entity
-@Audited
-@Table(name="ddd_OFFICE_LIST", schema = "ddd")
-@NamedQuery(name="dddOfficeList.findAll", query="SELECT d FROM dddOfficeList d")
-public class dddOfficeList implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@Column(name="ID")
-	private int id;
-
-	@Column(name="ddd_OFFICE_DESC")
-	private String dddOfficeDesc;
-
-	@Column(name="AD_SG_NM")
-	private String adSgNm;
-
-	@Column(name="INACTIVE_FLG")
-	private short inactiveFlg;
-
-	@Column(name="ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
-
-	@LastModifiedDate
-	@UpdateTimestamp
-	@Column(name="ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
-	private Timestamp rowUpdtTs;
-
-	public dddOfficeList() {
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public String getdddOfficeDesc() {
-		return this.dddOfficeDesc;
-	}
-
-	public void setdddOfficeDesc(String dddOfficeDesc) {
-		this.dddOfficeDesc = dddOfficeDesc;
-	}
-
-	public String getAdSgNm() {
-		return adSgNm;
-	}
-
-	public void setAdSgNm(String adSgNm) {
-		this.adSgNm = adSgNm;
-	}
-
-	public short getInactiveFlg() {
-		return this.inactiveFlg;
-	}
-
-	public void setInactiveFlg(short inactiveFlg) {
-		this.inactiveFlg = inactiveFlg;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public Timestamp getRowUpdtTs() {
-		return this.rowUpdtTs;
-	}
-
-	public void setRowUpdtTs(Timestamp rowUpdtTs) {
-		this.rowUpdtTs = rowUpdtTs;
-	}
-
-}
-
-===========
-
-package org.nnnn.ddd.entity;
-
-import java.io.Serializable;
-import jakarta.persistence.*;
-import java.sql.Timestamp;
-
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
-import org.springframework.data.annotation.LastModifiedDate;
-
-
-/**
- * The persistent class for the CASE_NOTE database table.
- * 
- */
-@Entity
-@Audited
-@Table(name="CASE_NOTE", schema = "ddd")
-@NamedQuery(name="CaseNote.findAll", query="SELECT c FROM CaseNote c")
-public class CaseNote implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@Column(name="ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
-	@Column(name="NOTE_DESC")
-	private String noteDesc;
-
-	@Column(name = "ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
-
-	@LastModifiedDate
-	@UpdateTimestamp
-	@Column(name = "ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
-	private Timestamp rowUpdtTs;
-
-	@Column(name="USER_NM")
-	private String userNm;
-
-	@ManyToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "CASE_ID", nullable = false) 
-    private dddCase dddCase;
-
-	@OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}) 
-    @JoinColumn(name = "UPLOAD_ID", nullable = true) 
-    private CaseUpload upload;
-
-	public CaseUpload getUpload() {
-		return upload;
-	}
-
-	public void setUpload(CaseUpload upload) {
-		this.upload = upload;
-	}
-
-	public dddCase getdddCase() {
-		return dddCase;
-	}
-
-	public void setdddCase(dddCase dddCase) {
-		this.dddCase = dddCase;
-	}
-
-	public CaseNote() {
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public String getNoteDesc() {
-		return this.noteDesc;
-	}
-
-	public void setNoteDesc(String noteDesc) {
-		this.noteDesc = noteDesc;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public Timestamp getRowUpdtTs() {
-		return this.rowUpdtTs;
-	}
-
-	public void setRowUpdtTs(Timestamp rowUpdtTs) {
-		this.rowUpdtTs = rowUpdtTs;
-	}
-
-	public String getUserNm() {
-		return this.userNm;
-	}
-
-	public void setUserNm(String userNm) {
-		this.userNm = userNm;
-	}
-
-}
-
-=========
-
-
-package org.nnnn.ddd.entity;
-
-import java.io.Serializable;
-import jakarta.persistence.*;
-import java.sql.Timestamp;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
-import org.springframework.data.annotation.LastModifiedDate;
-
-
-/**
- * The persistent class for the CATEGORY_LIST database table.
- * 
- */
-@Entity
-@Audited
-@Table(name="CATEGORY_LIST", schema = "ddd")
-@NamedQuery(name="CategoryList.findAll", query="SELECT c FROM CategoryList c")
-public class CategoryList implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@Column(name="ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
-	@Column(name="CATEGORY_DESC")
-	private String categoryDesc;
-
-	@Column(name="INACTIVE_FLG")
-	private short inactiveFlg;
-
-	@Column(name = "ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
-
-	@LastModifiedDate
-	@UpdateTimestamp
-	@Column(name = "ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
-	private Timestamp rowUpdtTs;
-
-	public CategoryList() {
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public String getCategoryDesc() {
-		return this.categoryDesc;
-	}
-
-	public void setCategoryDesc(String categoryDesc) {
-		this.categoryDesc = categoryDesc;
-	}
-
-	public short getInactiveFlg() {
-		return this.inactiveFlg;
-	}
-
-	public void setInactiveFlg(short inactiveFlg) {
-		this.inactiveFlg = inactiveFlg;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public Timestamp getRowUpdtTs() {
-		return this.rowUpdtTs;
-	}
-
-	public void setRowUpdtTs(Timestamp rowUpdtTs) {
-		this.rowUpdtTs = rowUpdtTs;
-	}
-
-}
-
-========
-
-
-
-package org.nnnn.ddd.entity;
-
-import java.io.Serializable;
-import jakarta.persistence.*;
-import java.sql.Timestamp;
-
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
-import org.springframework.data.annotation.LastModifiedDate;
-
-
-/**
- * The persistent class for the ITEM_LIST database table.
- * 
- */
-@Entity
-@Audited
-@Table(name="ITEM_LIST", schema = "ddd")
-@NamedQuery(name="ItemList.findAll", query="SELECT i FROM ItemList i")
-public class ItemList implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@Column(name="ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
-	@Column(name="INACTIVE_FLG")
-	private short inactiveFlg;
-
-	@Column(name="ITEM_DESC")
-	private String itemDesc;
-
-	@Column(name = "ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
-
-	@LastModifiedDate
-	@UpdateTimestamp
-	@Column(name = "ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
-	private Timestamp rowUpdtTs;
-
-	public ItemList() {
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public short getInactiveFlg() {
-		return this.inactiveFlg;
-	}
-
-	public void setInactiveFlg(short inactiveFlg) {
-		this.inactiveFlg = inactiveFlg;
-	}
-
-	public String getItemDesc() {
-		return this.itemDesc;
-	}
-
-	public void setItemDesc(String itemDesc) {
-		this.itemDesc = itemDesc;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public Timestamp getRowUpdtTs() {
-		return this.rowUpdtTs;
-	}
-
-	public void setRowUpdtTs(Timestamp rowUpdtTs) {
-		this.rowUpdtTs = rowUpdtTs;
-	}
-
-}
-
-============
-
-package org.nnnn.ddd.entity;
-
-import java.io.Serializable;
-import jakarta.persistence.*;
-import java.sql.Timestamp;
-
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
-import org.springframework.data.annotation.LastModifiedDate;
-
-
-/**
- * The persistent class for the STATUS_LIST database table.
- * 
- */
-@Entity
-@Audited
-@Table(name="STATUS_LIST", schema = "ddd")
-@NamedQuery(name="StatusList.findAll", query="SELECT s FROM StatusList s")
-public class StatusList implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@Column(name="ID")
-	private int id;
-
-	@Column(name="INACTIVE_FLG")
-	private short inactiveFlg;
-
-	@Column(name="ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
-
-	@LastModifiedDate
-	@UpdateTimestamp
-	@Column(name="ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
-	private Timestamp rowUpdtTs;
-
-	@Column(name="STATUS_DESC")
-	private String statusDesc;
-
-	public StatusList() {
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public short getInactiveFlg() {
-		return this.inactiveFlg;
-	}
-
-	public void setInactiveFlg(short inactiveFlg) {
-		this.inactiveFlg = inactiveFlg;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public Timestamp getRowUpdtTs() {
-		return this.rowUpdtTs;
-	}
-
-	public void setRowUpdtTs(Timestamp rowUpdtTs) {
-		this.rowUpdtTs = rowUpdtTs;
-	}
-
-	public String getStatusDesc() {
-		return this.statusDesc;
-	}
-
-	public void setStatusDesc(String statusDesc) {
-		this.statusDesc = statusDesc;
-	}
-
-}
-
-==========
-
-
-package org.nnnn.ddd.entity;
-
-import java.io.Serializable;
-import jakarta.persistence.*;
-import java.sql.Timestamp;
-
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
-import org.springframework.data.annotation.LastModifiedDate;
-
-
-/**
- * The persistent class for the TAG_LIST database table.
- * 
- */
-@Entity
-@Audited
-@Table(name="TAG_LIST", schema = "ddd")
-@NamedQuery(name="TagList.findAll", query="SELECT t FROM TagList t")
-public class TagList implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@Column(name="ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
-	@Column(name="INACTIVE_FLG")
-	private short inactiveFlg;
-
-	@Column(name = "ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
-
-	@LastModifiedDate
-	@UpdateTimestamp
-	@Column(name = "ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
-	private Timestamp rowUpdtTs;
-
-	@Column(name="TAG_DESC")
-	private String tagDesc;
-
-	public TagList() {
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public short getInactiveFlg() {
-		return this.inactiveFlg;
-	}
-
-	public void setInactiveFlg(short inactiveFlg) {
-		this.inactiveFlg = inactiveFlg;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public Timestamp getRowUpdtTs() {
-		return this.rowUpdtTs;
-	}
-
-	public void setRowUpdtTs(Timestamp rowUpdtTs) {
-		this.rowUpdtTs = rowUpdtTs;
-	}
-
-	public String getTagDesc() {
-		return this.tagDesc;
-	}
-
-	public void setTagDesc(String tagDesc) {
-		this.tagDesc = tagDesc;
-	}
-
-}
-
-========
-
-
-package org.nnnn.ddd.entity;
-
-import java.io.Serializable;
-import jakarta.persistence.*;
-import java.sql.Timestamp;
-
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
-import org.springframework.data.annotation.LastModifiedDate;
-
-
-/**
- * The persistent class for the CASE_TAG database table.
- * 
- */
-@Entity
-@Audited
-@Table(name="CASE_TAG", schema = "ddd")
-@NamedQuery(name="CaseTag.findAll", query="SELECT c FROM CaseTag c")
-public class CaseTag implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@Column(name="ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
-	@Column(name = "ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
-
-	@LastModifiedDate
-	@UpdateTimestamp
-	@Column(name = "ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
-	private Timestamp rowUpdtTs;
-
-	@OneToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "TAG_ID", nullable = true) 
-    private TagList tag;
-
-	@ManyToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "CASE_ID", nullable = false) 
-    private dddCase dddCase;
-
-	public dddCase getdddCase() {
-		return dddCase;
-	}
-
-	public void setdddCase(dddCase dddCase) {
-		this.dddCase = dddCase;
-	}
-
-	public CaseTag() {
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public Timestamp getRowUpdtTs() {
-		return this.rowUpdtTs;
-	}
-
-	public void setRowUpdtTs(Timestamp rowUpdtTs) {
-		this.rowUpdtTs = rowUpdtTs;
-	}
-
-	public TagList getTag() {
-		return tag;
-	}
-
-	public void setTag(TagList tag) {
-		this.tag = tag;
-	}
-
-}
-
-==========
-
-
-package org.nnnn.ddd.entity;
-
-import java.io.Serializable;
-import jakarta.persistence.*;
-import java.sql.Timestamp;
-
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
-import org.springframework.data.annotation.LastModifiedDate;
-
-
-/**
- * The persistent class for the CASE_TAG database table.
- * 
- */
-@Entity
-@Audited
-@Table(name="CASE_TAG", schema = "ddd")
-@NamedQuery(name="CaseTag.findAll", query="SELECT c FROM CaseTag c")
-public class CaseTag implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@Column(name="ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
-	@Column(name = "ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
-
-	@LastModifiedDate
-	@UpdateTimestamp
-	@Column(name = "ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
-	private Timestamp rowUpdtTs;
-
-	@OneToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "TAG_ID", nullable = true) 
-    private TagList tag;
-
-	@ManyToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "CASE_ID", nullable = false) 
-    private dddCase dddCase;
-
-	public dddCase getdddCase() {
-		return dddCase;
-	}
-
-	public void setdddCase(dddCase dddCase) {
-		this.dddCase = dddCase;
-	}
-
-	public CaseTag() {
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public Timestamp getRowUpdtTs() {
-		return this.rowUpdtTs;
-	}
-
-	public void setRowUpdtTs(Timestamp rowUpdtTs) {
-		this.rowUpdtTs = rowUpdtTs;
-	}
-
-	public TagList getTag() {
-		return tag;
-	}
-
-	public void setTag(TagList tag) {
-		this.tag = tag;
-	}
-
-}
-
-======
-
-package org.nnnn.ddd.entity;
-
-import java.io.Serializable;
-import jakarta.persistence.*;
-import java.sql.Timestamp;
-
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
-import org.springframework.data.annotation.LastModifiedDate;
-
-
-/**
- * The persistent class for the CASE_ITEM database table.
- * 
- */
-@Entity
-@Audited
-@Table(name="CASE_ITEM", schema = "ddd")
-@NamedQuery(name="CaseItem.findAll", query="SELECT c FROM CaseItem c")
-public class CaseItem implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@Column(name="ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
-	private Integer quantity;
-
-	@Column(name="NOTE_DESC")
-	private String noteDesc;
-	
-	@OneToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "ITEM_ID", nullable = true) 
-    private ItemList item;
-
-	@Column(name = "ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
-
-	@LastModifiedDate
-	@UpdateTimestamp
-	@Column(name = "ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
-	private Timestamp rowUpdtTs;
-
-	@Column(name="STATUS_DESC")
-	private String statusDesc;
-
-	@ManyToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "CASE_ID", nullable = false) 
-    private dddCase dddCase;
-	
-	public ItemList getItem() {
-		return item;
-	}
-
-	public void setItem(ItemList item) {
-		this.item = item;
-	}
-
-	public void setdddCase(dddCase dddCase) {
-		this.dddCase = dddCase;
-	}
-
-	public dddCase getdddCase() {
-		return dddCase;
-	}
-
-	public CaseItem() {
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public Integer getQuantity() {
-		return this.quantity;
-	}
-
-	public void setQuantity(Integer quantity) {
-		this.quantity = quantity;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public Timestamp getRowUpdtTs() {
-		return this.rowUpdtTs;
-	}
-
-	public void setRowUpdtTs(Timestamp rowUpdtTs) {
-		this.rowUpdtTs = rowUpdtTs;
-	}
-
-	public String getStatusDesc() {
-		return this.statusDesc;
-	}
-
-	public void setStatusDesc(String statusDesc) {
-		this.statusDesc = statusDesc;
-	}
-
-	public String getNoteDesc() {
-		return this.noteDesc;
-	}
-
-	public void setNoteDesc(String noteDesc) {
-		this.noteDesc = noteDesc;
-	}
-}
-
-==========
-
-package org.nnnn.ddd.entity;
-
-import java.io.Serializable;
-import jakarta.persistence.*;
-import java.sql.Timestamp;
-
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
-import org.springframework.data.annotation.LastModifiedDate;
-
-
-/**
- * The persistent class for the CASE_UPLOAD database table.
- * 
- */
-@Entity
-@Audited
-@Table(name="CASE_UPLOAD", schema = "ddd")
-@NamedQuery(name="CaseUpload.findAll", query="SELECT c FROM CaseUpload c")
-public class CaseUpload implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@Column(name="ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
-	@Column(name="FILE_NM")
-	private String fileNm;
-
-	@Column(name = "ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
-
-	@LastModifiedDate
-	@UpdateTimestamp
-	@Column(name = "ROW_UPDT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
-	private Timestamp rowUpdtTs;
-
-	@Column(name="USER_NM")
-	private String userNm;
-
-	@Column(name="DELETED_FLG")
-	private short deletedFlg;
-
-	@ManyToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "CASE_ID", nullable = false) 
-    private dddCase dddCase;
-	
-	public short getDeletedFlg() {
-		return deletedFlg;
-	}
-
-	public void setDeletedFlg(short deletedFlg) {
-		this.deletedFlg = deletedFlg;
-	}
-
-	public dddCase getdddCase() {
-		return dddCase;
-	}
-
-	public void setdddCase(dddCase dddCase) {
-		this.dddCase = dddCase;
-	}
-
-	public CaseUpload() {
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public String getFileNm() {
-		return this.fileNm;
-	}
-
-	public void setFileNm(String fileNm) {
-		this.fileNm = fileNm;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public Timestamp getRowUpdtTs() {
-		return this.rowUpdtTs;
-	}
-
-	public void setRowUpdtTs(Timestamp rowUpdtTs) {
-		this.rowUpdtTs = rowUpdtTs;
-	}
-
-	public String getUserNm() {
-		return this.userNm;
-	}
-
-	public void setUserNm(String userNm) {
-		this.userNm = userNm;
-	}
-
-}
-
