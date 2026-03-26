@@ -1,568 +1,691 @@
 package org.nnnn.ddd.model;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.nnnn.ddd.AppConstants;
-import org.threeten.bp.LocalDate;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.sql.Date;
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.ArrayList;
 import java.util.List;
+import org.nnnn.ddd.model.ADA;
+import org.nnnn.ddd.model.ArrestInfo;
+import org.nnnn.ddd.model.CaseItem;
+import org.nnnn.ddd.model.CaseNote;
+import org.nnnn.ddd.model.CaseTag;
+import org.nnnn.ddd.model.CaseUpload;
+import org.nnnn.ddd.model.Category;
+import org.nnnn.ddd.model.dddCase;
+import org.nnnn.ddd.model.dddOffice;
+import org.nnnn.ddd.model.Status;
+import org.nnnn.ddd.model.User;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.OffsetDateTime;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
+/**
+ * dddCase
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-03-17T11:34:35.864-04:00")
 
-@DisplayName("ArrestInfo Model Tests")
-class ArrestInfoTest {
 
-    // =========================================================================
-    // Default constructor + getters/setters
-    // =========================================================================
+public class dddCase   {
+  @JsonProperty("id")
+  private Integer id = null;
 
-    @Nested
-    @DisplayName("Default Constructor and Setters")
-    class DefaultConstructorTests {
+  @JsonProperty("parentId")
+  private Integer parentId = null;
 
-        @Test
-        @DisplayName("default constructor creates instance with null fields")
-        void defaultConstructor_createsInstanceWithNullFields() {
-            ArrestInfo info = new ArrestInfo();
-            assertThat(info).isNotNull();
-            assertThat(info.getArrId()).isNull();
-            assertThat(info.getDeftFrstNm()).isNull();
-            assertThat(info.getDeftLastNm()).isNull();
-            assertThat(info.getArrSealedFlg()).isNull();
-        }
+  @JsonProperty("arrId")
+  private String arrId = null;
 
-        @Test
-        @DisplayName("setters and getters work correctly")
-        void settersAndGetters_workCorrectly() {
-            ArrestInfo info = new ArrestInfo();
-            LocalDate today = LocalDate.now();
+  @JsonProperty("assignedNm")
+  private String assignedNm = null;
 
-            info.setArrId("ARR001");
-            info.setArrPct("061");
-            info.setArrPb("BK");
-            info.setTopCharge("PL 265.03");
-            info.setAoTax("123456");
-            info.setAoFrstNm("John");
-            info.setAoLastNm("Smith");
-            info.setAoCmd("061");
-            info.setDeftFrstNm("Jane");
-            info.setDeftLastNm("Doe");
-            info.setDeftNysid("NY123456");
-            info.setArrSealedFlg("N");
-            info.setDeftGender("F");
-            info.setArrDt(today);
-            info.setDeftBrthDt(today);
-            info.setFelonyFlg(1);
-            info.setDvFlg(0);
-            info.setIndexCrimeFlg(0);
-            info.setCmplntId(List.of("C001", "C002"));
+  @JsonProperty("assignedNmInfo")
+  private User assignedNmInfo = null;
 
-            assertThat(info.getArrId()).isEqualTo("ARR001");
-            assertThat(info.getArrPct()).isEqualTo("061");
-            assertThat(info.getArrPb()).isEqualTo("BK");
-            assertThat(info.getTopCharge()).isEqualTo("PL 265.03");
-            assertThat(info.getAoTax()).isEqualTo("123456");
-            assertThat(info.getAoFrstNm()).isEqualTo("John");
-            assertThat(info.getAoLastNm()).isEqualTo("Smith");
-            assertThat(info.getAoCmd()).isEqualTo("061");
-            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
-            assertThat(info.getDeftLastNm()).isEqualTo("Doe");
-            assertThat(info.getDeftNysid()).isEqualTo("NY123456");
-            assertThat(info.getArrSealedFlg()).isEqualTo("N");
-            assertThat(info.getDeftGender()).isEqualTo("F");
-            assertThat(info.getArrDt()).isEqualTo(today);
-            assertThat(info.getDeftBrthDt()).isEqualTo(today);
-            assertThat(info.getFelonyFlg()).isEqualTo(1);
-            assertThat(info.getDvFlg()).isEqualTo(0);
-            assertThat(info.getIndexCrimeFlg()).isEqualTo(0);
-            assertThat(info.getCmplntId()).containsExactly("C001", "C002");
-        }
+  @JsonProperty("requestDt")
+  private LocalDate requestDt = null;
 
-        @Test
-        @DisplayName("addCmplntIdItem adds to list")
-        void addCmplntIdItem_addsToList() {
-            ArrestInfo info = new ArrestInfo();
-            info.addCmplntIdItem("C001");
-            info.addCmplntIdItem("C002");
+  @JsonProperty("dueDt")
+  private LocalDate dueDt = null;
 
-            assertThat(info.getCmplntId()).containsExactly("C001", "C002");
-        }
+  @JsonProperty("completeDt")
+  private LocalDate completeDt = null;
 
-        @Test
-        @DisplayName("addCmplntIdItem initializes list if null")
-        void addCmplntIdItem_initializesListIfNull() {
-            ArrestInfo info = new ArrestInfo();
-            assertThat(info.getCmplntId()).isNull();
+  @JsonProperty("proactiveFlg")
+  private Integer proactiveFlg = null;
 
-            info.addCmplntIdItem("C001");
+  @JsonProperty("activeFlg")
+  private Integer activeFlg = null;
 
-            assertThat(info.getCmplntId()).isNotNull().hasSize(1);
-        }
+  @JsonProperty("relatedCases")
+  @Valid
+  private List<dddCase> relatedCases = null;
+
+  @JsonProperty("category")
+  private Category category = null;
+
+  @JsonProperty("ddd")
+  private dddOffice ddd = null;
+
+  @JsonProperty("status")
+  private Status status = null;
+
+  @JsonProperty("arrest")
+  private ArrestInfo arrest = null;
+
+  @JsonProperty("ada")
+  private ADA ada = null;
+
+  @JsonProperty("tags")
+  @Valid
+  private List<CaseTag> tags = null;
+
+  @JsonProperty("items")
+  @Valid
+  private List<CaseItem> items = null;
+
+  @JsonProperty("notes")
+  @Valid
+  private List<CaseNote> notes = null;
+
+  @JsonProperty("uploads")
+  @Valid
+  private List<CaseUpload> uploads = null;
+
+  @JsonProperty("rowInsertTs")
+  private OffsetDateTime rowInsertTs = null;
+
+  @JsonProperty("rowUpdtTs")
+  private OffsetDateTime rowUpdtTs = null;
+
+  @JsonProperty("version")
+  private Long version = null;
+
+  private boolean isNew;
+
+  @JsonIgnore
+  public boolean isNew() {
+    return this.isNew;
+  }
+
+  public void setNew(final boolean isNew) {
+    this.isNew = isNew;
+  }
+
+  public dddCase id(Integer id) {
+    this.id = id;
+    return this;
+  }
+
+  /**
+   * Get id
+   * @return id
+   **/
+  @Schema(example = "1", description = "")
+  
+    public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public dddCase parentId(Integer parentId) {
+    this.parentId = parentId;
+    return this;
+  }
+
+  /**
+   * Get parentId
+   * @return parentId
+   **/
+  @Schema(description = "")
+  
+    public Integer getParentId() {
+    return parentId;
+  }
+
+  public void setParentId(Integer parentId) {
+    this.parentId = parentId;
+  }
+
+  public dddCase arrId(String arrId) {
+    this.arrId = arrId;
+    return this;
+  }
+
+  /**
+   * Get arrId
+   * @return arrId
+   **/
+  @Schema(description = "")
+  
+    public String getArrId() {
+    return arrId;
+  }
+
+  public void setArrId(String arrId) {
+    this.arrId = arrId;
+  }
+
+  public dddCase assignedNm(String assignedNm) {
+    this.assignedNm = assignedNm;
+    return this;
+  }
+
+  /**
+   * Get assignedNm
+   * @return assignedNm
+   **/
+  @Schema(description = "")
+  
+    public String getAssignedNm() {
+    return assignedNm;
+  }
+
+  public void setAssignedNm(String assignedNm) {
+    this.assignedNm = assignedNm;
+  }
+
+  public dddCase assignedNmInfo(User assignedNmInfo) {
+    this.assignedNmInfo = assignedNmInfo;
+    return this;
+  }
+
+  /**
+   * Get assignedNmInfo
+   * @return assignedNmInfo
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public User getAssignedNmInfo() {
+    return assignedNmInfo;
+  }
+
+  public void setAssignedNmInfo(User assignedNmInfo) {
+    this.assignedNmInfo = assignedNmInfo;
+  }
+
+  public dddCase requestDt(LocalDate requestDt) {
+    this.requestDt = requestDt;
+    return this;
+  }
+
+  /**
+   * Get requestDt
+   * @return requestDt
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public LocalDate getRequestDt() {
+    return requestDt;
+  }
+
+  public void setRequestDt(LocalDate requestDt) {
+    this.requestDt = requestDt;
+  }
+
+  public dddCase dueDt(LocalDate dueDt) {
+    this.dueDt = dueDt;
+    return this;
+  }
+
+  /**
+   * Get dueDt
+   * @return dueDt
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public LocalDate getDueDt() {
+    return dueDt;
+  }
+
+  public void setDueDt(LocalDate dueDt) {
+    this.dueDt = dueDt;
+  }
+
+  public dddCase completeDt(LocalDate completeDt) {
+    this.completeDt = completeDt;
+    return this;
+  }
+
+  /**
+   * Get completeDt
+   * @return completeDt
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public LocalDate getCompleteDt() {
+    return completeDt;
+  }
+
+  public void setCompleteDt(LocalDate completeDt) {
+    this.completeDt = completeDt;
+  }
+
+  public dddCase proactiveFlg(Integer proactiveFlg) {
+    this.proactiveFlg = proactiveFlg;
+    return this;
+  }
+
+  /**
+   * Get proactiveFlg
+   * @return proactiveFlg
+   **/
+  @Schema(description = "")
+  
+    public Integer getProactiveFlg() {
+    return proactiveFlg;
+  }
+
+  public void setProactiveFlg(Integer proactiveFlg) {
+    this.proactiveFlg = proactiveFlg;
+  }
+
+  public dddCase activeFlg(Integer activeFlg) {
+    this.activeFlg = activeFlg;
+    return this;
+  }
+
+  /**
+   * Get activeFlg
+   * @return activeFlg
+   **/
+  @Schema(description = "")
+  
+    public Integer getActiveFlg() {
+    return activeFlg;
+  }
+
+  public void setActiveFlg(Integer activeFlg) {
+    this.activeFlg = activeFlg;
+  }
+
+  public dddCase relatedCases(List<dddCase> relatedCases) {
+    this.relatedCases = relatedCases;
+    return this;
+  }
+
+  public dddCase addRelatedCasesItem(dddCase relatedCasesItem) {
+    if (this.relatedCases == null) {
+      this.relatedCases = new ArrayList<dddCase>();
     }
+    this.relatedCases.add(relatedCasesItem);
+    return this;
+  }
 
-    // =========================================================================
-    // Builder-style constructor (5 args)
-    // =========================================================================
+  /**
+   * Get relatedCases
+   * @return relatedCases
+   **/
+  @Schema(description = "")
+      @Valid
+    public List<dddCase> getRelatedCases() {
+    return relatedCases;
+  }
 
-    @Nested
-    @DisplayName("5-Arg Constructor (summary)")
-    class FiveArgConstructorTests {
+  public void setRelatedCases(List<dddCase> relatedCases) {
+    this.relatedCases = relatedCases;
+  }
 
-        @Test
-        @DisplayName("sets arrId, topCharge, deftFrstNm, deftLastNm, deftNysid from sql.Date")
-        void constructor_setsBasicFields() {
-            Date sqlDate = Date.valueOf("2024-01-15");
-            ArrestInfo info = new ArrestInfo("ARR001", "PL 265.03", sqlDate, "Jane", "Doe", "NY123456");
+  public dddCase category(Category category) {
+    this.category = category;
+    return this;
+  }
 
-            assertThat(info.getArrId()).isEqualTo("ARR001");
-            assertThat(info.getTopCharge()).isEqualTo("PL 265.03");
-            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
-            assertThat(info.getDeftLastNm()).isEqualTo("Doe");
-            assertThat(info.getDeftNysid()).isEqualTo("NY123456");
-            assertThat(info.getArrDt()).isNotNull();
-        }
+  /**
+   * Get category
+   * @return category
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public Category getCategory() {
+    return category;
+  }
 
-        @Test
-        @DisplayName("converts sql.Date to LocalDate correctly")
-        void constructor_convertsSqlDateToLocalDate() {
-            Date sqlDate = Date.valueOf("2024-03-15");
-            ArrestInfo info = new ArrestInfo("ARR001", "PL 265.03", sqlDate, "Jane", "Doe", "NY123");
+  public void setCategory(Category category) {
+    this.category = category;
+  }
 
-            assertThat(info.getArrDt().getYear()).isEqualTo(2024);
-            assertThat(info.getArrDt().getMonthValue()).isEqualTo(3);
-            assertThat(info.getArrDt().getDayOfMonth()).isEqualTo(15);
-        }
+  public dddCase ddd(dddOffice ddd) {
+    this.ddd = ddd;
+    return this;
+  }
+
+  /**
+   * Get ddd
+   * @return ddd
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public dddOffice getddd() {
+    return ddd;
+  }
+
+  public void setddd(dddOffice ddd) {
+    this.ddd = ddd;
+  }
+
+  public dddCase status(Status status) {
+    this.status = status;
+    return this;
+  }
+
+  /**
+   * Get status
+   * @return status
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public Status getStatus() {
+    return status;
+  }
+
+  public void setStatus(Status status) {
+    this.status = status;
+  }
+
+  public dddCase arrest(ArrestInfo arrest) {
+    this.arrest = arrest;
+    return this;
+  }
+
+  /**
+   * Get arrest
+   * @return arrest
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public ArrestInfo getArrest() {
+    return arrest;
+  }
+
+  public void setArrest(ArrestInfo arrest) {
+    this.arrest = arrest;
+  }
+
+  public dddCase ada(ADA ada) {
+    this.ada = ada;
+    return this;
+  }
+
+  /**
+   * Get ada
+   * @return ada
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public ADA getAda() {
+    return ada;
+  }
+
+  public void setAda(ADA ada) {
+    this.ada = ada;
+  }
+
+  public dddCase tags(List<CaseTag> tags) {
+    this.tags = tags;
+    return this;
+  }
+
+  public dddCase addTagsItem(CaseTag tagsItem) {
+    if (this.tags == null) {
+      this.tags = new ArrayList<CaseTag>();
     }
+    this.tags.add(tagsItem);
+    return this;
+  }
 
-    // =========================================================================
-    // Masked constructor (8 args) — sealed flag + masking logic
-    // =========================================================================
+  /**
+   * Get tags
+   * @return tags
+   **/
+  @Schema(description = "")
+      @Valid
+    public List<CaseTag> getTags() {
+    return tags;
+  }
 
-    @Nested
-    @DisplayName("8-Arg Constructor (masked summary)")
-    class EightArgConstructorTests {
+  public void setTags(List<CaseTag> tags) {
+    this.tags = tags;
+  }
 
-        @Test
-        @DisplayName("unsealed arrest - shows real defendant info")
-        void constructor_unsealedArrest_showsRealInfo() {
-            Date sqlDate = Date.valueOf("2024-01-15");
-            ArrestInfo info = new ArrestInfo("ARR001", "PL 265.03", sqlDate,
-                    "Jane", "Doe", "NY123456", 'N', true);
+  public dddCase items(List<CaseItem> items) {
+    this.items = items;
+    return this;
+  }
 
-            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
-            assertThat(info.getDeftLastNm()).isEqualTo("Doe");
-            assertThat(info.getDeftNysid()).isEqualTo("NY123456");
-            assertThat(info.getTopCharge()).isEqualTo("PL 265.03");
-            assertThat(info.getArrSealedFlg()).isEqualTo("N");
-        }
-
-        @Test
-        @DisplayName("sealed arrest with maskSealed=true - masks defendant info")
-        void constructor_sealedArrest_maskSealed_masksInfo() {
-            Date sqlDate = Date.valueOf("2024-01-15");
-            ArrestInfo info = new ArrestInfo("ARR001", "PL 265.03", sqlDate,
-                    "Jane", "Doe", "NY123456", 'Y', true);
-
-            assertThat(info.getDeftFrstNm()).isEqualTo(AppConstants.SEALED_STRING);
-            assertThat(info.getDeftLastNm()).isEqualTo(AppConstants.SEALED_STRING);
-            assertThat(info.getDeftNysid()).isEqualTo(AppConstants.SEALED_STRING);
-            assertThat(info.getTopCharge()).isEqualTo(AppConstants.SEALED_STRING);
-            assertThat(info.getArrSealedFlg()).isEqualTo("Y");
-        }
-
-        @Test
-        @DisplayName("sealed arrest with maskSealed=false - shows real info despite sealed")
-        void constructor_sealedArrest_maskSealedFalse_showsRealInfo() {
-            Date sqlDate = Date.valueOf("2024-01-15");
-            ArrestInfo info = new ArrestInfo("ARR001", "PL 265.03", sqlDate,
-                    "Jane", "Doe", "NY123456", 'Y', false);
-
-            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
-            assertThat(info.getDeftLastNm()).isEqualTo("Doe");
-            assertThat(info.getDeftNysid()).isEqualTo("NY123456");
-            assertThat(info.getTopCharge()).isEqualTo("PL 265.03");
-        }
-
-        @Test
-        @DisplayName("null arrSealedFlg - sets arrSealedFlg to null")
-        void constructor_nullSealedFlg_setsNull() {
-            Date sqlDate = Date.valueOf("2024-01-15");
-            ArrestInfo info = new ArrestInfo("ARR001", "PL 265.03", sqlDate,
-                    "Jane", "Doe", "NY123456", null, true);
-
-            assertThat(info.getArrSealedFlg()).isNull();
-            // Not sealed so real info shown
-            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
-        }
+  public dddCase addItemsItem(CaseItem itemsItem) {
+    if (this.items == null) {
+      this.items = new ArrayList<CaseItem>();
     }
+    this.items.add(itemsItem);
+    return this;
+  }
 
-    // =========================================================================
-    // Full constructor (19 args) — all fields including flags
-    // =========================================================================
+  /**
+   * Get items
+   * @return items
+   **/
+  @Schema(description = "")
+      @Valid
+    public List<CaseItem> getItems() {
+    return items;
+  }
 
-    @Nested
-    @DisplayName("Full Constructor (19 args)")
-    class FullConstructorTests {
+  public void setItems(List<CaseItem> items) {
+    this.items = items;
+  }
 
-        private ArrestInfo buildFullArrestInfo(String kyCd, Character dvFlg, Character lawCatCd,
-                                               String cmplntId, Character sealedFlg) {
-            return new ArrestInfo(
-                    "ARR001",
-                    Date.valueOf("2024-01-15"),
-                    "061",
-                    sealedFlg,
-                    "PL 265.03",
-                    "BK",
-                    "123456",
-                    "John",
-                    "Smith",
-                    "061",
-                    "Jane",
-                    "Doe",
-                    "NY123",
-                    "F",
-                    Date.valueOf("1990-05-20"),
-                    cmplntId,
-                    kyCd,
-                    dvFlg,
-                    lawCatCd
-            );
-        }
+  public dddCase notes(List<CaseNote> notes) {
+    this.notes = notes;
+    return this;
+  }
 
-        @Test
-        @DisplayName("sets all basic fields correctly")
-        void constructor_setsAllBasicFields() {
-            ArrestInfo info = buildFullArrestInfo(null, null, null, null, 'N');
-
-            assertThat(info.getArrId()).isEqualTo("ARR001");
-            assertThat(info.getArrPct()).isEqualTo("061");
-            assertThat(info.getArrPb()).isEqualTo("BK");
-            assertThat(info.getAoTax()).isEqualTo("123456");
-            assertThat(info.getAoFrstNm()).isEqualTo("John");
-            assertThat(info.getAoLastNm()).isEqualTo("Smith");
-            assertThat(info.getAoCmd()).isEqualTo("061");
-            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
-            assertThat(info.getDeftLastNm()).isEqualTo("Doe");
-            assertThat(info.getDeftNysid()).isEqualTo("NY123");
-            assertThat(info.getDeftGender()).isEqualTo("F");
-            assertThat(info.getArrSealedFlg()).isEqualTo("N");
-        }
-
-        @Test
-        @DisplayName("converts deftBrthDt from sql.Date to LocalDate")
-        void constructor_convertsDeftBrthDt() {
-            ArrestInfo info = buildFullArrestInfo(null, null, null, null, 'N');
-
-            assertThat(info.getDeftBrthDt()).isNotNull();
-            assertThat(info.getDeftBrthDt().getYear()).isEqualTo(1990);
-            assertThat(info.getDeftBrthDt().getMonthValue()).isEqualTo(5);
-            assertThat(info.getDeftBrthDt().getDayOfMonth()).isEqualTo(20);
-        }
-
-        @Test
-        @DisplayName("null deftBrthDt stays null")
-        void constructor_nullDeftBrthDt_staysNull() {
-            ArrestInfo info = new ArrestInfo(
-                    "ARR001", Date.valueOf("2024-01-15"), "061", 'N',
-                    "PL 265.03", "BK", "123456", "John", "Smith", "061",
-                    "Jane", "Doe", "NY123", "F",
-                    null, // null deftBrthDt
-                    null, null, null, null
-            );
-
-            assertThat(info.getDeftBrthDt()).isNull();
-        }
-
-        // ===== indexCrimeFlg logic =====
-
-        @Test
-        @DisplayName("indexCrimeFlg=0 when kyCd is null")
-        void constructor_indexCrimeFlg_nullKyCd_setsZero() {
-            ArrestInfo info = buildFullArrestInfo(null, null, null, null, 'N');
-            assertThat(info.getIndexCrimeFlg()).isEqualTo(0);
-        }
-
-        @Test
-        @DisplayName("indexCrimeFlg=1 when kyCd is 101")
-        void constructor_indexCrimeFlg_kyCd101_setsOne() {
-            assertThat(buildFullArrestInfo("101", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
-        }
-
-        @Test
-        @DisplayName("indexCrimeFlg=1 when kyCd is 102")
-        void constructor_indexCrimeFlg_kyCd102_setsOne() {
-            assertThat(buildFullArrestInfo("102", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
-        }
-
-        @Test
-        @DisplayName("indexCrimeFlg=1 when kyCd is 103")
-        void constructor_indexCrimeFlg_kyCd103_setsOne() {
-            assertThat(buildFullArrestInfo("103", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
-        }
-
-        @Test
-        @DisplayName("indexCrimeFlg=1 when kyCd is 104")
-        void constructor_indexCrimeFlg_kyCd104_setsOne() {
-            assertThat(buildFullArrestInfo("104", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
-        }
-
-        @Test
-        @DisplayName("indexCrimeFlg=1 when kyCd is 105")
-        void constructor_indexCrimeFlg_kyCd105_setsOne() {
-            assertThat(buildFullArrestInfo("105", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
-        }
-
-        @Test
-        @DisplayName("indexCrimeFlg=1 when kyCd is 106")
-        void constructor_indexCrimeFlg_kyCd106_setsOne() {
-            assertThat(buildFullArrestInfo("106", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
-        }
-
-        @Test
-        @DisplayName("indexCrimeFlg=1 when kyCd is 107")
-        void constructor_indexCrimeFlg_kyCd107_setsOne() {
-            assertThat(buildFullArrestInfo("107", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
-        }
-
-        @Test
-        @DisplayName("indexCrimeFlg=1 when kyCd is 109")
-        void constructor_indexCrimeFlg_kyCd109_setsOne() {
-            assertThat(buildFullArrestInfo("109", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
-        }
-
-        @Test
-        @DisplayName("indexCrimeFlg=0 when kyCd is non-index value")
-        void constructor_indexCrimeFlg_nonIndexKyCd_setsZero() {
-            assertThat(buildFullArrestInfo("999", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(0);
-        }
-
-        // ===== dvFlg logic =====
-
-        @Test
-        @DisplayName("dvFlg=1 when dvFlg char is Y")
-        void constructor_dvFlg_charY_setsOne() {
-            assertThat(buildFullArrestInfo(null, 'Y', null, null, 'N').getDvFlg()).isEqualTo(1);
-        }
-
-        @Test
-        @DisplayName("dvFlg=0 when dvFlg char is N")
-        void constructor_dvFlg_charN_setsZero() {
-            assertThat(buildFullArrestInfo(null, 'N', null, null, 'N').getDvFlg()).isEqualTo(0);
-        }
-
-        @Test
-        @DisplayName("dvFlg=0 when dvFlg is null")
-        void constructor_dvFlg_null_setsZero() {
-            assertThat(buildFullArrestInfo(null, null, null, null, 'N').getDvFlg()).isEqualTo(0);
-        }
-
-        // ===== felonyFlg logic =====
-
-        @Test
-        @DisplayName("felonyFlg=1 when lawCatCd is F")
-        void constructor_felonyFlg_charF_setsOne() {
-            assertThat(buildFullArrestInfo(null, null, 'F', null, 'N').getFelonyFlg()).isEqualTo(1);
-        }
-
-        @Test
-        @DisplayName("felonyFlg=0 when lawCatCd is M")
-        void constructor_felonyFlg_charM_setsZero() {
-            assertThat(buildFullArrestInfo(null, null, 'M', null, 'N').getFelonyFlg()).isEqualTo(0);
-        }
-
-        @Test
-        @DisplayName("felonyFlg=0 when lawCatCd is null")
-        void constructor_felonyFlg_null_setsZero() {
-            assertThat(buildFullArrestInfo(null, null, null, null, 'N').getFelonyFlg()).isEqualTo(0);
-        }
-
-        // ===== cmplntId splitting =====
-
-        @Test
-        @DisplayName("cmplntId is split by comma when provided")
-        void constructor_cmplntId_splitByComma() {
-            ArrestInfo info = buildFullArrestInfo(null, null, null, "C001,C002,C003", 'N');
-
-            assertThat(info.getCmplntId()).containsExactly("C001", "C002", "C003");
-        }
-
-        @Test
-        @DisplayName("cmplntId is null when not provided")
-        void constructor_cmplntId_nullWhenNotProvided() {
-            ArrestInfo info = buildFullArrestInfo(null, null, null, null, 'N');
-
-            assertThat(info.getCmplntId()).isNull();
-        }
-
-        @Test
-        @DisplayName("cmplntId with single value produces single-element list")
-        void constructor_cmplntId_singleValue_producesSingleElement() {
-            ArrestInfo info = buildFullArrestInfo(null, null, null, "C001", 'N');
-
-            assertThat(info.getCmplntId()).containsExactly("C001");
-        }
-
-        @Test
-        @DisplayName("null arrSealedFlg sets arrSealedFlg to null")
-        void constructor_nullSealedFlg_setsNull() {
-            ArrestInfo info = buildFullArrestInfo(null, null, null, null, null);
-            assertThat(info.getArrSealedFlg()).isNull();
-        }
+  public dddCase addNotesItem(CaseNote notesItem) {
+    if (this.notes == null) {
+      this.notes = new ArrayList<CaseNote>();
     }
+    this.notes.add(notesItem);
+    return this;
+  }
 
-    // =========================================================================
-    // Builder-style fluent methods
-    // =========================================================================
+  /**
+   * Get notes
+   * @return notes
+   **/
+  @Schema(description = "")
+      @Valid
+    public List<CaseNote> getNotes() {
+    return notes;
+  }
 
-    @Nested
-    @DisplayName("Fluent Builder Methods")
-    class FluentBuilderTests {
+  public void setNotes(List<CaseNote> notes) {
+    this.notes = notes;
+  }
 
-        @Test
-        @DisplayName("fluent arrId returns same instance")
-        void fluent_arrId_returnsSameInstance() {
-            ArrestInfo info = new ArrestInfo();
-            ArrestInfo result = info.arrId("ARR001");
-            assertThat(result).isSameAs(info);
-            assertThat(info.getArrId()).isEqualTo("ARR001");
-        }
+  public dddCase uploads(List<CaseUpload> uploads) {
+    this.uploads = uploads;
+    return this;
+  }
 
-        @Test
-        @DisplayName("fluent deftFrstNm returns same instance")
-        void fluent_deftFrstNm_returnsSameInstance() {
-            ArrestInfo info = new ArrestInfo();
-            assertThat(info.deftFrstNm("Jane")).isSameAs(info);
-            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
-        }
-
-        @Test
-        @DisplayName("fluent arrSealedFlg returns same instance")
-        void fluent_arrSealedFlg_returnsSameInstance() {
-            ArrestInfo info = new ArrestInfo();
-            assertThat(info.arrSealedFlg("Y")).isSameAs(info);
-            assertThat(info.getArrSealedFlg()).isEqualTo("Y");
-        }
-
-        @Test
-        @DisplayName("fluent felonyFlg returns same instance")
-        void fluent_felonyFlg_returnsSameInstance() {
-            ArrestInfo info = new ArrestInfo();
-            assertThat(info.felonyFlg(1)).isSameAs(info);
-            assertThat(info.getFelonyFlg()).isEqualTo(1);
-        }
-
-        @Test
-        @DisplayName("fluent dvFlg returns same instance")
-        void fluent_dvFlg_returnsSameInstance() {
-            ArrestInfo info = new ArrestInfo();
-            assertThat(info.dvFlg(0)).isSameAs(info);
-            assertThat(info.getDvFlg()).isEqualTo(0);
-        }
-
-        @Test
-        @DisplayName("fluent indexCrimeFlg returns same instance")
-        void fluent_indexCrimeFlg_returnsSameInstance() {
-            ArrestInfo info = new ArrestInfo();
-            assertThat(info.indexCrimeFlg(1)).isSameAs(info);
-            assertThat(info.getIndexCrimeFlg()).isEqualTo(1);
-        }
+  public dddCase addUploadsItem(CaseUpload uploadsItem) {
+    if (this.uploads == null) {
+      this.uploads = new ArrayList<CaseUpload>();
     }
+    this.uploads.add(uploadsItem);
+    return this;
+  }
 
-    // =========================================================================
-    // equals() and hashCode()
-    // =========================================================================
+  /**
+   * Get uploads
+   * @return uploads
+   **/
+  @Schema(description = "")
+      @Valid
+    public List<CaseUpload> getUploads() {
+    return uploads;
+  }
 
-    @Nested
-    @DisplayName("equals() and hashCode()")
-    class EqualsAndHashCodeTests {
+  public void setUploads(List<CaseUpload> uploads) {
+    this.uploads = uploads;
+  }
 
-        @Test
-        @DisplayName("two instances with same arrId are equal")
-        void equals_sameArrId_returnsTrue() {
-            ArrestInfo a = new ArrestInfo();
-            a.setArrId("ARR001");
-            ArrestInfo b = new ArrestInfo();
-            b.setArrId("ARR001");
+  public dddCase rowInsertTs(OffsetDateTime rowInsertTs) {
+    this.rowInsertTs = rowInsertTs;
+    return this;
+  }
 
-            assertThat(a).isEqualTo(b);
-        }
+  /**
+   * Get rowInsertTs
+   * @return rowInsertTs
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public OffsetDateTime getRowInsertTs() {
+    return rowInsertTs;
+  }
 
-        @Test
-        @DisplayName("two instances with different arrId are not equal")
-        void equals_differentArrId_returnsFalse() {
-            ArrestInfo a = new ArrestInfo();
-            a.setArrId("ARR001");
-            ArrestInfo b = new ArrestInfo();
-            b.setArrId("ARR002");
+  public void setRowInsertTs(OffsetDateTime rowInsertTs) {
+    this.rowInsertTs = rowInsertTs;
+  }
 
-            assertThat(a).isNotEqualTo(b);
-        }
+  public dddCase rowUpdtTs(OffsetDateTime rowUpdtTs) {
+    this.rowUpdtTs = rowUpdtTs;
+    return this;
+  }
 
-        @Test
-        @DisplayName("same instance is equal to itself")
-        void equals_sameInstance_returnsTrue() {
-            ArrestInfo a = new ArrestInfo();
-            a.setArrId("ARR001");
+  /**
+   * Get rowUpdtTs
+   * @return rowUpdtTs
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public OffsetDateTime getRowUpdtTs() {
+    return rowUpdtTs;
+  }
 
-            assertThat(a).isEqualTo(a);
-        }
+  public void setRowUpdtTs(OffsetDateTime rowUpdtTs) {
+    this.rowUpdtTs = rowUpdtTs;
+  }
 
-        @Test
-        @DisplayName("instance is not equal to null")
-        void equals_null_returnsFalse() {
-            ArrestInfo a = new ArrestInfo();
-            assertThat(a).isNotEqualTo(null);
-        }
+  public dddCase version(Long version) {
+    this.version = version;
+    return this;
+  }
 
-        @Test
-        @DisplayName("instance is not equal to different type")
-        void equals_differentType_returnsFalse() {
-            ArrestInfo a = new ArrestInfo();
-            assertThat(a).isNotEqualTo("string");
-        }
+  /**
+   * Get version
+   * @return version
+   **/
+  @Schema(description = "")
+  
+    public Long getVersion() {
+    return version;
+  }
 
-        @Test
-        @DisplayName("equal instances have same hashCode")
-        void hashCode_equalInstances_samHashCode() {
-            ArrestInfo a = new ArrestInfo();
-            a.setArrId("ARR001");
-            ArrestInfo b = new ArrestInfo();
-            b.setArrId("ARR001");
+  public void setVersion(Long version) {
+    this.version = version;
+  }
 
-            assertThat(a.hashCode()).isEqualTo(b.hashCode());
-        }
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
     }
-
-    // =========================================================================
-    // toString()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("toString()")
-    class ToStringTests {
-
-        @Test
-        @DisplayName("toString contains class name")
-        void toString_containsClassName() {
-            ArrestInfo info = new ArrestInfo();
-            assertThat(info.toString()).contains("ArrestInfo");
-        }
-
-        @Test
-        @DisplayName("toString contains arrId value")
-        void toString_containsArrId() {
-            ArrestInfo info = new ArrestInfo();
-            info.setArrId("ARR001");
-            assertThat(info.toString()).contains("ARR001");
-        }
-
-        @Test
-        @DisplayName("toString shows null for unset fields")
-        void toString_showsNullForUnsetFields() {
-            ArrestInfo info = new ArrestInfo();
-            assertThat(info.toString()).contains("null");
-        }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
+    dddCase dddCase = (dddCase) o;
+    return Objects.equals(this.id, dddCase.id) &&
+        Objects.equals(this.parentId, dddCase.parentId) &&
+        Objects.equals(this.arrId, dddCase.arrId) &&
+        Objects.equals(this.assignedNm, dddCase.assignedNm) &&
+        Objects.equals(this.assignedNmInfo, dddCase.assignedNmInfo) &&
+        Objects.equals(this.requestDt, dddCase.requestDt) &&
+        Objects.equals(this.dueDt, dddCase.dueDt) &&
+        Objects.equals(this.completeDt, dddCase.completeDt) &&
+        Objects.equals(this.proactiveFlg, dddCase.proactiveFlg) &&
+        Objects.equals(this.activeFlg, dddCase.activeFlg) &&
+        Objects.equals(this.relatedCases, dddCase.relatedCases) &&
+        Objects.equals(this.category, dddCase.category) &&
+        Objects.equals(this.ddd, dddCase.ddd) &&
+        Objects.equals(this.status, dddCase.status) &&
+        Objects.equals(this.arrest, dddCase.arrest) &&
+        Objects.equals(this.ada, dddCase.ada) &&
+        Objects.equals(this.tags, dddCase.tags) &&
+        Objects.equals(this.items, dddCase.items) &&
+        Objects.equals(this.notes, dddCase.notes) &&
+        Objects.equals(this.uploads, dddCase.uploads) &&
+        Objects.equals(this.rowInsertTs, dddCase.rowInsertTs) &&
+        Objects.equals(this.rowUpdtTs, dddCase.rowUpdtTs) &&
+        Objects.equals(this.version, dddCase.version);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, parentId, arrId, assignedNm, assignedNmInfo, requestDt, dueDt, completeDt, proactiveFlg, activeFlg, relatedCases, category, ddd, status, arrest, ada, tags, items, notes, uploads, rowInsertTs, rowUpdtTs, version);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class dddCase {\n");
+    
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    parentId: ").append(toIndentedString(parentId)).append("\n");
+    sb.append("    arrId: ").append(toIndentedString(arrId)).append("\n");
+    sb.append("    assignedNm: ").append(toIndentedString(assignedNm)).append("\n");
+    sb.append("    assignedNmInfo: ").append(toIndentedString(assignedNmInfo)).append("\n");
+    sb.append("    requestDt: ").append(toIndentedString(requestDt)).append("\n");
+    sb.append("    dueDt: ").append(toIndentedString(dueDt)).append("\n");
+    sb.append("    completeDt: ").append(toIndentedString(completeDt)).append("\n");
+    sb.append("    proactiveFlg: ").append(toIndentedString(proactiveFlg)).append("\n");
+    sb.append("    activeFlg: ").append(toIndentedString(activeFlg)).append("\n");
+    sb.append("    relatedCases: ").append(toIndentedString(relatedCases)).append("\n");
+    sb.append("    category: ").append(toIndentedString(category)).append("\n");
+    sb.append("    ddd: ").append(toIndentedString(ddd)).append("\n");
+    sb.append("    status: ").append(toIndentedString(status)).append("\n");
+    sb.append("    arrest: ").append(toIndentedString(arrest)).append("\n");
+    sb.append("    ada: ").append(toIndentedString(ada)).append("\n");
+    sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
+    sb.append("    items: ").append(toIndentedString(items)).append("\n");
+    sb.append("    notes: ").append(toIndentedString(notes)).append("\n");
+    sb.append("    uploads: ").append(toIndentedString(uploads)).append("\n");
+    sb.append("    rowInsertTs: ").append(toIndentedString(rowInsertTs)).append("\n");
+    sb.append("    rowUpdtTs: ").append(toIndentedString(rowUpdtTs)).append("\n");
+    sb.append("    version: ").append(toIndentedString(version)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }
