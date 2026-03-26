@@ -1,230 +1,148 @@
-// =========================================================================
-// ADD THESE TESTS TO YOUR EXISTING CaseServiceTest.java
-// Paste them before the last closing } of the class
-// =========================================================================
 
-    // =========================================================================
-    // loadCase()
-    // =========================================================================
+package org.nnnn.ddd.service;
 
-    @Test
-    @DisplayName("loadCase - throws CaseNotFoundException when case does not exist")
-    void loadCase_caseNotFound_throwsCaseNotFoundException() {
-        mockFindById_empty(999);
+import org.nnnn.ddd.entity.dddAudit;
+import org.nnnn.ddd.repository.AuditRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-        assertThatThrownBy(() -> caseService.loadCase(999))
-                .isInstanceOf(CaseNotFoundException.class)
-                .hasMessageContaining("999");
+@Service
+public class AuditService {
+    private static final Logger log = LoggerFactory.getLogger(AuditService.class);
 
-        verify(caseRepository).findById(999);
-        verifyNoInteractions(cdwRepository);
+    @Autowired
+    private AuditRepository auditRepository;
+
+    @Autowired
+    private AuthenticationService authenticationService;
+
+    public void auditAction(final String actionType, final String actionDetail) {
+        dddAudit audit = new dddAudit();
+        audit.setUserNm(authenticationService.getUsername());
+        audit.setActionType(actionType);
+        audit.setActionDetail(actionDetail);
+        auditRepository.save(audit);
     }
 
-    @Test
-    @DisplayName("loadCase - sets activeFlg=1 when status is NOT_STARTED")
-    void loadCase_statusNotStarted_setsActiveFlg1() {
-        Status s = new Status();
-        s.setId(AppConstants.STATUS_NOT_STARTED);
-        dtoCase.setStatus(s);
-        arrestInfo.setArrSealedFlg("N");
-
-        mockFindById_found(100);
-        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-
-        assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(1);
+    public void auditAction(final String actionType, final String actionDetail, final Integer caseId) {
+        dddAudit audit = new dddAudit();
+        audit.setUserNm(authenticationService.getUsername());
+        audit.setActionType(actionType);
+        audit.setActionDetail(actionDetail);
+        audit.setCaseId(caseId);
+        auditRepository.save(audit);
     }
+}
 
-    @Test
-    @DisplayName("loadCase - sets activeFlg=1 when status is IN_PROGRESS")
-    void loadCase_statusInProgress_setsActiveFlg1() {
-        Status s = new Status();
-        s.setId(AppConstants.STATUS_IN_PROGRESS);
-        dtoCase.setStatus(s);
-        arrestInfo.setArrSealedFlg("N");
 
-        mockFindById_found(100);
-        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
 
-        assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(1);
-    }
 
-    @Test
-    @DisplayName("loadCase - sets activeFlg=1 when status is WAITING")
-    void loadCase_statusWaiting_setsActiveFlg1() {
-        Status s = new Status();
-        s.setId(AppConstants.STATUS_WAITING);
-        dtoCase.setStatus(s);
-        arrestInfo.setArrSealedFlg("N");
 
-        mockFindById_found(100);
-        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
 
-        assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(1);
-    }
+===============================
 
-    @Test
-    @DisplayName("loadCase - sets activeFlg=0 when status is COMPLETED")
-    void loadCase_statusCompleted_setsActiveFlg0() {
-        Status s = new Status();
-        s.setId(AppConstants.STATUS_COMPLETED);
-        dtoCase.setStatus(s);
-        arrestInfo.setArrSealedFlg("N");
 
-        mockFindById_found(100);
-        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
 
-        assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(0);
-    }
 
-    @Test
-    @DisplayName("loadCase - sets activeFlg=1 when status is null")
-    void loadCase_statusNull_setsActiveFlg1() {
-        dtoCase.setStatus(null);
-        arrestInfo.setArrSealedFlg("N");
+package org.nnnn.ddd.entity;
 
-        mockFindById_found(100);
-        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+import java.io.Serializable;
+import jakarta.persistence.*;
+import java.sql.Timestamp;
 
-        assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(1);
-    }
 
-    @Test
-    @DisplayName("loadCase - unsealed arrest loads without calling hasSealedAccess")
-    void loadCase_unsealedArrest_loadsSuccessfully() {
-        arrestInfo.setArrSealedFlg("N");
-        dtoCase.setStatus(null);
+/**
+ * The persistent class for the ddd_AUDIT database table.
+ * 
+ */
+@Entity
+@Table(name="ddd_AUDIT", schema = "ddd")
+@NamedQuery(name="dddAudit.findAll", query="SELECT d FROM dddAudit d")
+public class dddAudit implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-        mockFindById_found(100);
-        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+	@Id
+	@Column(name="ID")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int id;
 
-        assertThat(caseService.loadCase(100)).isNotNull();
-        verify(authenticationService, never()).hasSealedAccess();
-    }
+	@Column(name="ACTION_DETAIL")
+	private String actionDetail;
 
-    @Test
-    @DisplayName("loadCase - sealed arrest with no sealed access throws SealedAccessException")
-    void loadCase_sealedArrest_noSealedAccess_throwsSealedAccessException() {
-        arrestInfo.setArrSealedFlg("Y");
-        dtoCase.setStatus(null);
+	@Column(name="ACTION_TYPE")
+	private String actionType;
 
-        mockFindById_found(100);
-        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-        when(authenticationService.hasSealedAccess()).thenReturn(false);
+	@Column(name="ARR_ID")
+	private String arrId;
 
-        assertThatThrownBy(() -> caseService.loadCase(100))
-                .isInstanceOf(SealedAccessException.class)
-                .hasMessageContaining("no sealed access");
-    }
+	@Column(name="CASE_ID")
+	private Integer caseId;
 
-    @Test
-    @DisplayName("loadCase - sealed arrest, supervisor loads successfully")
-    void loadCase_sealedArrest_supervisor_loadsSuccessfully() {
-        arrestInfo.setArrSealedFlg("Y");
-        dtoCase.setStatus(null);
+	@Column(name = "ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
+	private Timestamp rowInsertTs;
 
-        mockFindById_found(100);
-        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-        when(authenticationService.hasSealedAccess()).thenReturn(true);
-        when(authenticationService.isSupervisor()).thenReturn(true);
+	@Column(name="USER_NM")
+	private String userNm;
 
-        assertThat(caseService.loadCase(100)).isNotNull();
-    }
+	public dddAudit() {
+	}
 
-    @Test
-    @DisplayName("loadCase - non-supervisor assigned to case loads successfully")
-    void loadCase_nonSupervisor_assignedToCase_loadsSuccessfully() {
-        arrestInfo.setArrSealedFlg("N");
-        dtoCase.setStatus(null);
-        entityCase.setAssignedNm("jdoe");
+	public int getId() {
+		return this.id;
+	}
 
-        mockFindById_found(100);
-        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-        when(authenticationService.isSupervisor()).thenReturn(false);
-        when(authenticationService.getUsername()).thenReturn("jdoe");
+	public void setId(int id) {
+		this.id = id;
+	}
 
-        assertThat(caseService.loadCase(100)).isNotNull();
-        verify(authenticationService, never()).hasRole(any());
-    }
+	public String getActionDetail() {
+		return this.actionDetail;
+	}
 
-    @Test
-    @DisplayName("loadCase - non-supervisor not assigned, no office throws CaseAccessException")
-    void loadCase_nonSupervisor_notAssigned_noOffice_throwsCaseAccessException() {
-        arrestInfo.setArrSealedFlg("N");
-        dtoCase.setStatus(null);
-        entityCase.setAssignedNm("otherUser");
+	public void setActionDetail(String actionDetail) {
+		this.actionDetail = actionDetail;
+	}
 
-        mockFindById_found(100);
-        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-        when(authenticationService.isSupervisor()).thenReturn(false);
-        when(authenticationService.getUsername()).thenReturn("jdoe");
+	public String getActionType() {
+		return this.actionType;
+	}
 
-        assertThatThrownBy(() -> caseService.loadCase(100))
-                .isInstanceOf(CaseAccessException.class)
-                .hasMessageContaining("no access to case");
-    }
+	public void setActionType(String actionType) {
+		this.actionType = actionType;
+	}
 
-    @Test
-    @DisplayName("loadCase - populates assignedNmInfo when assignedNm is set")
-    void loadCase_withAssignedNm_populatesAssignedNmInfo() {
-        entityCase.setAssignedNm("jdoe");
-        dtoCase.setStatus(null);
-        arrestInfo.setArrSealedFlg("N");
+	public String getArrId() {
+		return this.arrId;
+	}
 
-        User mockUser = new User();
-        mockUser.setUsername("jdoe");
+	public void setArrId(String arrId) {
+		this.arrId = arrId;
+	}
 
-        mockFindById_found(100);
-        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-        when(adSearchService.findUser("jdoe")).thenReturn(mockUser);
+	public Integer getCaseId() {
+		return this.caseId;
+	}
 
-        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
+	public void setCaseId(Integer caseId) {
+		this.caseId = caseId;
+	}
 
-        assertThat(result.getAssignedNmInfo()).isNotNull();
-        verify(adSearchService).findUser("jdoe");
-    }
+	public Timestamp getRowInsertTs() {
+		return this.rowInsertTs;
+	}
 
-    @Test
-    @DisplayName("loadCase - skips AD lookup when assignedNm is null")
-    void loadCase_noAssignedNm_skipsAdLookup() {
-        entityCase.setAssignedNm(null);
-        dtoCase.setStatus(null);
-        arrestInfo.setArrSealedFlg("N");
+	public void setRowInsertTs(Timestamp rowInsertTs) {
+		this.rowInsertTs = rowInsertTs;
+	}
 
-        mockFindById_found(100);
-        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
+	public String getUserNm() {
+		return this.userNm;
+	}
 
-        caseService.loadCase(100);
+	public void setUserNm(String userNm) {
+		this.userNm = userNm;
+	}
 
-        verifyNoInteractions(adSearchService);
-    }
-
-    @Test
-    @DisplayName("loadCase - arrest info is attached to returned DTO")
-    void loadCase_arrestInfoAttachedToDto() {
-        dtoCase.setStatus(null);
-        arrestInfo.setArrSealedFlg("N");
-        arrestInfo.setDeftFrstNm("Jane");
-        arrestInfo.setDeftLastNm("Smith");
-
-        mockFindById_found(100);
-        when(modelMapper.map(entityCase, org.nnnn.ddd.model.dddCase.class)).thenReturn(dtoCase);
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-
-        org.nnnn.ddd.model.dddCase result = caseService.loadCase(100);
-
-        assertThat(result.getArrest()).isNotNull();
-        assertThat(result.getArrest().getDeftFrstNm()).isEqualTo("Jane");
-        verify(cdwRepository).getArrestInfo("ARR001");
-    }
+}
