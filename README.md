@@ -1,25 +1,17 @@
+mvn clean test -Dtest=SecurityConfigTest#debug_printClaimNames -s
+```
 
-[ERROR] Failures: 
-[ERROR]   SecurityConfigTest.convert_allAnalystGroupsConvertCorrectly:165 
-Expected size: 7 but was: 0 in:
-[]
-[ERROR]   SecurityConfigTest.convert_mapsGroupsToRoleAuthorities:58 
-Expecting any elements of:
-  []
-to match given predicate but none did.
-[ERROR]   SecurityConfigTest.convert_mapsMultipleGroupsToMultipleRoles:112 
-Expected size: 4 but was: 0 in:
-[]
-[ERROR]   SecurityConfigTest.convert_sealedEventGroupConvertsCorrectly:147 
-Expecting any elements of:
-  []
-to match given predicate but none did.
-[ERROR]   SecurityConfigTest.convert_singleGroupProducesSingleRole:133 
-Expected size: 1 but was: 0 in:
-[]
-[INFO]
-[ERROR] Tests run: 380, Failures: 5, Errors: 0, Skipped: 11
-[INFO]
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] -----------
+The output will show two things:
+
+**1. What key is actually stored in the JWT:**
+```
+=== JWT Claims ===
+  key=[nnnn Groups] value=[[SG-ddd-SUPERVISOR]]
+```
+If the key shows something different (like `nnnn_Groups` or truncated), that's the problem.
+
+**2. Whether the converter finds any authorities:**
+```
+=== Authorities ===
+  ROLE_SG-DDD-SUPERVISOR   ← good
+(empty)                     ← means getClaimAsStringList("nnnn Groups") returned null
