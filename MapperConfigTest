@@ -1,0 +1,198 @@
+package org.nnnn.ddd;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
+import org.nnnn.ddd.entity.CaseItem;
+import org.nnnn.ddd.entity.CaseTag;
+import org.nnnn.ddd.entity.ItemList;
+import org.nnnn.ddd.entity.TagList;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DisplayName("MapperConfig Tests")
+class MapperConfigTest {
+
+    private ModelMapper modelMapper;
+
+    @BeforeEach
+    void setUp() {
+        MapperConfig config = new MapperConfig();
+        modelMapper = config.modelMapper();
+    }
+
+    // =========================================================================
+    // ModelMapper bean creation
+    // =========================================================================
+
+    @Test
+    @DisplayName("modelMapper bean is created successfully")
+    void modelMapper_beanCreatedSuccessfully() {
+        assertThat(modelMapper).isNotNull();
+    }
+
+    @Test
+    @DisplayName("modelMapper has strict matching strategy configured")
+    void modelMapper_hasStrictMatchingStrategy() {
+        assertThat(modelMapper.getConfiguration().getMatchingStrategy())
+                .isEqualTo(org.modelmapper.convention.MatchingStrategies.STRICT);
+    }
+
+    @Test
+    @DisplayName("modelMapper has field matching enabled")
+    void modelMapper_hasFieldMatchingEnabled() {
+        assertThat(modelMapper.getConfiguration().isFieldMatchingEnabled()).isTrue();
+    }
+
+    @Test
+    @DisplayName("modelMapper has ambiguity ignored")
+    void modelMapper_hasAmbiguityIgnored() {
+        assertThat(modelMapper.getConfiguration().isAmbiguityIgnored()).isTrue();
+    }
+
+    @Test
+    @DisplayName("modelMapper has private field access level")
+    void modelMapper_hasPrivateFieldAccessLevel() {
+        assertThat(modelMapper.getConfiguration().getFieldAccessLevel())
+                .isEqualTo(org.modelmapper.config.Configuration.AccessLevel.PRIVATE);
+    }
+
+    // =========================================================================
+    // CaseTag → model.CaseTag mapping
+    // =========================================================================
+
+    @Test
+    @DisplayName("CaseTag maps tagDesc from nested Tag entity")
+    void caseTag_mapsTagDescFromNestedTag() {
+        TagList tagList = new TagList();
+        tagList.setId(1);
+        tagList.setTagDesc("Gun");
+
+        CaseTag entityTag = new CaseTag();
+        entityTag.setId(10);
+        entityTag.setTag(tagList);
+
+        org.nnnn.ddd.model.CaseTag modelTag = modelMapper.map(entityTag, org.nnnn.ddd.model.CaseTag.class);
+
+        assertThat(modelTag.getTagDesc()).isEqualTo("Gun");
+    }
+
+    @Test
+    @DisplayName("CaseTag maps tagId from nested Tag entity")
+    void caseTag_mapsTagIdFromNestedTag() {
+        TagList tagList = new TagList();
+        tagList.setId(5);
+        tagList.setTagDesc("Gang");
+
+        CaseTag entityTag = new CaseTag();
+        entityTag.setId(10);
+        entityTag.setTag(tagList);
+
+        org.nnnn.ddd.model.CaseTag modelTag = modelMapper.map(entityTag, org.nnnn.ddd.model.CaseTag.class);
+
+        assertThat(modelTag.getTagId()).isEqualTo(5);
+    }
+
+    // =========================================================================
+    // CaseItem → model.CaseItem mapping
+    // =========================================================================
+
+    @Test
+    @DisplayName("CaseItem maps itemDesc from nested Item entity")
+    void caseItem_mapsItemDescFromNestedItem() {
+        ItemList itemList = new ItemList();
+        itemList.setId(1);
+        itemList.setItemDesc("ECMS");
+
+        CaseItem entityItem = new CaseItem();
+        entityItem.setId(10);
+        entityItem.setItem(itemList);
+        entityItem.setQuantity(2);
+        entityItem.setNoteDesc("Test note");
+
+        org.nnnn.ddd.model.CaseItem modelItem = modelMapper.map(entityItem, org.nnnn.ddd.model.CaseItem.class);
+
+        assertThat(modelItem.getItemDesc()).isEqualTo("ECMS");
+    }
+
+    @Test
+    @DisplayName("CaseItem maps itemId from nested Item entity")
+    void caseItem_mapsItemIdFromNestedItem() {
+        ItemList itemList = new ItemList();
+        itemList.setId(3);
+        itemList.setItemDesc("Court Records");
+
+        CaseItem entityItem = new CaseItem();
+        entityItem.setId(10);
+        entityItem.setItem(itemList);
+
+        org.nnnn.ddd.model.CaseItem modelItem = modelMapper.map(entityItem, org.nnnn.ddd.model.CaseItem.class);
+
+        assertThat(modelItem.getItemId()).isEqualTo(3);
+    }
+
+    // =========================================================================
+    // dddCase entity → model mapping (skipped fields)
+    // =========================================================================
+
+    @Test
+    @DisplayName("dddCase entity maps basic fields to model")
+    void dddCase_mapsBasicFields() {
+        org.nnnn.ddd.entity.dddCase entity = new org.nnnn.ddd.entity.dddCase();
+        entity.setId(100);
+        entity.setArrId("ARR001");
+        entity.setAssignedNm("jdoe");
+        entity.setVersion(1L);
+
+        org.nnnn.ddd.model.dddCase model = modelMapper.map(entity, org.nnnn.ddd.model.dddCase.class);
+
+        assertThat(model.getId()).isEqualTo(100);
+        assertThat(model.getArrId()).isEqualTo("ARR001");
+        assertThat(model.getAssignedNm()).isEqualTo("jdoe");
+        assertThat(model.getVersion()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("dddCase entity skips ada mapping")
+    void dddCase_skipsAdaMapping() {
+        org.nnnn.ddd.entity.dddCase entity = new org.nnnn.ddd.entity.dddCase();
+        entity.setId(100);
+        org.nnnn.ddd.entity.AdaList ada = new org.nnnn.ddd.entity.AdaList();
+        ada.setId(1);
+        entity.setAda(ada);
+
+        org.nnnn.ddd.model.dddCase model = modelMapper.map(entity, org.nnnn.ddd.model.dddCase.class);
+
+        // ada should be skipped
+        assertThat(model.getAda()).isNull();
+    }
+
+    @Test
+    @DisplayName("dddCase entity skips category mapping")
+    void dddCase_skipsCategoryMapping() {
+        org.nnnn.ddd.entity.dddCase entity = new org.nnnn.ddd.entity.dddCase();
+        entity.setId(100);
+        org.nnnn.ddd.entity.CategoryList cat = new org.nnnn.ddd.entity.CategoryList();
+        cat.setId(1);
+        entity.setCategory(cat);
+
+        org.nnnn.ddd.model.dddCase model = modelMapper.map(entity, org.nnnn.ddd.model.dddCase.class);
+
+        assertThat(model.getCategory()).isNull();
+    }
+
+    @Test
+    @DisplayName("dddCase entity skips status mapping")
+    void dddCase_skipsStatusMapping() {
+        org.nnnn.ddd.entity.dddCase entity = new org.nnnn.ddd.entity.dddCase();
+        entity.setId(100);
+        org.nnnn.ddd.entity.StatusList status = new org.nnnn.ddd.entity.StatusList();
+        status.setId(1);
+        entity.setStatus(status);
+
+        org.nnnn.ddd.model.dddCase model = modelMapper.map(entity, org.nnnn.ddd.model.dddCase.class);
+
+        assertThat(model.getStatus()).isNull();
+    }
+}
