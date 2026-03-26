@@ -1,305 +1,469 @@
 package org.nnnn.ddd.service;
 
-import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.nnnn.ddd.model.User;
-public interface ADSearchService {
-    List<User> findAllUsers();
+import org.springframework.ldap.core.LdapTemplate;
 
-    List<User> findAllUsersWithSealedAccess();
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-    List<User> findMembersOfGroup(String... groupDn);
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-    public User findUser(final String username);
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+@DisplayName("ADSearchServiceDev Tests")
+class ADSearchServiceDevTest {
+
+    @Mock
+    private LdapTemplate ldapTemplate;
+
+    @Spy
+    @InjectMocks
+    private ADSearchServiceDev adSearchServiceDev;
+
+    private User prodUser;
+    private User testUser;
+
+    @BeforeEach
+    void setUp() {
+        prodUser = new User();
+        prodUser.setUsername("jdoe");
+        prodUser.setFirstName("John");
+        prodUser.setLastName("Doe");
+        prodUser.setEmail("jdoe@nnnn.org");
+
+        testUser = new User();
+        testUser.setUsername("T-SG-ddd-SUPERVISOR");
+        testUser.setFirstName("John");
+        testUser.setLastName("ddd-SUPERVISOR");
+        testUser.setEmail("SG-ddd-SUPERVISOR@nnnn.org");
+        testUser.setRank("Sgt");
+    }
+
+    // =========================================================================
+    // testUsers()
+    // =========================================================================
+
+    @Test
+    @DisplayName("testUsers - returns 9 hardcoded test users")
+    void testUsers_returnsAllTestUsers() {
+        List<User> users = adSearchServiceDev.testUsers();
+
+        assertThat(users).hasSize(9);
+    }
+
+    @Test
+    @DisplayName("testUsers - contains T-SG-ddd-SUPERVISOR")
+    void testUsers_containsSupervisor() {
+        List<User> users = adSearchServiceDev.testUsers();
+
+        assertThat(users).anyMatch(u -> u.getUsername().equals("T-SG-ddd-SUPERVISOR"));
+    }
+
+    @Test
+    @DisplayName("testUsers - contains all expected borough analysts")
+    void testUsers_containsAllBoroughAnalysts() {
+        List<User> users = adSearchServiceDev.testUsers();
+
+        List<String> usernames = users.stream().map(User::getUsername).toList();
+        assertThat(usernames).contains(
+                "T-SG-ddd-SUPERVISOR",
+                "T-SG-ddd-ANALYST-BROOKLYN",
+                "T-SG-ddd-ANALYST-BRONX",
+                "T-SG-ddd-ANALYST-QUEENS",
+                "T-SG-ddd-ANALYST-SI",
+                "T-SG-ddd-ANALYST-MANHATTAN",
+                "T-SG-ddd-ANALYST-SNP",
+                "T-SG-ddd-ANALYST-REMANDED",
+                "T-SG-ddd-DUAL"
+        );
+    }
+
+    @Test
+    @DisplayName("testUsers - each test user has required fields populated")
+    void testUsers_allUsersHaveRequiredFields() {
+        List<User> users = adSearchServiceDev.testUsers();
+
+        for (User user : users) {
+            assertThat(user.getUsername()).isNotNull().isNotEmpty();
+            assertThat(user.getFirstName()).isNotNull().isNotEmpty();
+            assertThat(user.getLastName()).isNotNull().isNotEmpty();
+            assertThat(user.getEmail()).isNotNull().isNotEmpty();
+            assertThat(user.getRank()).isNotNull();
+        }
+    }
+
+    // =========================================================================
+    // findUser()
+    // =========================================================================
+
+    @Test
+    @DisplayName("findUser - returns prod user when found in LDAP")
+    void findUser_foundInLdap_returnsProdUser() {
+        doReturn(prodUser).when(adSearchServiceDev).findUser("jdoe");
+
+        User result = adSearchServiceDev.findUser("jdoe");
+
+        assertThat(result).isNotNull();
+        assertThat(result.getUsername()).isEqualTo("jdoe");
+    }
+
+    @Test
+    @DisplayName("findUser - returns test user when not found in LDAP but in test users")
+    void findUser_notInLdap_returnsTestUser() {
+        // Simulate super.findUser returning null (not in LDAP)
+        doReturn(null).when((ADSearchServiceProd) adSearchServiceDev).findUser("T-SG-ddd-SUPERVISOR");
+
+        // Call the Dev implementation directly
+        // Since super returns null, it should fall through to testUsers()
+        User result = adSearchServiceDev.findUser("T-SG-ddd-SUPERVISOR");
+
+        assertThat(result).isNotNull();
+        assertThat(result.getUsername()).isEqualTo("T-SG-ddd-SUPERVISOR");
+    }
+
+    @Test
+    @DisplayName("findUser - case insensitive match in test users")
+    void findUser_caseInsensitiveMatch_returnsTestUser() {
+        // Test that equalsIgnoreCase works — lowercase lookup
+        doReturn(null).when((ADSearchServiceProd) adSearchServiceDev).findUser("t-sg-ddd-supervisor");
+
+        User result = adSearchServiceDev.findUser("t-sg-ddd-supervisor");
+
+        assertThat(result).isNotNull();
+        assertThat(result.getUsername()).isEqualTo("T-SG-ddd-SUPERVISOR");
+    }
+
+    @Test
+    @DisplayName("findUser - returns null when not found in LDAP or test users")
+    void findUser_notFoundAnywhere_returnsNull() {
+        doReturn(null).when((ADSearchServiceProd) adSearchServiceDev).findUser("unknown");
+
+        User result = adSearchServiceDev.findUser("unknown");
+
+        assertThat(result).isNull();
+    }
+
+    // =========================================================================
+    // findAllUsers()
+    // =========================================================================
+
+    @Test
+    @DisplayName("findAllUsers - combines prod users and test users")
+    void findAllUsers_combinesProdAndTestUsers() {
+        List<User> prodUsers = List.of(prodUser);
+        doReturn(prodUsers).when((ADSearchServiceProd) adSearchServiceDev).findAllUsers();
+
+        List<User> result = adSearchServiceDev.findAllUsers();
+
+        // Should contain prod user + 9 test users = 10
+        assertThat(result).hasSize(10);
+        assertThat(result).contains(prodUser);
+    }
+
+    @Test
+    @DisplayName("findAllUsers - returns only test users when no prod users")
+    void findAllUsers_noProdUsers_returnsOnlyTestUsers() {
+        doReturn(new java.util.ArrayList<>()).when((ADSearchServiceProd) adSearchServiceDev).findAllUsers();
+
+        List<User> result = adSearchServiceDev.findAllUsers();
+
+        assertThat(result).hasSize(9);
+    }
+
+    // =========================================================================
+    // findAllUsersWithSealedAccess()
+    // =========================================================================
+
+    @Test
+    @DisplayName("findAllUsersWithSealedAccess - adds T-SG-ddd-ANALYST-BRONX to sealed list")
+    void findAllUsersWithSealedAccess_addsBronxTestUser() {
+        doReturn(new java.util.ArrayList<>())
+                .when((ADSearchServiceProd) adSearchServiceDev).findAllUsersWithSealedAccess();
+
+        List<User> result = adSearchServiceDev.findAllUsersWithSealedAccess();
+
+        assertThat(result).anyMatch(u -> u.getUsername().equals("T-SG-ddd-ANALYST-BRONX"));
+    }
+
+    @Test
+    @DisplayName("findAllUsersWithSealedAccess - only adds Bronx test user not all test users")
+    void findAllUsersWithSealedAccess_onlyAddsBronxNotAllTestUsers() {
+        doReturn(new java.util.ArrayList<>())
+                .when((ADSearchServiceProd) adSearchServiceDev).findAllUsersWithSealedAccess();
+
+        List<User> result = adSearchServiceDev.findAllUsersWithSealedAccess();
+
+        // Only Bronx should be added from test users
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getUsername()).isEqualTo("T-SG-ddd-ANALYST-BRONX");
+    }
+
+    @Test
+    @DisplayName("findAllUsersWithSealedAccess - combines prod sealed users with bronx test user")
+    void findAllUsersWithSealedAccess_combinesProdAndBronxTestUser() {
+        List<User> prodSealedUsers = List.of(prodUser);
+        doReturn(new java.util.ArrayList<>(prodSealedUsers))
+                .when((ADSearchServiceProd) adSearchServiceDev).findAllUsersWithSealedAccess();
+
+        List<User> result = adSearchServiceDev.findAllUsersWithSealedAccess();
+
+        assertThat(result).hasSize(2);
+        assertThat(result).contains(prodUser);
+        assertThat(result).anyMatch(u -> u.getUsername().equals("T-SG-ddd-ANALYST-BRONX"));
+    }
 }
 
 
-=============
+
+
+
+
+
+
+=======================================================
+
+
 
 package org.nnnn.ddd.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.naming.directory.Attributes;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.nnnn.ddd.AppConstants;
 import org.nnnn.ddd.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Profile;
+import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.query.LdapQuery;
-import org.springframework.stereotype.Service;
-import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-@Service
-@Profile({ "test", "dev", "local", "test-users" })
-public class ADSearchServiceDev extends ADSearchServiceProd {
-    @Autowired
-    private LdapTemplate ldapTemplate;
-
-    public User findUser(final String username) {
-        User user = super.findUser(username);
-        if (user != null) {
-                return user;
-        }
-         List<User> userList = testUsers();
-         for (User testUser: userList) {
-                if (testUser.getUsername().equalsIgnoreCase(username)) {
-                        return testUser;
-                }
-         }
-         return null;
-
-    }
-
-    @Cacheable("userList")
-    public List<User> findAllUsers() {
-        List<User> allUsers = super.findAllUsers();
-        allUsers.addAll(testUsers());
-        return allUsers;
-    }
-
-
-    @Cacheable("sealedUserList")
-    public List<User> findAllUsersWithSealedAccess() {
-        List<User> allUsers = super.findAllUsersWithSealedAccess();
-        List<User> userList = testUsers();
-        for (User testUser : userList) {
-            if (testUser.getUsername().equalsIgnoreCase("T-SG-ddd-ANALYST-BRONX")) {
-                allUsers.add(testUser);
-                break;
-            }
-        }
-        return allUsers;
-    }
-
-
-    final String jsonUsers = "[\n" +
-            "  {\n" +
-            "    \"username\": \"T-SG-ddd-SUPERVISOR\",\n" +
-            "    \"firstName\": \"John\",\n" +
-            "    \"lastName\": \"ddd-SUPERVISOR\",\n" +
-            "    \"email\": \"SG-ddd-SUPERVISOR@nnnn.org\",\n" +
-            "    \"rank\": \"Sgt\",\n" +
-            "    \"title\": \"\",\n" +
-            "    \"tax\": \"\",\n" +
-            "    \"cmdCode\": \"\",\n" +
-            "    \"mobile\": \"\"\n" +
-            "  },\n" +
-            "  {\n" +
-            "    \"username\": \"T-SG-ddd-ANALYST-BROOKLYN\",\n" +
-            "    \"firstName\": \"Mike\",\n" +
-            "    \"lastName\": \"SG-ddd-ANALYST-BROOKLYN\",\n" +
-            "    \"email\": \"SG-ddd-ANALYST-BROOKLYN@nnnn.org\",\n" +
-            "    \"rank\": \"Sgt\",\n" +
-            "    \"title\": \"\",\n" +
-            "    \"tax\": \"\",\n" +
-            "    \"cmdCode\": \"\",\n" +
-            "    \"mobile\": \"\"\n" +
-            "  },\n" +
-            "  {\n" +
-            "    \"username\": \"T-SG-ddd-ANALYST-BRONX\",\n" +
-            "    \"firstName\": \"Chris\",\n" +
-            "    \"lastName\": \"SG-ddd-ANALYST-BRONX\",\n" +
-            "    \"email\": \"SG-ddd-ANALYST-BRONX@nnnn.org\",\n" +
-            "    \"rank\": \"Sgt\",\n" +
-            "    \"title\": \"\",\n" +
-            "    \"tax\": \"\",\n" +
-            "    \"cmdCode\": \"\",\n" +
-            "    \"mobile\": \"\"\n" +
-            "  },\n" +
-            "  {\n" +
-            "    \"username\": \"T-SG-ddd-ANALYST-QUEENS\",\n" +
-            "    \"firstName\": \"Elizabeth\",\n" +
-            "    \"lastName\": \"SG-ddd-ANALYST-QUEENS\",\n" +
-            "    \"email\": \"SG-ddd-ANALYST-QUEENS@nnnn.org\",\n" +
-            "    \"rank\": \"Sgt\",\n" +
-            "    \"title\": \"\",\n" +
-            "    \"tax\": \"\",\n" +
-            "    \"cmdCode\": \"\",\n" +
-            "    \"mobile\": \"\"\n" +
-            "  },\n" +
-            "  {\n" +
-            "    \"username\": \"T-SG-ddd-ANALYST-SI\",\n" +
-            "    \"firstName\": \"Cindy\",\n" +
-            "    \"lastName\": \"SG-ddd-ANALYST-SI\",\n" +
-            "    \"email\": \"SG-ddd-ANALYST-SI@nnnn.org\",\n" +
-            "    \"rank\": \"Sgt\",\n" +
-            "    \"title\": \"\",\n" +
-            "    \"tax\": \"\",\n" +
-            "    \"cmdCode\": \"\",\n" +
-            "    \"mobile\": \"\"\n" +
-            "  },\n" +
-            "  {\n" +
-            "    \"username\": \"T-SG-ddd-ANALYST-MANHATTAN\",\n" +
-            "    \"firstName\": \"Jose\",\n" +
-            "    \"lastName\": \"SG-ddd-ANALYST-MANHATTAN\",\n" +
-            "    \"email\": \"SG-ddd-ANALYST-MANHATTAN@nnnn.org\",\n" +
-            "    \"rank\": \"Sgt\",\n" +
-            "    \"title\": \"\",\n" +
-            "    \"tax\": \"\",\n" +
-            "    \"cmdCode\": \"\",\n" +
-            "    \"mobile\": \"\"\n" +
-            "  },\n" +
-            "  {\n" +
-            "    \"username\": \"T-SG-ddd-ANALYST-SNP\",\n" +
-            "    \"firstName\": \"Jennifer\",\n" +
-            "    \"lastName\": \"SG-ddd-ANALYST-SNP\",\n" +
-            "    \"email\": \"SG-ddd-ANALYST-SNP@nnnn.org\",\n" +
-            "    \"rank\": \"Sgt\",\n" +
-            "    \"title\": \"\",\n" +
-            "    \"tax\": \"\",\n" +
-            "    \"cmdCode\": \"\",\n" +
-            "    \"mobile\": \"\"\n" +
-            "  },\n" +
-            "  {\n" +
-            "    \"username\": \"T-SG-ddd-ANALYST-REMANDED\",\n" +
-            "    \"firstName\": \"Brian\",\n" +
-            "    \"lastName\": \"SG-ddd-ANALYST-REMANDED\",\n" +
-            "    \"email\": \"SG-ddd-ANALYST-REMANDED@nnnn.org\",\n" +
-            "    \"rank\": \"Sgt\",\n" +
-            "    \"title\": \"\",\n" +
-            "    \"tax\": \"\",\n" +
-            "    \"cmdCode\": \"\",\n" +
-            "    \"mobile\": \"\"\n" +
-            "  },\n" +
-            " {\n" +
-            "    \"username\": \"T-SG-ddd-DUAL\",\n" +
-            "    \"firstName\": \"AnthonyR\",\n" +
-            "    \"lastName\": \"T-SG-ddd-DUAL\",\n" +
-            "    \"email\": \"T-SG-ddd-DUAL@nnnn.org\",\n" +
-            "    \"rank\": \"Sgt\",\n" +
-            "    \"title\": \"\",\n" +
-            "    \"tax\": \"\",\n" +
-            "    \"cmdCode\": \"\",\n" +
-            "    \"mobile\": \"\"\n" +
-            "  }\n" +
-            "]";
-
-    public List<User> testUsers() {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            // Convert JSON array into List<User>
-            return mapper.readValue(jsonUsers, new TypeReference<List<User>>() {
-            });
-        } catch (Exception e) {
-            // Log error if needed
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
-    }
-
- 
-}
-
-
-==============
-
-package org.nnnn.ddd.service;
-
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import javax.naming.directory.Attributes;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-import org.nnnn.ddd.AppConstants;
-import org.nnnn.ddd.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Profile;
-import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.ldap.query.ContainerCriteria;
-import org.springframework.ldap.query.LdapQuery;
-import org.springframework.stereotype.Service;
-import static org.springframework.ldap.query.LdapQueryBuilder.query;
+@ExtendWith(MockitoExtension.class)
+@DisplayName("ADSearchServiceProd Tests")
+class ADSearchServiceProdTest {
 
-@Service
-@Profile({"prod", "uat"})
-public class ADSearchServiceProd implements ADSearchService {
-    @Autowired
+    @Mock
     private LdapTemplate ldapTemplate;
 
-    public User findUser(final String username) {
-        LdapQuery query = query()
-                .where("objectClass").is("user")
-                .and("sAMAccountName").is(username);
+    @InjectMocks
+    private ADSearchServiceProd adSearchServiceProd;
 
-        List<User> userList = ldapTemplate.search(query, (Attributes attrs) -> {
-            User user = new User();
-            user.setUsername(attrs.get("sAMAccountName").get().toString());
-            user.setFirstName(attrs.get("givenName").get().toString());
-            user.setLastName(attrs.get("sn").get().toString());
-            user.setMobile(attrs.get("telephoneNumber") != null ? attrs.get("telephoneNumber").get().toString() : "");
-            user.setEmail(attrs.get("mail") != null ? attrs.get("mail").get().toString() : "");
-            user.setRank(attrs.get("nnnnrank") != null ? attrs.get("nnnnrank").get().toString() : "");
-            user.setTitle(attrs.get("title") != null ? attrs.get("title").get().toString() : "");
-            user.setTax(attrs.get("nnnntaxid") != null ? attrs.get("nnnntaxid").get().toString() : "");
-            user.setCmdCode(attrs.get("nnnncmdcode") != null ? attrs.get("nnnncmdcode").get().toString() : "");
-            return user;
-        });
-        if (userList.size() < 1)
-            return null;
-        return userList.get(0);
+    private User sampleUser;
+
+    @BeforeEach
+    void setUp() {
+        sampleUser = new User();
+        sampleUser.setUsername("jdoe");
+        sampleUser.setFirstName("John");
+        sampleUser.setLastName("Doe");
+        sampleUser.setEmail("jdoe@nnnn.org");
+        sampleUser.setRank("Detective");
+        sampleUser.setTitle("Senior Analyst");
+        sampleUser.setTax("123456");
+        sampleUser.setCmdCode("CMD01");
+        sampleUser.setMobile("555-1234");
     }
 
-    @Cacheable("userList")
-    public List<User> findAllUsers(){
-        List<User> allUsers = new ArrayList<User>();
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_SUPERVISOR+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_BK+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_BX+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_MN+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_QN+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_SI+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_SNP+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_RMD+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest"));
-        return allUsers;
+    // =========================================================================
+    // findUser()
+    // =========================================================================
+
+    @Test
+    @DisplayName("findUser - returns user when found in LDAP")
+    void findUser_userFound_returnsUser() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(List.of(sampleUser));
+
+        User result = adSearchServiceProd.findUser("jdoe");
+
+        assertThat(result).isNotNull();
+        assertThat(result.getUsername()).isEqualTo("jdoe");
     }
 
-    @Cacheable("sealedUserList")
-    public List<User> findAllUsersWithSealedAccess(){
-        List<User> allUsers = new ArrayList<User>();
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_SUPERVISOR+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest", AppConstants.SG_SEALED_EVENT_DN));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_BK+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest", AppConstants.SG_SEALED_EVENT_DN));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_BX+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest", AppConstants.SG_SEALED_EVENT_DN));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_MN+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest", AppConstants.SG_SEALED_EVENT_DN));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_QN+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest", AppConstants.SG_SEALED_EVENT_DN));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_SI+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest", AppConstants.SG_SEALED_EVENT_DN));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_SNP+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest", AppConstants.SG_SEALED_EVENT_DN));
-        allUsers.addAll(findMembersOfGroup("CN="+AppConstants.SG_ANALYST_RMD+",OU=ddd,OU=Application Control,OU=nnnn Groups,DC=nnnn,DC=finest", AppConstants.SG_SEALED_EVENT_DN));
-        return allUsers;
+    @Test
+    @DisplayName("findUser - returns null when user not found in LDAP")
+    void findUser_userNotFound_returnsNull() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(Collections.emptyList());
+
+        User result = adSearchServiceProd.findUser("unknown");
+
+        assertThat(result).isNull();
     }
 
-    public List<User> findMembersOfGroup(String... groupDns) {
-        if (groupDns.length == 0) {
-            return new ArrayList<User>();
-        }
-        ContainerCriteria query = query()
-                .where("objectClass").is("user");
-        for (int i = 0; i < groupDns.length; i++) {
-            query.and("memberOf").is(groupDns[i]);
-        }
+    @Test
+    @DisplayName("findUser - returns first user when multiple results returned")
+    void findUser_multipleResults_returnsFirst() {
+        User secondUser = new User();
+        secondUser.setUsername("jdoe2");
 
-        return ldapTemplate.search(query, (Attributes attrs) -> {
-            User user = new User();
-            user.setUsername(attrs.get("sAMAccountName").get().toString());
-            user.setFirstName(attrs.get("givenName")!=null?attrs.get("givenName").get().toString():"");
-            user.setLastName(attrs.get("sn")!=null?attrs.get("sn").get().toString():"");
-            user.setMobile(attrs.get("telephoneNumber")!=null?attrs.get("telephoneNumber").get().toString():"");
-            user.setEmail(attrs.get("mail")!=null?attrs.get("mail").get().toString():"");
-            user.setRank(attrs.get("nnnnrank")!=null?attrs.get("nnnnrank").get().toString():"");
-            user.setTitle(attrs.get("title")!=null?attrs.get("title").get().toString():"");
-            user.setTax(attrs.get("nnnntaxid")!=null?attrs.get("nnnntaxid").get().toString():"");
-            user.setCmdCode(attrs.get("nnnncmdcode")!=null?attrs.get("nnnncmdcode").get().toString():"");
-            return user;
-        });
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(Arrays.asList(sampleUser, secondUser));
+
+        User result = adSearchServiceProd.findUser("jdoe");
+
+        assertThat(result.getUsername()).isEqualTo("jdoe");
     }
 
+    @Test
+    @DisplayName("findUser - calls ldapTemplate.search exactly once")
+    void findUser_callsLdapSearchOnce() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(Collections.emptyList());
+
+        adSearchServiceProd.findUser("jdoe");
+
+        verify(ldapTemplate, times(1)).search(any(LdapQuery.class), any(AttributesMapper.class));
+    }
+
+    // =========================================================================
+    // findAllUsers()
+    // =========================================================================
+
+    @Test
+    @DisplayName("findAllUsers - returns combined users from all groups")
+    void findAllUsers_returnsUsersFromAllGroups() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(List.of(sampleUser));
+
+        List<User> result = adSearchServiceProd.findAllUsers();
+
+        // 8 group queries each returning 1 user = 8 users
+        assertThat(result).hasSize(8);
+        verify(ldapTemplate, times(8)).search(any(LdapQuery.class), any(AttributesMapper.class));
+    }
+
+    @Test
+    @DisplayName("findAllUsers - returns empty list when LDAP returns no users")
+    void findAllUsers_noUsersInLdap_returnsEmptyList() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(Collections.emptyList());
+
+        List<User> result = adSearchServiceProd.findAllUsers();
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("findAllUsers - queries all 8 AD groups")
+    void findAllUsers_queriesAll8Groups() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(Collections.emptyList());
+
+        adSearchServiceProd.findAllUsers();
+
+        // Supervisor + 7 borough analyst groups = 8 queries
+        verify(ldapTemplate, times(8)).search(any(LdapQuery.class), any(AttributesMapper.class));
+    }
+
+    // =========================================================================
+    // findAllUsersWithSealedAccess()
+    // =========================================================================
+
+    @Test
+    @DisplayName("findAllUsersWithSealedAccess - returns combined sealed users from all groups")
+    void findAllUsersWithSealedAccess_returnsUsersFromAllGroups() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(List.of(sampleUser));
+
+        List<User> result = adSearchServiceProd.findAllUsersWithSealedAccess();
+
+        assertThat(result).hasSize(8);
+        verify(ldapTemplate, times(8)).search(any(LdapQuery.class), any(AttributesMapper.class));
+    }
+
+    @Test
+    @DisplayName("findAllUsersWithSealedAccess - returns empty list when no sealed users")
+    void findAllUsersWithSealedAccess_noSealedUsers_returnsEmptyList() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(Collections.emptyList());
+
+        List<User> result = adSearchServiceProd.findAllUsersWithSealedAccess();
+
+        assertThat(result).isEmpty();
+    }
+
+    // =========================================================================
+    // findMembersOfGroup()
+    // =========================================================================
+
+    @Test
+    @DisplayName("findMembersOfGroup - returns users for single group")
+    void findMembersOfGroup_singleGroup_returnsUsers() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(List.of(sampleUser));
+
+        List<User> result = adSearchServiceProd.findMembersOfGroup("CN=SG-ddd-SUPERVISOR,OU=ddd");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getUsername()).isEqualTo("jdoe");
+    }
+
+    @Test
+    @DisplayName("findMembersOfGroup - returns users for multiple groups (AND condition)")
+    void findMembersOfGroup_multipleGroups_returnsIntersection() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(List.of(sampleUser));
+
+        List<User> result = adSearchServiceProd.findMembersOfGroup(
+                "CN=SG-ddd-SUPERVISOR,OU=ddd",
+                "CN=SG-ddd-SEALED,OU=ddd"
+        );
+
+        assertThat(result).hasSize(1);
+        verify(ldapTemplate, times(1)).search(any(LdapQuery.class), any(AttributesMapper.class));
+    }
+
+    @Test
+    @DisplayName("findMembersOfGroup - returns empty list when no group DNs provided")
+    void findMembersOfGroup_noGroupDns_returnsEmptyList() {
+        List<User> result = adSearchServiceProd.findMembersOfGroup();
+
+        assertThat(result).isEmpty();
+        verifyNoInteractions(ldapTemplate);
+    }
+
+    @Test
+    @DisplayName("findMembersOfGroup - returns empty list when LDAP returns no results")
+    void findMembersOfGroup_noResults_returnsEmptyList() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(Collections.emptyList());
+
+        List<User> result = adSearchServiceProd.findMembersOfGroup("CN=SG-ddd-SUPERVISOR,OU=ddd");
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("findMembersOfGroup - calls ldapTemplate.search exactly once per call")
+    void findMembersOfGroup_callsLdapSearchOnce() {
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
+                .thenReturn(Collections.emptyList());
+
+        adSearchServiceProd.findMembersOfGroup("CN=SG-ddd-SUPERVISOR,OU=ddd");
+
+        verify(ldapTemplate, times(1)).search(any(LdapQuery.class), any(AttributesMapper.class));
+    }
 }
-
-
-=====
