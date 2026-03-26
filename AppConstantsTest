@@ -1,0 +1,96 @@
+package org.nnnn.ddd;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DisplayName("AppConstants Tests")
+class AppConstantsTest {
+
+    @Test
+    @DisplayName("ROLE_PREFIX is ROLE_")
+    void rolePrefix_isCorrect() {
+        assertThat(AppConstants.ROLE_PREFIX).isEqualTo("ROLE_");
+    }
+
+    @Test
+    @DisplayName("supervisor role name is correct")
+    void supervisorRole_isCorrect() {
+        assertThat(AppConstants.SG_SUPERVISOR).isEqualTo("SG-ddd-SUPERVISOR");
+    }
+
+    @Test
+    @DisplayName("all analyst role names are correct")
+    void analystRoles_areCorrect() {
+        assertThat(AppConstants.SG_ANALYST_BK).isEqualTo("SG-ddd-ANALYST-BROOKLYN");
+        assertThat(AppConstants.SG_ANALYST_BX).isEqualTo("SG-ddd-ANALYST-BRONX");
+        assertThat(AppConstants.SG_ANALYST_QN).isEqualTo("SG-ddd-ANALYST-QUEENS");
+        assertThat(AppConstants.SG_ANALYST_SI).isEqualTo("SG-ddd-ANALYST-SI");
+        assertThat(AppConstants.SG_ANALYST_MN).isEqualTo("SG-ddd-ANALYST-MANHATTAN");
+        assertThat(AppConstants.SG_ANALYST_SNP).isEqualTo("SG-ddd-ANALYST-SNP");
+        assertThat(AppConstants.SG_ANALYST_RMD).isEqualTo("SG-ddd-ANALYST-REMANDED");
+    }
+
+    @Test
+    @DisplayName("sealed event constants are correct")
+    void sealedEventConstants_areCorrect() {
+        assertThat(AppConstants.SG_SEALED_EVENT).isEqualTo("SG-SEALED-EVENT");
+        assertThat(AppConstants.SG_SEALED_EVENT_DN)
+                .contains("SG-Sealed-Event")
+                .contains("DC=nnnn");
+    }
+
+    @Test
+    @DisplayName("status constants have correct values")
+    void statusConstants_areCorrect() {
+        assertThat(AppConstants.STATUS_NOT_STARTED).isEqualTo(1);
+        assertThat(AppConstants.STATUS_IN_PROGRESS).isEqualTo(2);
+        assertThat(AppConstants.STATUS_WAITING).isEqualTo(3);
+        assertThat(AppConstants.STATUS_COMPLETED).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("status constants are ordered correctly")
+    void statusConstants_areOrdered() {
+        assertThat(AppConstants.STATUS_NOT_STARTED)
+                .isLessThan(AppConstants.STATUS_IN_PROGRESS);
+        assertThat(AppConstants.STATUS_IN_PROGRESS)
+                .isLessThan(AppConstants.STATUS_WAITING);
+        assertThat(AppConstants.STATUS_WAITING)
+                .isLessThan(AppConstants.STATUS_COMPLETED);
+    }
+
+    @Test
+    @DisplayName("default page size is 100")
+    void defaultPageSize_is100() {
+        assertThat(AppConstants.DEFAULT_PAGE_SIZE).isEqualTo(100);
+    }
+
+    @Test
+    @DisplayName("audit action constants are correct")
+    void auditActionConstants_areCorrect() {
+        assertThat(AppConstants.AUDIT_ACTION_LOGIN).isEqualTo("LOGIN");
+        assertThat(AppConstants.AUDIT_ACTION_LOGOUT).isEqualTo("LOGOUT");
+    }
+
+    @Test
+    @DisplayName("SEALED_STRING is correct")
+    void sealedString_isCorrect() {
+        assertThat(AppConstants.SEALED_STRING).isEqualTo("SEALED");
+    }
+
+    @Test
+    @DisplayName("full supervisor role with prefix is correct")
+    void fullSupervisorRole_isCorrect() {
+        String fullRole = AppConstants.ROLE_PREFIX + AppConstants.SG_SUPERVISOR;
+        assertThat(fullRole).isEqualTo("ROLE_SG-ddd-SUPERVISOR");
+    }
+
+    @Test
+    @DisplayName("full sealed event role with prefix is correct")
+    void fullSealedEventRole_isCorrect() {
+        String fullRole = AppConstants.ROLE_PREFIX + AppConstants.SG_SEALED_EVENT;
+        assertThat(fullRole).isEqualTo("ROLE_SG-SEALED-EVENT");
+    }
+}
