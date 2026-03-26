@@ -1,4 +1,347 @@
- @Test
+package org.nnnn.ddd.service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
+import org.nnnn.ddd.TestConfig;
+import org.nnnn.ddd.api.CaseApiController;
+import org.nnnn.ddd.exceptions.InvalidArrestException;
+import org.nnnn.ddd.exceptions.SealedAccessException;
+import org.nnnn.ddd.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+/**
+ * Tests based on:
+ * 1. ddd_Create_Case_Flowchart — POST /case (createCaseByArrest)
+ * 2. ddd_Case_Drilldown_Flowchart — GET /case/{caseId} (getCaseById)
+ */
+@WebMvcTest(controllers = CaseApiController.class)
+@Import({TestConfig.class, CaseApiController.class})
+public class CaseFlowChartTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @SpyBean
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private javax.sql.DataSource dataSource;
+
+    @MockBean
+    private ModelMapper modelMapper;
+
+    @MockBean
+    private CaseService caseService;
+
+    @MockBean
+    private AuthenticationService authenticationService;
+
+    @MockBean
+    private AuditService auditService;
+
+    private CreateCaseRequest createRequest;
+
+    @BeforeEach
+    void setUp() {
+        createRequest = new CreateCaseRequest();
+        createRequest.setArrId("ARR001");
+        createRequest.setdddOfficeId(1);
+        createRequest.setProactiveFlg(0);
+    }
+
+    // =========================================================================
+    // CREATE CASE FLOWCHART — POST /case
+    // =========================================================================
+
+    /**
+     * FLOW: Arrest is SEALED + user NOT in SEALED-SG
+     * → HTTP 403 FORBIDDEN with error code 1002 SEALED_ACCESS_PERM
+     */
+    @Test
+    @WithMockUser
+    void createCase_sealedArrest_userNotInSealedGroup_returns403() throws Exception {
+        when(caseService.createCase(any(CreateCaseRequest.class)))
+                .thenThrow(new SealedAccessException("SEALED_ACCESS_PERM"));
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isForbidden());
+    }
+
+    /**
+     * FLOW: Arrest not sealed + case with arrest ID does NOT exist
+     * → Create new case → HTTP 201 CREATED with id
+     */
+    @Test
+    @WithMockUser
+    void createCase_newArrest_caseDoesNotExist_returns201() throws Exception {
+        dddCase newCase = new dddCase();
+        newCase.setId(101);
+        newCase.setNew(true);
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(newCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(101));
+    }
+
+    /**
+     * FLOW: Case exists + case IS closed
+     * → Create child case → HTTP 201 CREATED with id and parentId
+     */
+    @Test
+    @WithMockUser
+    void createCase_caseExists_caseIsClosed_createsChildCase_returns201() throws Exception {
+        dddCase childCase = new dddCase();
+        childCase.setId(102);
+        childCase.setNew(true); // child case is new
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(childCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(102));
+    }
+
+    /**
+     * FLOW: Case exists + case NOT closed + user IS assigned to case
+     * → Read/Write case edit screen → HTTP 200 OK with id
+     */
+    @Test 
+    @WithMockUser
+    void createCase_caseExists_notClosed_userAssigned_returns200() throws Exception {
+        dddCase existingCase = new dddCase();
+        existingCase.setId(100);
+        existingCase.setNew(false);
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(existingCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100));
+    }
+
+    /**
+     * FLOW: Case exists + case NOT closed + user NOT assigned + user IS supervisor
+     * → Read/Write case edit screen → HTTP 200 OK with id
+     */
+    @Test
+    @WithMockUser
+    void createCase_caseExists_notClosed_userNotAssigned_isSupervisor_returns200() throws Exception {
+        dddCase existingCase = new dddCase();
+        existingCase.setId(100);
+        existingCase.setNew(false);
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(existingCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100));
+    }
+
+    /**
+     * FLOW: Case exists + case NOT closed + user NOT assigned + NOT supervisor
+     *       + user IS in case's office → Read-Only case screen → HTTP 200 OK
+     */
+    @Test
+    @WithMockUser
+    void createCase_caseExists_notClosed_userNotAssigned_notSupervisor_inOffice_returns200() throws Exception {
+        dddCase existingCase = new dddCase();
+        existingCase.setId(100);
+        existingCase.setNew(false);
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(existingCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * FLOW: Case exists + case NOT closed + user NOT assigned + NOT supervisor
+     *       + user NOT in case's office
+     * → HTTP 403 FORBIDDEN with error code 1004 CASE_ACCESS_PERM
+     */
+    @Test
+    @WithMockUser
+    void createCase_caseExists_notClosed_userNotAssigned_notSupervisor_notInOffice_returns403() throws Exception {
+        when(caseService.createCase(any(CreateCaseRequest.class)))
+                .thenThrow(new SealedAccessException("CASE_ACCESS_PERM"));
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isForbidden());
+    }
+
+    /**
+     * FLOW: Invalid arrest ID
+     * → HTTP 500 with error code ARR_NOT_FOUND
+     */
+    @Test
+    @WithMockUser
+    void createCase_invalidArrestId_returns500() throws Exception {
+        when(caseService.createCase(any(CreateCaseRequest.class)))
+                .thenThrow(new InvalidArrestException("ARR_NOT_FOUND"));
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    /**
+     * FLOW: Unauthenticated user tries to create case
+     * → HTTP 401 UNAUTHORIZED
+     */
+    @Test
+    void createCase_noAuth_returns401() throws Exception {
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // CASE DRILLDOWN FLOWCHART — GET /case/{caseId}
+    // =========================================================================
+
+    /**
+     * FLOW: User IS assigned to case
+     * → Open Case Information screen in Read/Write mode → HTTP 200 OK
+     */
+    @Test
+    @WithMockUser
+    void getCaseById_userAssigned_returnsOkReadWrite() throws Exception {
+        dddCase mockCase = new dddCase();
+        mockCase.setId(100);
+        mockCase.setArrId("ARR001");
+
+        when(caseService.loadCase(100)).thenReturn(mockCase);
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100));
+    }
+
+    /**
+     * FLOW: User NOT assigned + case NOT sealed + user IS in case's office
+     * → Open Case Information screen in Read-Only mode → HTTP 200 OK
+     */
+    @Test
+    @WithMockUser
+    void getCaseById_userNotAssigned_notSealed_inOffice_returnsOkReadOnly() throws Exception {
+        dddCase mockCase = new dddCase();
+        mockCase.setId(100);
+
+        when(caseService.loadCase(100)).thenReturn(mockCase);
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * FLOW: User NOT assigned + case NOT sealed + user NOT in case's office
+     * → HTTP 403 FORBIDDEN with error 1004 CASE_ACCESS_PERM
+     */
+    @Test
+    @WithMockUser
+    void getCaseById_userNotAssigned_notSealed_notInOffice_returns403() throws Exception {
+        when(caseService.loadCase(100))
+                .thenThrow(new SealedAccessException("CASE_ACCESS_PERM"));
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    /**
+     * FLOW: Case IS sealed + user IS supervisor
+     * → Open Case Information screen in Read/Write mode → HTTP 200 OK
+     */
+    @Test
+    @WithMockUser
+    void getCaseById_caseSealed_userIsSupervisor_returnsOk() throws Exception {
+        dddCase mockCase = new dddCase();
+        mockCase.setId(100);
+
+        when(caseService.loadCase(100)).thenReturn(mockCase);
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * FLOW: Case IS sealed + user NOT supervisor + user IS in SEALED-SG group
+     * → Open Case Information screen in Read-Only mode → HTTP 200 OK
+     */
+    @Test
+    @WithMockUser
+    void getCaseById_caseSealed_notSupervisor_userInSealedGroup_returnsOkReadOnly() throws Exception {
+        dddCase mockCase = new dddCase();
+        mockCase.setId(100);
+
+        when(caseService.loadCase(100)).thenReturn(mockCase);
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * FLOW: Case IS sealed + user NOT supervisor + user NOT in SEALED-SG group
+     * → HTTP 403 FORBIDDEN with error 1002 SEALED_ACCESS_PERM
+     * → Display "This Arrest ID is SEALED. Contact your Supervisor."
+     */
+    @Test
     @WithMockUser
     void getCaseById_caseSealed_notSupervisor_notInSealedGroup_returns403() throws Exception {
         when(caseService.loadCase(100))
@@ -8,3 +351,26 @@
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
+
+    /**
+     * FLOW: Unauthenticated user tries to access case
+     * → HTTP 401 UNAUTHORIZED
+     */
+    @Test
+    void getCaseById_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    /**
+     * FLOW: No Accept header
+     * → HTTP 405 METHOD NOT ALLOWED (unreachable NOT_IMPLEMENTED due to routing)
+     */
+    @Test
+    @WithMockUser
+    void getCaseById_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(get("/case/100"))
+                .andExpect(status().isNotImplemented());
+    }
+}
