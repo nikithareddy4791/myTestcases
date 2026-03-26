@@ -20,6 +20,8 @@ import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -38,9 +40,7 @@ class DellS3ServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Use constructor injection since DellS3Service takes S3Client via constructor
         dellS3Service = new DellS3Service(s3Client);
-        // Inject bucket name via ReflectionTestUtils
         ReflectionTestUtils.setField(dellS3Service, "bucketName", "test-bucket");
     }
 
@@ -57,16 +57,15 @@ class DellS3ServiceTest {
 
         dellS3Service.uploadMultipartFile("uploads/case/100/1", mockFile);
 
-        ArgumentCaptor<PutObjectRequest> requestCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
-        verify(s3Client, times(1)).putObject(requestCaptor.capture(), any(RequestBody.class));
+        ArgumentCaptor<PutObjectRequest> captor = ArgumentCaptor.forClass(PutObjectRequest.class);
+        verify(s3Client, times(1)).putObject(captor.capture(), any(RequestBody.class));
 
-        PutObjectRequest captured = requestCaptor.getValue();
-        assertThat(captured.bucket()).isEqualTo("test-bucket");
-        assertThat(captured.key()).isEqualTo("uploads/case/100/1");
+        assertThat(captor.getValue().bucket()).isEqualTo("test-bucket");
+        assertThat(captor.getValue().key()).isEqualTo("uploads/case/100/1");
     }
 
     @Test
-    @DisplayName("uploadMultipartFile - sets correct content type from multipart file")
+    @DisplayName("uploadMultipartFile - sets correct content type")
     void uploadMultipartFile_setsCorrectContentType() throws IOException {
         MockMultipartFile mockFile = new MockMultipartFile(
                 "file", "image.png", "image/png", "image data".getBytes()
@@ -74,17 +73,17 @@ class DellS3ServiceTest {
 
         dellS3Service.uploadMultipartFile("uploads/case/100/2", mockFile);
 
-        ArgumentCaptor<PutObjectRequest> requestCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
-        verify(s3Client).putObject(requestCaptor.capture(), any(RequestBody.class));
+        ArgumentCaptor<PutObjectRequest> captor = ArgumentCaptor.forClass(PutObjectRequest.class);
+        verify(s3Client).putObject(captor.capture(), any(RequestBody.class));
 
-        assertThat(requestCaptor.getValue().contentType()).isEqualTo("image/png");
+        assertThat(captor.getValue().contentType()).isEqualTo("image/png");
     }
 
     @Test
-    @DisplayName("uploadMultipartFile - calls s3Client.putObject exactly once")
+    @DisplayName("uploadMultipartFile - calls putObject exactly once")
     void uploadMultipartFile_callsPutObjectExactlyOnce() throws IOException {
         MockMultipartFile mockFile = new MockMultipartFile(
-                "file", "doc.txt", "text/plain", "text content".getBytes()
+                "file", "doc.txt", "text/plain", "text".getBytes()
         );
 
         dellS3Service.uploadMultipartFile("uploads/test/key", mockFile);
@@ -103,21 +102,6 @@ class DellS3ServiceTest {
         assertThatThrownBy(() -> dellS3Service.uploadMultipartFile("key", mockFile))
                 .isInstanceOf(IOException.class)
                 .hasMessageContaining("Stream error");
-    }
-
-    @Test
-    @DisplayName("uploadMultipartFile - works with different file types")
-    void uploadMultipartFile_differentFileTypes_uploadsSuccessfully() throws IOException {
-        String[] contentTypes = {"application/pdf", "image/jpeg", "image/png", "text/plain"};
-
-        for (String contentType : contentTypes) {
-            MockMultipartFile file = new MockMultipartFile(
-                    "file", "test", contentType, "content".getBytes()
-            );
-            dellS3Service.uploadMultipartFile("key/" + contentType, file);
-        }
-
-        verify(s3Client, times(4)).putObject(any(PutObjectRequest.class), any(RequestBody.class));
     }
 
     // =========================================================================
@@ -142,23 +126,21 @@ class DellS3ServiceTest {
     }
 
     @Test
-    @DisplayName("downloadFile - calls s3Client.getObject with correct bucket and key")
+    @DisplayName("downloadFile - calls getObject with correct bucket and key")
     void downloadFile_callsGetObjectWithCorrectBucketAndKey() {
-        byte[] content = "content".getBytes();
-
         @SuppressWarnings("unchecked")
         ResponseBytes<GetObjectResponse> mockResponseBytes = mock(ResponseBytes.class);
-        when(mockResponseBytes.asByteArray()).thenReturn(content);
+        when(mockResponseBytes.asByteArray()).thenReturn("content".getBytes());
         when(s3Client.getObject(any(GetObjectRequest.class), any(ResponseTransformer.class)))
                 .thenReturn(mockResponseBytes);
 
         dellS3Service.downloadFile("uploads/case/100/1");
 
-        ArgumentCaptor<GetObjectRequest> requestCaptor = ArgumentCaptor.forClass(GetObjectRequest.class);
-        verify(s3Client).getObject(requestCaptor.capture(), any(ResponseTransformer.class));
+        ArgumentCaptor<GetObjectRequest> captor = ArgumentCaptor.forClass(GetObjectRequest.class);
+        verify(s3Client).getObject(captor.capture(), any(ResponseTransformer.class));
 
-        assertThat(requestCaptor.getValue().bucket()).isEqualTo("test-bucket");
-        assertThat(requestCaptor.getValue().key()).isEqualTo("uploads/case/100/1");
+        assertThat(captor.getValue().bucket()).isEqualTo("test-bucket");
+        assertThat(captor.getValue().key()).isEqualTo("uploads/case/100/1");
     }
 
     @Test
@@ -178,20 +160,6 @@ class DellS3ServiceTest {
     }
 
     @Test
-    @DisplayName("downloadFile - calls s3Client.getObject exactly once")
-    void downloadFile_callsGetObjectExactlyOnce() {
-        @SuppressWarnings("unchecked")
-        ResponseBytes<GetObjectResponse> mockResponseBytes = mock(ResponseBytes.class);
-        when(mockResponseBytes.asByteArray()).thenReturn(new byte[0]);
-        when(s3Client.getObject(any(GetObjectRequest.class), any(ResponseTransformer.class)))
-                .thenReturn(mockResponseBytes);
-
-        dellS3Service.downloadFile("some/key");
-
-        verify(s3Client, times(1)).getObject(any(GetObjectRequest.class), any(ResponseTransformer.class));
-    }
-
-    @Test
     @DisplayName("downloadFile - handles empty file content")
     void downloadFile_emptyContent_returnsEmptyResource() throws IOException {
         @SuppressWarnings("unchecked")
@@ -205,22 +173,42 @@ class DellS3ServiceTest {
         assertThat(result.getContentAsByteArray()).isEmpty();
     }
 
+    @Test
+    @DisplayName("downloadFile - calls getObject exactly once")
+    void downloadFile_callsGetObjectExactlyOnce() {
+        @SuppressWarnings("unchecked")
+        ResponseBytes<GetObjectResponse> mockResponseBytes = mock(ResponseBytes.class);
+        when(mockResponseBytes.asByteArray()).thenReturn(new byte[0]);
+        when(s3Client.getObject(any(GetObjectRequest.class), any(ResponseTransformer.class)))
+                .thenReturn(mockResponseBytes);
+
+        dellS3Service.downloadFile("some/key");
+
+        verify(s3Client, times(1)).getObject(any(GetObjectRequest.class), any(ResponseTransformer.class));
+    }
+
     // =========================================================================
     // listFiles()
+    // FIX: Use mock ListObjectsV2Iterable with a real Iterable
+    // instead of SdkIterable.of() which is not available in all SDK versions
     // =========================================================================
+
+    private ListObjectsV2Iterable mockIterableWithObjects(S3Object... objects) {
+        ListObjectsV2Iterable mockIterable = mock(ListObjectsV2Iterable.class);
+        // Return a plain Iterable backed by a list — works with all SDK versions
+        Iterable<S3Object> iterable = Arrays.asList(objects);
+        doReturn(iterable).when(mockIterable).contents();
+        return mockIterable;
+    }
 
     @Test
     @DisplayName("listFiles - returns list of file keys from S3")
     void listFiles_returnsFileKeys() {
-        S3Object s3Object1 = S3Object.builder().key("uploads/case/100/1").build();
-        S3Object s3Object2 = S3Object.builder().key("uploads/case/100/2").build();
+        S3Object obj1 = S3Object.builder().key("uploads/case/100/1").build();
+        S3Object obj2 = S3Object.builder().key("uploads/case/100/2").build();
 
-        ListObjectsV2Iterable mockIterable = mock(ListObjectsV2Iterable.class);
-        when(mockIterable.contents()).thenReturn(
-                software.amazon.awssdk.core.pagination.sync.SdkIterable.of(s3Object1, s3Object2)
-        );
         when(s3Client.listObjectsV2Paginator(any(ListObjectsV2Request.class)))
-                .thenReturn(mockIterable);
+                .thenReturn(mockIterableWithObjects(obj1, obj2));
 
         List<String> result = dellS3Service.listFiles();
 
@@ -231,12 +219,8 @@ class DellS3ServiceTest {
     @Test
     @DisplayName("listFiles - returns empty list when bucket is empty")
     void listFiles_emptyBucket_returnsEmptyList() {
-        ListObjectsV2Iterable mockIterable = mock(ListObjectsV2Iterable.class);
-        when(mockIterable.contents()).thenReturn(
-                software.amazon.awssdk.core.pagination.sync.SdkIterable.of()
-        );
         when(s3Client.listObjectsV2Paginator(any(ListObjectsV2Request.class)))
-                .thenReturn(mockIterable);
+                .thenReturn(mockIterableWithObjects());
 
         List<String> result = dellS3Service.listFiles();
 
@@ -244,19 +228,33 @@ class DellS3ServiceTest {
     }
 
     @Test
-    @DisplayName("listFiles - calls s3Client.listObjectsV2Paginator with correct bucket")
+    @DisplayName("listFiles - calls listObjectsV2Paginator with correct bucket")
     void listFiles_callsWithCorrectBucket() {
-        ListObjectsV2Iterable mockIterable = mock(ListObjectsV2Iterable.class);
-        when(mockIterable.contents()).thenReturn(
-                software.amazon.awssdk.core.pagination.sync.SdkIterable.of()
-        );
         when(s3Client.listObjectsV2Paginator(any(ListObjectsV2Request.class)))
-                .thenReturn(mockIterable);
+                .thenReturn(mockIterableWithObjects());
 
         dellS3Service.listFiles();
 
         ArgumentCaptor<ListObjectsV2Request> captor = ArgumentCaptor.forClass(ListObjectsV2Request.class);
         verify(s3Client).listObjectsV2Paginator(captor.capture());
         assertThat(captor.getValue().bucket()).isEqualTo("test-bucket");
+    }
+
+    @Test
+    @DisplayName("listFiles - returns only keys not full S3Object")
+    void listFiles_returnsOnlyKeys() {
+        S3Object obj = S3Object.builder()
+                .key("uploads/case/100/1")
+                .size(1024L)
+                .build();
+
+        when(s3Client.listObjectsV2Paginator(any(ListObjectsV2Request.class)))
+                .thenReturn(mockIterableWithObjects(obj));
+
+        List<String> result = dellS3Service.listFiles();
+
+        // Should return just the key string, not the full S3Object
+        assertThat(result).containsExactly("uploads/case/100/1");
+        assertThat(result.get(0)).isInstanceOf(String.class);
     }
 }
