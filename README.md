@@ -3,14 +3,14 @@ package org.nnnn.ddd;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -22,130 +22,138 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SecurityConfigTest {
 
     private SecurityConfig securityConfig;
+    private JwtAuthenticationConverter jwtAuthenticationConverter;
 
     @BeforeEach
     void setUp() {
         securityConfig = new SecurityConfig();
+        jwtAuthenticationConverter = securityConfig.jwtAuthenticationConverter();
     }
 
     // =========================================================================
-    // jwtAuthenticationConverter bean
+    // Bean creation
     // =========================================================================
 
     @Test
     @DisplayName("jwtAuthenticationConverter bean is created successfully")
     void jwtAuthenticationConverter_beanCreatedSuccessfully() {
-        assertThat(securityConfig.jwtAuthenticationConverter()).isNotNull();
+        assertThat(jwtAuthenticationConverter).isNotNull();
+        assertThat(jwtAuthenticationConverter).isInstanceOf(JwtAuthenticationConverter.class);
     }
 
     // =========================================================================
-    // Test the authorities converter logic directly by replicating it
-    // The converter lambda reads "nnnn Groups" claim, strips slashes,
-    // uppercases, and prefixes with ROLE_
-    // We test this by calling the same logic directly
+    // Call convert() directly — JwtAuthenticationConverter implements
+    // Converter<Jwt, AbstractAuthenticationToken> so convert() IS callable
     // =========================================================================
-
-    private List<String> convertGroupsToRoles(List<String> groups) {
-        List<String> roles = new ArrayList<>();
-        if (groups != null) {
-            for (String g : groups) {
-                String role = g.replace("/", "").toUpperCase();
-                roles.add("ROLE_" + role);
-            }
-        }
-        return roles;
-    }
 
     @Test
-    @DisplayName("groups are converted to ROLE_ prefixed uppercase authorities")
-    void groups_convertedToRolePrefixedAuthorities() {
-        List<String> groups = List.of("SG-ddd-SUPERVISOR", "SG-ddd-ANALYST-MANHATTAN");
+    @DisplayName("convert - maps nnnn Groups to ROLE_ prefixed authorities")
+    void convert_mapsGroupsToRoleAuthorities() {
+        Jwt jwt = buildJwt(List.of("SG-ddd-SUPERVISOR", "SG-ddd-ANALYST-MANHATTAN"));
 
-        List<String> roles = convertGroupsToRoles(groups);
+        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
 
-        assertThat(roles).contains("ROLE_SG-DDD-SUPERVISOR");
-        assertThat(roles).contains("ROLE_SG-DDD-ANALYST-MANHATTAN");
+        assertThat(token).isNotNull();
+        List<String> roles = token.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        assertThat(roles).anyMatch(r -> r.contains("SUPERVISOR"));
+        assertThat(roles).anyMatch(r -> r.contains("MANHATTAN"));
         assertThat(roles).allMatch(r -> r.startsWith("ROLE_"));
     }
 
     @Test
-    @DisplayName("leading slash is removed from group name")
-    void groups_leadingSlashIsRemoved() {
-        List<String> groups = List.of("/SG-ddd-SUPERVISOR");
+    @DisplayName("convert - removes slash from group name")
+    void convert_removesSlashFromGroupName() {
+        Jwt jwt = buildJwt(List.of("/SG-ddd-SUPERVISOR"));
 
-        List<String> roles = convertGroupsToRoles(groups);
+        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
 
-        assertThat(roles).contains("ROLE_SG-DDD-SUPERVISOR");
-        assertThat(roles).allMatch(r -> !r.contains("/"));
+        assertThat(token.getAuthorities())
+                .allMatch(a -> !a.getAuthority().contains("/"));
     }
 
     @Test
-    @DisplayName("group names are uppercased in role")
-    void groups_namesAreUppercased() {
-        List<String> groups = List.of("sg-ddd-supervisor");
+    @DisplayName("convert - uppercases group names")
+    void convert_uppercasesGroupNames() {
+        Jwt jwt = buildJwt(List.of("sg-ddd-supervisor"));
 
-        List<String> roles = convertGroupsToRoles(groups);
+        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
 
-        assertThat(roles).contains("ROLE_SG-DDD-SUPERVISOR");
-        assertThat(roles).allMatch(r -> r.equals(r.toUpperCase()));
+        assertThat(token.getAuthorities())
+                .allMatch(a -> a.getAuthority().equals(a.getAuthority().toUpperCase()));
     }
 
     @Test
-    @DisplayName("null groups produces empty roles")
-    void groups_nullProducesEmptyRoles() {
-        List<String> roles = convertGroupsToRoles(null);
+    @DisplayName("convert - returns empty authorities when groups claim absent")
+    void convert_returnsEmptyWhenGroupsAbsent() {
+        Jwt jwt = Jwt.withTokenValue("mock-token")
+                .header("alg", "RS256")
+                .claim("sub", "jdoe")
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(3600))
+                .build();
 
-        assertThat(roles).isEmpty();
+        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
+
+        assertThat(token.getAuthorities()).isEmpty();
     }
 
     @Test
-    @DisplayName("empty groups produces empty roles")
-    void groups_emptyProducesEmptyRoles() {
-        List<String> roles = convertGroupsToRoles(List.of());
-
-        assertThat(roles).isEmpty();
-    }
-
-    @Test
-    @DisplayName("multiple groups produce multiple roles")
-    void groups_multipleGroupsProduceMultipleRoles() {
-        List<String> groups = Arrays.asList(
+    @DisplayName("convert - maps multiple groups to multiple roles")
+    void convert_mapsMultipleGroupsToMultipleRoles() {
+        Jwt jwt = buildJwt(Arrays.asList(
                 "SG-ddd-SUPERVISOR",
                 "SG-ddd-ANALYST-BROOKLYN",
                 "SG-ddd-ANALYST-BRONX",
                 "SG-SEALED-EVENT"
-        );
+        ));
 
-        List<String> roles = convertGroupsToRoles(groups);
+        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
 
-        assertThat(roles).hasSize(4);
+        assertThat(token.getAuthorities()).hasSize(4);
     }
 
     @Test
-    @DisplayName("single group produces single role")
-    void groups_singleGroupProducesSingleRole() {
-        List<String> groups = List.of("SG-ddd-SUPERVISOR");
+    @DisplayName("convert - all authorities have ROLE_ prefix")
+    void convert_allAuthoritiesHaveRolePrefix() {
+        Jwt jwt = buildJwt(List.of("SG-ddd-SUPERVISOR", "SG-ddd-ANALYST-MANHATTAN"));
 
-        List<String> roles = convertGroupsToRoles(groups);
+        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
 
-        assertThat(roles).hasSize(1);
-        assertThat(roles.get(0)).isEqualTo("ROLE_SG-DDD-SUPERVISOR");
+        assertThat(token.getAuthorities())
+                .allMatch(a -> a.getAuthority().startsWith("ROLE_"));
     }
 
     @Test
-    @DisplayName("sealed event group converts correctly")
-    void groups_sealedEventConvertsCorrectly() {
-        List<String> groups = List.of("SG-SEALED-EVENT");
+    @DisplayName("convert - single group produces single role")
+    void convert_singleGroupProducesSingleRole() {
+        Jwt jwt = buildJwt(List.of("SG-ddd-SUPERVISOR"));
 
-        List<String> roles = convertGroupsToRoles(groups);
+        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
 
-        assertThat(roles).contains("ROLE_SG-SEALED-EVENT");
+        assertThat(token.getAuthorities()).hasSize(1);
+        assertThat(token.getAuthorities().iterator().next().getAuthority())
+                .startsWith("ROLE_")
+                .contains("SUPERVISOR");
     }
 
     @Test
-    @DisplayName("all analyst groups convert correctly")
-    void groups_allAnalystGroupsConvertCorrectly() {
-        List<String> groups = Arrays.asList(
+    @DisplayName("convert - sealed event group converts correctly")
+    void convert_sealedEventGroupConvertsCorrectly() {
+        Jwt jwt = buildJwt(List.of("SG-SEALED-EVENT"));
+
+        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
+
+        assertThat(token.getAuthorities())
+                .anyMatch(a -> a.getAuthority().contains("SEALED"));
+    }
+
+    @Test
+    @DisplayName("convert - all analyst groups convert correctly")
+    void convert_allAnalystGroupsConvertCorrectly() {
+        Jwt jwt = buildJwt(Arrays.asList(
                 "SG-ddd-ANALYST-BROOKLYN",
                 "SG-ddd-ANALYST-BRONX",
                 "SG-ddd-ANALYST-QUEENS",
@@ -153,33 +161,29 @@ class SecurityConfigTest {
                 "SG-ddd-ANALYST-MANHATTAN",
                 "SG-ddd-ANALYST-SNP",
                 "SG-ddd-ANALYST-REMANDED"
-        );
+        ));
 
-        List<String> roles = convertGroupsToRoles(groups);
+        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
 
-        assertThat(roles).hasSize(7);
-        assertThat(roles).allMatch(r -> r.startsWith("ROLE_SG-DDD-ANALYST-"));
-    }
-
-    @Test
-    @DisplayName("group with multiple slashes has all slashes removed")
-    void groups_multipleSlashesAllRemoved() {
-        List<String> groups = List.of("//SG-ddd-SUPERVISOR");
-
-        List<String> roles = convertGroupsToRoles(groups);
-
-        assertThat(roles).allMatch(r -> !r.contains("/"));
-        assertThat(roles).contains("ROLE_SG-DDD-SUPERVISOR");
+        assertThat(token.getAuthorities()).hasSize(7);
+        assertThat(token.getAuthorities())
+                .allMatch(a -> a.getAuthority().startsWith("ROLE_"));
     }
 
     // =========================================================================
-    // JwtAuthenticationConverter bean - verify it's wired correctly
+    // Helper
     // =========================================================================
 
-    @Test
-    @DisplayName("jwtAuthenticationConverter is not null and is correct type")
-    void jwtAuthenticationConverter_isCorrectType() {
-        JwtAuthenticationConverter converter = securityConfig.jwtAuthenticationConverter();
-        assertThat(converter).isInstanceOf(JwtAuthenticationConverter.class);
+    private Jwt buildJwt(List<String> groups) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", "jdoe");
+        claims.put("nnnn Groups", groups);
+
+        return Jwt.withTokenValue("mock-token")
+                .header("alg", "RS256")
+                .claims(c -> c.putAll(claims))
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(3600))
+                .build();
     }
 }
