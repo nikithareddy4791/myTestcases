@@ -1,141 +1,83 @@
-mvn clean test "-Dtest=SecurityConfigTest" "-Dsurefire.useFile=false" 2>&1
+------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running org.nnnn.ddd.SecurityConfigTest
+[ERROR] Tests run: 10, Failures: 5, Errors: 0, Skipped: 0, Time elapsed: 0.461 s <<< FAILURE! -- in org.nnnn.ddd.SecurityConfigTest
+[ERROR] org.nnnn.ddd.SecurityConfigTest.convert_mapsMultipleGroupsToMultipleRoles -- Time elapsed: 0.015 s <<< FAILURE!
+java.lang.AssertionError:
 
-package org.nnnn.ddd;
+Expected size: 4 but was: 0 in:
+[]
+        at org.nnnn.ddd.SecurityConfigTest.convert_mapsMultipleGroupsToMultipleRoles(SecurityConfigTest.java:112)
+        at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+        at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+        at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+[ERROR] org.nnnn.ddd.SecurityConfigTest.convert_allAnalystGroupsConvertCorrectly -- Time elapsed: 0.002 s <<< FAILURE!
+java.lang.AssertionError:
 
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.LinkedHashMap;
+Expected size: 7 but was: 0 in:
+[]
+        at org.nnnn.ddd.SecurityConfigTest.convert_allAnalystGroupsConvertCorrectly(SecurityConfigTest.java:165)
+        at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+        at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+        at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
 
-import static org.assertj.core.api.Assertions.assertThat;
+[ERROR] org.nnnn.ddd.SecurityConfigTest.convert_mapsGroupsToRoleAuthorities -- Time elapsed: 0.008 s <<< FAILURE!
+java.lang.AssertionError:
 
-@DisplayName("SecurityConfig Tests")
-class SecurityConfigTest {
+Expecting any elements of:
+  []
+to match given predicate but none did.
+        at org.nnnn.ddd.SecurityConfigTest.convert_mapsGroupsToRoleAuthorities(SecurityConfigTest.java:58)
+        at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+        at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+        at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
 
-    private SecurityConfig securityConfig;
-    private JwtAuthenticationConverter jwtAuthenticationConverter;
+[ERROR] org.nnnn.ddd.SecurityConfigTest.convert_sealedEventGroupConvertsCorrectly -- Time elapsed: 0.003 s <<< FAILURE!
+java.lang.AssertionError:
 
-    @BeforeEach
-    void setUp() {
-        securityConfig = new SecurityConfig();
-        jwtAuthenticationConverter = securityConfig.jwtAuthenticationConverter();
-    }
+Expecting any elements of:
+  []
+to match given predicate but none did.
+        at org.nnnn.ddd.SecurityConfigTest.convert_sealedEventGroupConvertsCorrectly(SecurityConfigTest.java:147)
+        at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+        at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+        at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
 
-    @Test
-    @DisplayName("jwtAuthenticationConverter bean is created successfully")
-    void jwtAuthenticationConverter_beanCreatedSuccessfully() {
-        assertThat(jwtAuthenticationConverter).isNotNull();
-    }
+[ERROR] org.nnnn.ddd.SecurityConfigTest.convert_singleGroupProducesSingleRole -- Time elapsed: 0.001 s <<< FAILURE!
+java.lang.AssertionError:
 
-    @Test
-    @DisplayName("convert - returns empty when no groups claim")
-    void convert_returnsEmptyWhenNoGroups() {
-        Jwt jwt = Jwt.withTokenValue("mock-token")
-                .header("alg", "RS256")
-                .claim("sub", "jdoe")
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plusSeconds(3600))
-                .build();
+Expected size: 1 but was: 0 in:
+[]
+        at org.nnnn.ddd.SecurityConfigTest.convert_singleGroupProducesSingleRole(SecurityConfigTest.java:133)
+        at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+        at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+        at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
 
-        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
-
-        assertThat(token.getAuthorities()).isEmpty();
-    }
-
-    @Test
-    @DisplayName("debug - verify claim name stored in JWT")
-    void debug_verifyClaimNameStoredInJwt() {
-        // Build JWT and verify claim is stored with exact key
-        Jwt jwt = buildJwt(List.of("SG-ddd-SUPERVISOR"));
-
-        System.out.println("=== All claim keys ===");
-        jwt.getClaims().keySet().forEach(k ->
-                System.out.println("  [" + k + "]"));
-
-        Object groupsValue = jwt.getClaims().get("nnnn Groups");
-        System.out.println("=== nnnn Groups value ===");
-        System.out.println("  " + groupsValue);
-
-        List<String> fromMethod = jwt.getClaimAsStringList("nnnn Groups");
-        System.out.println("=== getClaimAsStringList result ===");
-        System.out.println("  " + fromMethod);
-
-        // Assert claim is stored correctly
-        assertThat(jwt.getClaims()).containsKey("nnnn Groups");
-        assertThat(jwt.getClaimAsStringList("nnnn Groups")).isNotNull();
-    }
-
-    @Test
-    @DisplayName("convert - single group maps to single ROLE_ authority")
-    void convert_singleGroupMapsToRole() {
-        Jwt jwt = buildJwt(List.of("SG-ddd-SUPERVISOR"));
-
-        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
-
-        System.out.println("=== Authorities from convert ===");
-        token.getAuthorities().forEach(a -> System.out.println("  " + a.getAuthority()));
-
-        // If converter works, should have 1 authority
-        assertThat(token.getAuthorities()).hasSizeGreaterThanOrEqualTo(0); // always passes
-    }
-
-    @Test
-    @DisplayName("convert - all authorities start with ROLE_ prefix")
-    void convert_allAuthoritiesHaveRolePrefix() {
-        Jwt jwt = buildJwt(List.of("SG-ddd-SUPERVISOR", "SG-ddd-ANALYST-MANHATTAN"));
-
-        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
-
-        token.getAuthorities().forEach(a ->
-                assertThat(a.getAuthority()).startsWith("ROLE_"));
-    }
-
-    @Test
-    @DisplayName("convert - slash removed from group name")
-    void convert_slashRemovedFromGroupName() {
-        Jwt jwt = buildJwt(List.of("/SG-ddd-SUPERVISOR"));
-
-        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
-
-        token.getAuthorities().forEach(a ->
-                assertThat(a.getAuthority()).doesNotContain("/"));
-    }
-
-    @Test
-    @DisplayName("convert - group names uppercased")
-    void convert_groupNamesUppercased() {
-        Jwt jwt = buildJwt(List.of("sg-ddd-supervisor"));
-
-        AbstractAuthenticationToken token = jwtAuthenticationConverter.convert(jwt);
-
-        token.getAuthorities().forEach(a ->
-                assertThat(a.getAuthority()).isEqualTo(a.getAuthority().toUpperCase()));
-    }
-
-    // =========================================================================
-    // Helper — use LinkedHashMap to preserve key with space exactly
-    // =========================================================================
-
-    private Jwt buildJwt(List<String> groups) {
-        // Use LinkedHashMap — preserves insertion order and allows spaces in keys
-        Map<String, Object> claims = new LinkedHashMap<>();
-        claims.put("sub", "jdoe");
-        claims.put("nnnn Groups", groups);
-
-        return Jwt.withTokenValue("mock-token")
-                .header("alg", "RS256")
-                .claims(claimsMap -> claimsMap.putAll(claims))
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plusSeconds(3600))
-                .build();
-    }
-}
+[INFO] 
+[INFO] Results:
+[INFO]
+[ERROR] Failures: 
+[ERROR]   SecurityConfigTest.convert_allAnalystGroupsConvertCorrectly:165 
+Expected size: 7 but was: 0 in:
+[]
+[ERROR]   SecurityConfigTest.convert_mapsGroupsToRoleAuthorities:58 
+Expecting any elements of:
+  []
+to match given predicate but none did.
+[ERROR]   SecurityConfigTest.convert_mapsMultipleGroupsToMultipleRoles:112 
+Expected size: 4 but was: 0 in:
+[]
+[ERROR]   SecurityConfigTest.convert_sealedEventGroupConvertsCorrectly:147 
+Expecting any elements of:
+  []
+to match given predicate but none did.
+[ERROR]   SecurityConfigTest.convert_singleGroupProducesSingleRole:133 
+Expected size: 1 but was: 0 in:
+[]
+[INFO]
+[ERROR] Tests run: 10, Failures: 5, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILUR
