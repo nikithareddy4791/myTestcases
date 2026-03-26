@@ -1,148 +1,162 @@
-
 package org.nnnn.ddd.service;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.nnnn.ddd.entity.dddAudit;
 import org.nnnn.ddd.repository.AuditRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-@Service
-public class AuditService {
-    private static final Logger log = LoggerFactory.getLogger(AuditService.class);
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
-    @Autowired
+@ExtendWith(MockitoExtension.class)
+@DisplayName("AuditService Tests")
+class AuditServiceTest {
+
+    @Mock
     private AuditRepository auditRepository;
 
-    @Autowired
+    @Mock
     private AuthenticationService authenticationService;
 
-    public void auditAction(final String actionType, final String actionDetail) {
-        dddAudit audit = new dddAudit();
-        audit.setUserNm(authenticationService.getUsername());
-        audit.setActionType(actionType);
-        audit.setActionDetail(actionDetail);
-        auditRepository.save(audit);
+    @InjectMocks
+    private AuditService auditService;
+
+    @BeforeEach
+    void setUp() {
+        when(authenticationService.getUsername()).thenReturn("jdoe");
     }
 
-    public void auditAction(final String actionType, final String actionDetail, final Integer caseId) {
-        dddAudit audit = new dddAudit();
-        audit.setUserNm(authenticationService.getUsername());
-        audit.setActionType(actionType);
-        audit.setActionDetail(actionDetail);
-        audit.setCaseId(caseId);
-        auditRepository.save(audit);
+    // =========================================================================
+    // auditAction(String actionType, String actionDetail)
+    // =========================================================================
+
+    @Test
+    @DisplayName("auditAction - saves audit record with correct fields")
+    void auditAction_twoArgs_savesAuditWithCorrectFields() {
+        auditService.auditAction("LOGIN", "User logged in");
+
+        ArgumentCaptor<dddAudit> captor = ArgumentCaptor.forClass(dddAudit.class);
+        verify(auditRepository, times(1)).save(captor.capture());
+
+        dddAudit saved = captor.getValue();
+        assertThat(saved.getUserNm()).isEqualTo("jdoe");
+        assertThat(saved.getActionType()).isEqualTo("LOGIN");
+        assertThat(saved.getActionDetail()).isEqualTo("User logged in");
+        assertThat(saved.getCaseId()).isNull(); // no caseId for this overload
     }
-}
 
+    @Test
+    @DisplayName("auditAction - calls getUsername to set userNm")
+    void auditAction_twoArgs_callsGetUsername() {
+        auditService.auditAction("VIEW", "Viewed dashboard");
 
+        verify(authenticationService, times(1)).getUsername();
+    }
 
+    @Test
+    @DisplayName("auditAction - saves exactly once")
+    void auditAction_twoArgs_savesExactlyOnce() {
+        auditService.auditAction("LOGOUT", "User logged out");
 
+        verify(auditRepository, times(1)).save(any(dddAudit.class));
+    }
 
+    @Test
+    @DisplayName("auditAction - works with null actionDetail")
+    void auditAction_twoArgs_nullActionDetail_savesSuccessfully() {
+        auditService.auditAction("VIEW", null);
 
-===============================
+        ArgumentCaptor<dddAudit> captor = ArgumentCaptor.forClass(dddAudit.class);
+        verify(auditRepository).save(captor.capture());
 
+        assertThat(captor.getValue().getActionDetail()).isNull();
+        assertThat(captor.getValue().getActionType()).isEqualTo("VIEW");
+    }
 
+    @Test
+    @DisplayName("auditAction - works with empty strings")
+    void auditAction_twoArgs_emptyStrings_savesSuccessfully() {
+        auditService.auditAction("", "");
 
+        ArgumentCaptor<dddAudit> captor = ArgumentCaptor.forClass(dddAudit.class);
+        verify(auditRepository).save(captor.capture());
 
-package org.nnnn.ddd.entity;
+        assertThat(captor.getValue().getActionType()).isEmpty();
+        assertThat(captor.getValue().getActionDetail()).isEmpty();
+    }
 
-import java.io.Serializable;
-import jakarta.persistence.*;
-import java.sql.Timestamp;
+    // =========================================================================
+    // auditAction(String actionType, String actionDetail, Integer caseId)
+    // =========================================================================
 
+    @Test
+    @DisplayName("auditAction - saves audit record with caseId")
+    void auditAction_threeArgs_savesAuditWithCaseId() {
+        auditService.auditAction("CASE_VIEW", "Viewed case details", 100);
 
-/**
- * The persistent class for the ddd_AUDIT database table.
- * 
- */
-@Entity
-@Table(name="ddd_AUDIT", schema = "ddd")
-@NamedQuery(name="dddAudit.findAll", query="SELECT d FROM dddAudit d")
-public class dddAudit implements Serializable {
-	private static final long serialVersionUID = 1L;
+        ArgumentCaptor<dddAudit> captor = ArgumentCaptor.forClass(dddAudit.class);
+        verify(auditRepository, times(1)).save(captor.capture());
 
-	@Id
-	@Column(name="ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+        dddAudit saved = captor.getValue();
+        assertThat(saved.getUserNm()).isEqualTo("jdoe");
+        assertThat(saved.getActionType()).isEqualTo("CASE_VIEW");
+        assertThat(saved.getActionDetail()).isEqualTo("Viewed case details");
+        assertThat(saved.getCaseId()).isEqualTo(100);
+    }
 
-	@Column(name="ACTION_DETAIL")
-	private String actionDetail;
+    @Test
+    @DisplayName("auditAction - calls getUsername to set userNm when caseId provided")
+    void auditAction_threeArgs_callsGetUsername() {
+        auditService.auditAction("CASE_UPDATE", "Updated case", 100);
 
-	@Column(name="ACTION_TYPE")
-	private String actionType;
+        verify(authenticationService, times(1)).getUsername();
+    }
 
-	@Column(name="ARR_ID")
-	private String arrId;
+    @Test
+    @DisplayName("auditAction - saves exactly once when caseId provided")
+    void auditAction_threeArgs_savesExactlyOnce() {
+        auditService.auditAction("CASE_CREATE", "Created case", 101);
 
-	@Column(name="CASE_ID")
-	private Integer caseId;
+        verify(auditRepository, times(1)).save(any(dddAudit.class));
+    }
 
-	@Column(name = "ROW_INSERT_TS", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-	private Timestamp rowInsertTs;
+    @Test
+    @DisplayName("auditAction - works with null caseId")
+    void auditAction_threeArgs_nullCaseId_savesSuccessfully() {
+        auditService.auditAction("CASE_VIEW", "Viewed case", null);
 
-	@Column(name="USER_NM")
-	private String userNm;
+        ArgumentCaptor<dddAudit> captor = ArgumentCaptor.forClass(dddAudit.class);
+        verify(auditRepository).save(captor.capture());
 
-	public dddAudit() {
-	}
+        assertThat(captor.getValue().getCaseId()).isNull();
+        assertThat(captor.getValue().getActionType()).isEqualTo("CASE_VIEW");
+    }
 
-	public int getId() {
-		return this.id;
-	}
+    @Test
+    @DisplayName("auditAction - different users produce different userNm values")
+    void auditAction_differentUsers_setsCorrectUserNm() {
+        when(authenticationService.getUsername()).thenReturn("asmith");
 
-	public void setId(int id) {
-		this.id = id;
-	}
+        auditService.auditAction("LOGIN", "User logged in");
 
-	public String getActionDetail() {
-		return this.actionDetail;
-	}
+        ArgumentCaptor<dddAudit> captor = ArgumentCaptor.forClass(dddAudit.class);
+        verify(auditRepository).save(captor.capture());
 
-	public void setActionDetail(String actionDetail) {
-		this.actionDetail = actionDetail;
-	}
+        assertThat(captor.getValue().getUserNm()).isEqualTo("asmith");
+    }
 
-	public String getActionType() {
-		return this.actionType;
-	}
+    @Test
+    @DisplayName("auditAction - two overloads create separate audit records")
+    void auditAction_bothOverloads_createSeparateRecords() {
+        auditService.auditAction("LOGIN", "User logged in");
+        auditService.auditAction("CASE_VIEW", "Viewed case", 100);
 
-	public void setActionType(String actionType) {
-		this.actionType = actionType;
-	}
-
-	public String getArrId() {
-		return this.arrId;
-	}
-
-	public void setArrId(String arrId) {
-		this.arrId = arrId;
-	}
-
-	public Integer getCaseId() {
-		return this.caseId;
-	}
-
-	public void setCaseId(Integer caseId) {
-		this.caseId = caseId;
-	}
-
-	public Timestamp getRowInsertTs() {
-		return this.rowInsertTs;
-	}
-
-	public void setRowInsertTs(Timestamp rowInsertTs) {
-		this.rowInsertTs = rowInsertTs;
-	}
-
-	public String getUserNm() {
-		return this.userNm;
-	}
-
-	public void setUserNm(String userNm) {
-		this.userNm = userNm;
-	}
-
+        verify(auditRepository, times(2)).save(any(dddAudit.class));
+    }
 }
