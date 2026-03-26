@@ -1,608 +1,568 @@
 package org.nnnn.ddd.model;
 
-import java.util.Objects;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.ArrayList;
-import java.util.Arrays;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.nnnn.ddd.AppConstants;
+import org.threeten.bp.LocalDate;
+
+import java.sql.Date;
 import java.util.List;
 
-import org.threeten.bp.DateTimeUtils;
-import org.threeten.bp.LocalDate;
-import org.nnnn.ddd.AppConstants;
-import org.springframework.validation.annotation.Validated;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * ArrestInfo
- */
-@Validated
-@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-25T09:56:25.615-05:00")
+@DisplayName("ArrestInfo Model Tests")
+class ArrestInfoTest {
 
+    // =========================================================================
+    // Default constructor + getters/setters
+    // =========================================================================
 
-public class ArrestInfo   {
-  @JsonProperty("arrId")
-  private String arrId = null;
+    @Nested
+    @DisplayName("Default Constructor and Setters")
+    class DefaultConstructorTests {
 
-  @JsonProperty("arrDt")
-  private LocalDate arrDt = null;
+        @Test
+        @DisplayName("default constructor creates instance with null fields")
+        void defaultConstructor_createsInstanceWithNullFields() {
+            ArrestInfo info = new ArrestInfo();
+            assertThat(info).isNotNull();
+            assertThat(info.getArrId()).isNull();
+            assertThat(info.getDeftFrstNm()).isNull();
+            assertThat(info.getDeftLastNm()).isNull();
+            assertThat(info.getArrSealedFlg()).isNull();
+        }
 
-  @JsonProperty("arrPct")
-  private String arrPct = null;
+        @Test
+        @DisplayName("setters and getters work correctly")
+        void settersAndGetters_workCorrectly() {
+            ArrestInfo info = new ArrestInfo();
+            LocalDate today = LocalDate.now();
 
-  @JsonProperty("arrPb")
-  private String arrPb = null;
+            info.setArrId("ARR001");
+            info.setArrPct("061");
+            info.setArrPb("BK");
+            info.setTopCharge("PL 265.03");
+            info.setAoTax("123456");
+            info.setAoFrstNm("John");
+            info.setAoLastNm("Smith");
+            info.setAoCmd("061");
+            info.setDeftFrstNm("Jane");
+            info.setDeftLastNm("Doe");
+            info.setDeftNysid("NY123456");
+            info.setArrSealedFlg("N");
+            info.setDeftGender("F");
+            info.setArrDt(today);
+            info.setDeftBrthDt(today);
+            info.setFelonyFlg(1);
+            info.setDvFlg(0);
+            info.setIndexCrimeFlg(0);
+            info.setCmplntId(List.of("C001", "C002"));
 
-  @JsonProperty("cmplntId")
-  @Valid
-  private List<String> cmplntId = null;
+            assertThat(info.getArrId()).isEqualTo("ARR001");
+            assertThat(info.getArrPct()).isEqualTo("061");
+            assertThat(info.getArrPb()).isEqualTo("BK");
+            assertThat(info.getTopCharge()).isEqualTo("PL 265.03");
+            assertThat(info.getAoTax()).isEqualTo("123456");
+            assertThat(info.getAoFrstNm()).isEqualTo("John");
+            assertThat(info.getAoLastNm()).isEqualTo("Smith");
+            assertThat(info.getAoCmd()).isEqualTo("061");
+            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
+            assertThat(info.getDeftLastNm()).isEqualTo("Doe");
+            assertThat(info.getDeftNysid()).isEqualTo("NY123456");
+            assertThat(info.getArrSealedFlg()).isEqualTo("N");
+            assertThat(info.getDeftGender()).isEqualTo("F");
+            assertThat(info.getArrDt()).isEqualTo(today);
+            assertThat(info.getDeftBrthDt()).isEqualTo(today);
+            assertThat(info.getFelonyFlg()).isEqualTo(1);
+            assertThat(info.getDvFlg()).isEqualTo(0);
+            assertThat(info.getIndexCrimeFlg()).isEqualTo(0);
+            assertThat(info.getCmplntId()).containsExactly("C001", "C002");
+        }
 
-  @JsonProperty("topCharge")
-  private String topCharge = null;
+        @Test
+        @DisplayName("addCmplntIdItem adds to list")
+        void addCmplntIdItem_addsToList() {
+            ArrestInfo info = new ArrestInfo();
+            info.addCmplntIdItem("C001");
+            info.addCmplntIdItem("C002");
 
-  @JsonProperty("aoTax")
-  private String aoTax = null;
+            assertThat(info.getCmplntId()).containsExactly("C001", "C002");
+        }
 
-  @JsonProperty("aoFrstNm")
-  private String aoFrstNm = null;
+        @Test
+        @DisplayName("addCmplntIdItem initializes list if null")
+        void addCmplntIdItem_initializesListIfNull() {
+            ArrestInfo info = new ArrestInfo();
+            assertThat(info.getCmplntId()).isNull();
 
-  @JsonProperty("aoLastNm")
-  private String aoLastNm = null;
+            info.addCmplntIdItem("C001");
 
-  @JsonProperty("aoCmd")
-  private String aoCmd = null;
-
-  @JsonProperty("deftFrstNm")
-  private String deftFrstNm = null;
-
-  @JsonProperty("deftLastNm")
-  private String deftLastNm = null;
-
-  @JsonProperty("deftNysid")
-  private String deftNysid = null;
-
-  @JsonProperty("arrSealedFlg")
-  private String arrSealedFlg = null;
-
-  @JsonProperty("deftGender")
-  private String deftGender = null;
-
-  @JsonProperty("deftBrthDt")
-  private LocalDate deftBrthDt = null;
-
-  @JsonProperty("felonyFlg")
-  private Integer felonyFlg = null;
-
-  @JsonProperty("dvFlg")
-  private Integer dvFlg = null;
-
-  @JsonProperty("indexCrimeFlg")
-  private Integer indexCrimeFlg = null;
-
-  public ArrestInfo() {}
-  
-  public ArrestInfo(final String arrId, final String topCharge, final java.sql.Date arrDt, final String deftFrstNm, final String deftLastNm,
-      final String deftNysid) {
-    this.arrId = arrId;
-    this.topCharge = topCharge;
-    this.arrDt = DateTimeUtils.toLocalDate(arrDt);
-    this.deftFrstNm = deftFrstNm;
-    this.deftLastNm = deftLastNm;
-    this.deftNysid = deftNysid;
-  }
-
-  public ArrestInfo(final String arrId, final String topCharge, final java.sql.Date arrDt, final String deftFrstNm, final String deftLastNm,
-      final String deftNysid, final Character arrSealedFlg, final boolean maskSealed) {
-    this.arrId = arrId;
-    this.arrDt = DateTimeUtils.toLocalDate(arrDt);
-    this.arrSealedFlg = arrSealedFlg != null ? String.valueOf(arrSealedFlg) : null;
-    if (maskSealed && arrSealedFlg != null && 'Y' == arrSealedFlg) {
-      this.deftFrstNm = AppConstants.SEALED_STRING;
-      this.deftLastNm = AppConstants.SEALED_STRING;
-      this.deftNysid = AppConstants.SEALED_STRING;
-      this.topCharge = AppConstants.SEALED_STRING;
-    } else {
-      this.deftFrstNm = deftFrstNm;
-      this.deftLastNm = deftLastNm;
-      this.deftNysid = deftNysid;
-      this.topCharge = topCharge;
+            assertThat(info.getCmplntId()).isNotNull().hasSize(1);
+        }
     }
-  }
 
-  // ARR.ARR_ID, ARR.ARR_DT, ARR.ARR_PCT_CD AS ARR_PCT, ARR.ARR_SEALED_FLG, 
-  // LWC.LAW_LONG_DESC AS TOP_CHARGE, PSB.PATRL_BORO_CD AS ARR_PB, OFR.OFCR_TAX_NUM AS AO_TAX, 
-  // OFR.LAST_NM AS AO_LAST_NM, OFR.FRST_NM AS AO_FRST_NM, OFR.OFCR_CMD_CD AS AO_CMD, 
-  // PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, 
-  // LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID, ARR.PD_CD, ARR.DV_FLG, PKC.LAW_CAT_CD
-  public ArrestInfo(final String arrId, final java.sql.Date arrDt, final String arrPct, final Character arrSealedFlg,
-      final String topCharge, final String arrPb, final String aoTax, final String aoFrstNm,
-      final String aoLastNm, final String aoCmd, final String deftFrstNm, final String deftLastNm,
-      final String deftNysid, final String deftGender, final java.sql.Date deftBrthDt, final String cmplntId,
-      final String kyCd, final Character dvFlg, final Character lawCatCd) {
-    this.arrId = arrId;
-    this.arrDt = DateTimeUtils.toLocalDate(arrDt);
-    this.arrPct = arrPct;
-    this.arrSealedFlg = arrSealedFlg != null ? String.valueOf(arrSealedFlg) : null;
-    this.topCharge = topCharge;
-    this.arrPb = arrPb;
-    this.aoTax = aoTax;
-    this.aoCmd = aoCmd;
-    this.aoFrstNm = aoFrstNm;
-    this.aoLastNm = aoLastNm;
-    this.deftFrstNm = deftFrstNm;
-    this.deftLastNm = deftLastNm;
-    this.deftNysid = deftNysid;
-    this.deftGender = deftGender;
-    this.deftBrthDt = deftBrthDt != null ? DateTimeUtils.toLocalDate(deftBrthDt) : null;
-    if (cmplntId != null) {
-      String[] complntIdsArr = cmplntId.split(",");
-      this.cmplntId = Arrays.asList(complntIdsArr);
+    // =========================================================================
+    // Builder-style constructor (5 args)
+    // =========================================================================
+
+    @Nested
+    @DisplayName("5-Arg Constructor (summary)")
+    class FiveArgConstructorTests {
+
+        @Test
+        @DisplayName("sets arrId, topCharge, deftFrstNm, deftLastNm, deftNysid from sql.Date")
+        void constructor_setsBasicFields() {
+            Date sqlDate = Date.valueOf("2024-01-15");
+            ArrestInfo info = new ArrestInfo("ARR001", "PL 265.03", sqlDate, "Jane", "Doe", "NY123456");
+
+            assertThat(info.getArrId()).isEqualTo("ARR001");
+            assertThat(info.getTopCharge()).isEqualTo("PL 265.03");
+            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
+            assertThat(info.getDeftLastNm()).isEqualTo("Doe");
+            assertThat(info.getDeftNysid()).isEqualTo("NY123456");
+            assertThat(info.getArrDt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("converts sql.Date to LocalDate correctly")
+        void constructor_convertsSqlDateToLocalDate() {
+            Date sqlDate = Date.valueOf("2024-03-15");
+            ArrestInfo info = new ArrestInfo("ARR001", "PL 265.03", sqlDate, "Jane", "Doe", "NY123");
+
+            assertThat(info.getArrDt().getYear()).isEqualTo(2024);
+            assertThat(info.getArrDt().getMonthValue()).isEqualTo(3);
+            assertThat(info.getArrDt().getDayOfMonth()).isEqualTo(15);
+        }
     }
-    this.indexCrimeFlg = 0;
-    if (kyCd != null) {
-      if ("101".equals(kyCd) || "102".equals(kyCd) || "103".equals(kyCd) || "104".equals(kyCd)
-          || "105".equals(kyCd) || "106".equals(kyCd) || "107".equals(kyCd) || "109".equals(kyCd)) {
-        this.indexCrimeFlg = 1;
-      }
+
+    // =========================================================================
+    // Masked constructor (8 args) — sealed flag + masking logic
+    // =========================================================================
+
+    @Nested
+    @DisplayName("8-Arg Constructor (masked summary)")
+    class EightArgConstructorTests {
+
+        @Test
+        @DisplayName("unsealed arrest - shows real defendant info")
+        void constructor_unsealedArrest_showsRealInfo() {
+            Date sqlDate = Date.valueOf("2024-01-15");
+            ArrestInfo info = new ArrestInfo("ARR001", "PL 265.03", sqlDate,
+                    "Jane", "Doe", "NY123456", 'N', true);
+
+            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
+            assertThat(info.getDeftLastNm()).isEqualTo("Doe");
+            assertThat(info.getDeftNysid()).isEqualTo("NY123456");
+            assertThat(info.getTopCharge()).isEqualTo("PL 265.03");
+            assertThat(info.getArrSealedFlg()).isEqualTo("N");
+        }
+
+        @Test
+        @DisplayName("sealed arrest with maskSealed=true - masks defendant info")
+        void constructor_sealedArrest_maskSealed_masksInfo() {
+            Date sqlDate = Date.valueOf("2024-01-15");
+            ArrestInfo info = new ArrestInfo("ARR001", "PL 265.03", sqlDate,
+                    "Jane", "Doe", "NY123456", 'Y', true);
+
+            assertThat(info.getDeftFrstNm()).isEqualTo(AppConstants.SEALED_STRING);
+            assertThat(info.getDeftLastNm()).isEqualTo(AppConstants.SEALED_STRING);
+            assertThat(info.getDeftNysid()).isEqualTo(AppConstants.SEALED_STRING);
+            assertThat(info.getTopCharge()).isEqualTo(AppConstants.SEALED_STRING);
+            assertThat(info.getArrSealedFlg()).isEqualTo("Y");
+        }
+
+        @Test
+        @DisplayName("sealed arrest with maskSealed=false - shows real info despite sealed")
+        void constructor_sealedArrest_maskSealedFalse_showsRealInfo() {
+            Date sqlDate = Date.valueOf("2024-01-15");
+            ArrestInfo info = new ArrestInfo("ARR001", "PL 265.03", sqlDate,
+                    "Jane", "Doe", "NY123456", 'Y', false);
+
+            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
+            assertThat(info.getDeftLastNm()).isEqualTo("Doe");
+            assertThat(info.getDeftNysid()).isEqualTo("NY123456");
+            assertThat(info.getTopCharge()).isEqualTo("PL 265.03");
+        }
+
+        @Test
+        @DisplayName("null arrSealedFlg - sets arrSealedFlg to null")
+        void constructor_nullSealedFlg_setsNull() {
+            Date sqlDate = Date.valueOf("2024-01-15");
+            ArrestInfo info = new ArrestInfo("ARR001", "PL 265.03", sqlDate,
+                    "Jane", "Doe", "NY123456", null, true);
+
+            assertThat(info.getArrSealedFlg()).isNull();
+            // Not sealed so real info shown
+            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
+        }
     }
-    this.dvFlg = 0;
-    if (dvFlg != null && "Y".equals(String.valueOf(dvFlg))) {
-      this.dvFlg = 1;
+
+    // =========================================================================
+    // Full constructor (19 args) — all fields including flags
+    // =========================================================================
+
+    @Nested
+    @DisplayName("Full Constructor (19 args)")
+    class FullConstructorTests {
+
+        private ArrestInfo buildFullArrestInfo(String kyCd, Character dvFlg, Character lawCatCd,
+                                               String cmplntId, Character sealedFlg) {
+            return new ArrestInfo(
+                    "ARR001",
+                    Date.valueOf("2024-01-15"),
+                    "061",
+                    sealedFlg,
+                    "PL 265.03",
+                    "BK",
+                    "123456",
+                    "John",
+                    "Smith",
+                    "061",
+                    "Jane",
+                    "Doe",
+                    "NY123",
+                    "F",
+                    Date.valueOf("1990-05-20"),
+                    cmplntId,
+                    kyCd,
+                    dvFlg,
+                    lawCatCd
+            );
+        }
+
+        @Test
+        @DisplayName("sets all basic fields correctly")
+        void constructor_setsAllBasicFields() {
+            ArrestInfo info = buildFullArrestInfo(null, null, null, null, 'N');
+
+            assertThat(info.getArrId()).isEqualTo("ARR001");
+            assertThat(info.getArrPct()).isEqualTo("061");
+            assertThat(info.getArrPb()).isEqualTo("BK");
+            assertThat(info.getAoTax()).isEqualTo("123456");
+            assertThat(info.getAoFrstNm()).isEqualTo("John");
+            assertThat(info.getAoLastNm()).isEqualTo("Smith");
+            assertThat(info.getAoCmd()).isEqualTo("061");
+            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
+            assertThat(info.getDeftLastNm()).isEqualTo("Doe");
+            assertThat(info.getDeftNysid()).isEqualTo("NY123");
+            assertThat(info.getDeftGender()).isEqualTo("F");
+            assertThat(info.getArrSealedFlg()).isEqualTo("N");
+        }
+
+        @Test
+        @DisplayName("converts deftBrthDt from sql.Date to LocalDate")
+        void constructor_convertsDeftBrthDt() {
+            ArrestInfo info = buildFullArrestInfo(null, null, null, null, 'N');
+
+            assertThat(info.getDeftBrthDt()).isNotNull();
+            assertThat(info.getDeftBrthDt().getYear()).isEqualTo(1990);
+            assertThat(info.getDeftBrthDt().getMonthValue()).isEqualTo(5);
+            assertThat(info.getDeftBrthDt().getDayOfMonth()).isEqualTo(20);
+        }
+
+        @Test
+        @DisplayName("null deftBrthDt stays null")
+        void constructor_nullDeftBrthDt_staysNull() {
+            ArrestInfo info = new ArrestInfo(
+                    "ARR001", Date.valueOf("2024-01-15"), "061", 'N',
+                    "PL 265.03", "BK", "123456", "John", "Smith", "061",
+                    "Jane", "Doe", "NY123", "F",
+                    null, // null deftBrthDt
+                    null, null, null, null
+            );
+
+            assertThat(info.getDeftBrthDt()).isNull();
+        }
+
+        // ===== indexCrimeFlg logic =====
+
+        @Test
+        @DisplayName("indexCrimeFlg=0 when kyCd is null")
+        void constructor_indexCrimeFlg_nullKyCd_setsZero() {
+            ArrestInfo info = buildFullArrestInfo(null, null, null, null, 'N');
+            assertThat(info.getIndexCrimeFlg()).isEqualTo(0);
+        }
+
+        @Test
+        @DisplayName("indexCrimeFlg=1 when kyCd is 101")
+        void constructor_indexCrimeFlg_kyCd101_setsOne() {
+            assertThat(buildFullArrestInfo("101", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("indexCrimeFlg=1 when kyCd is 102")
+        void constructor_indexCrimeFlg_kyCd102_setsOne() {
+            assertThat(buildFullArrestInfo("102", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("indexCrimeFlg=1 when kyCd is 103")
+        void constructor_indexCrimeFlg_kyCd103_setsOne() {
+            assertThat(buildFullArrestInfo("103", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("indexCrimeFlg=1 when kyCd is 104")
+        void constructor_indexCrimeFlg_kyCd104_setsOne() {
+            assertThat(buildFullArrestInfo("104", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("indexCrimeFlg=1 when kyCd is 105")
+        void constructor_indexCrimeFlg_kyCd105_setsOne() {
+            assertThat(buildFullArrestInfo("105", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("indexCrimeFlg=1 when kyCd is 106")
+        void constructor_indexCrimeFlg_kyCd106_setsOne() {
+            assertThat(buildFullArrestInfo("106", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("indexCrimeFlg=1 when kyCd is 107")
+        void constructor_indexCrimeFlg_kyCd107_setsOne() {
+            assertThat(buildFullArrestInfo("107", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("indexCrimeFlg=1 when kyCd is 109")
+        void constructor_indexCrimeFlg_kyCd109_setsOne() {
+            assertThat(buildFullArrestInfo("109", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("indexCrimeFlg=0 when kyCd is non-index value")
+        void constructor_indexCrimeFlg_nonIndexKyCd_setsZero() {
+            assertThat(buildFullArrestInfo("999", null, null, null, 'N').getIndexCrimeFlg()).isEqualTo(0);
+        }
+
+        // ===== dvFlg logic =====
+
+        @Test
+        @DisplayName("dvFlg=1 when dvFlg char is Y")
+        void constructor_dvFlg_charY_setsOne() {
+            assertThat(buildFullArrestInfo(null, 'Y', null, null, 'N').getDvFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("dvFlg=0 when dvFlg char is N")
+        void constructor_dvFlg_charN_setsZero() {
+            assertThat(buildFullArrestInfo(null, 'N', null, null, 'N').getDvFlg()).isEqualTo(0);
+        }
+
+        @Test
+        @DisplayName("dvFlg=0 when dvFlg is null")
+        void constructor_dvFlg_null_setsZero() {
+            assertThat(buildFullArrestInfo(null, null, null, null, 'N').getDvFlg()).isEqualTo(0);
+        }
+
+        // ===== felonyFlg logic =====
+
+        @Test
+        @DisplayName("felonyFlg=1 when lawCatCd is F")
+        void constructor_felonyFlg_charF_setsOne() {
+            assertThat(buildFullArrestInfo(null, null, 'F', null, 'N').getFelonyFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("felonyFlg=0 when lawCatCd is M")
+        void constructor_felonyFlg_charM_setsZero() {
+            assertThat(buildFullArrestInfo(null, null, 'M', null, 'N').getFelonyFlg()).isEqualTo(0);
+        }
+
+        @Test
+        @DisplayName("felonyFlg=0 when lawCatCd is null")
+        void constructor_felonyFlg_null_setsZero() {
+            assertThat(buildFullArrestInfo(null, null, null, null, 'N').getFelonyFlg()).isEqualTo(0);
+        }
+
+        // ===== cmplntId splitting =====
+
+        @Test
+        @DisplayName("cmplntId is split by comma when provided")
+        void constructor_cmplntId_splitByComma() {
+            ArrestInfo info = buildFullArrestInfo(null, null, null, "C001,C002,C003", 'N');
+
+            assertThat(info.getCmplntId()).containsExactly("C001", "C002", "C003");
+        }
+
+        @Test
+        @DisplayName("cmplntId is null when not provided")
+        void constructor_cmplntId_nullWhenNotProvided() {
+            ArrestInfo info = buildFullArrestInfo(null, null, null, null, 'N');
+
+            assertThat(info.getCmplntId()).isNull();
+        }
+
+        @Test
+        @DisplayName("cmplntId with single value produces single-element list")
+        void constructor_cmplntId_singleValue_producesSingleElement() {
+            ArrestInfo info = buildFullArrestInfo(null, null, null, "C001", 'N');
+
+            assertThat(info.getCmplntId()).containsExactly("C001");
+        }
+
+        @Test
+        @DisplayName("null arrSealedFlg sets arrSealedFlg to null")
+        void constructor_nullSealedFlg_setsNull() {
+            ArrestInfo info = buildFullArrestInfo(null, null, null, null, null);
+            assertThat(info.getArrSealedFlg()).isNull();
+        }
     }
-    this.felonyFlg = 0;
-    if (lawCatCd != null && "F".equals(String.valueOf(lawCatCd))) {
-      this.felonyFlg = 1;
+
+    // =========================================================================
+    // Builder-style fluent methods
+    // =========================================================================
+
+    @Nested
+    @DisplayName("Fluent Builder Methods")
+    class FluentBuilderTests {
+
+        @Test
+        @DisplayName("fluent arrId returns same instance")
+        void fluent_arrId_returnsSameInstance() {
+            ArrestInfo info = new ArrestInfo();
+            ArrestInfo result = info.arrId("ARR001");
+            assertThat(result).isSameAs(info);
+            assertThat(info.getArrId()).isEqualTo("ARR001");
+        }
+
+        @Test
+        @DisplayName("fluent deftFrstNm returns same instance")
+        void fluent_deftFrstNm_returnsSameInstance() {
+            ArrestInfo info = new ArrestInfo();
+            assertThat(info.deftFrstNm("Jane")).isSameAs(info);
+            assertThat(info.getDeftFrstNm()).isEqualTo("Jane");
+        }
+
+        @Test
+        @DisplayName("fluent arrSealedFlg returns same instance")
+        void fluent_arrSealedFlg_returnsSameInstance() {
+            ArrestInfo info = new ArrestInfo();
+            assertThat(info.arrSealedFlg("Y")).isSameAs(info);
+            assertThat(info.getArrSealedFlg()).isEqualTo("Y");
+        }
+
+        @Test
+        @DisplayName("fluent felonyFlg returns same instance")
+        void fluent_felonyFlg_returnsSameInstance() {
+            ArrestInfo info = new ArrestInfo();
+            assertThat(info.felonyFlg(1)).isSameAs(info);
+            assertThat(info.getFelonyFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("fluent dvFlg returns same instance")
+        void fluent_dvFlg_returnsSameInstance() {
+            ArrestInfo info = new ArrestInfo();
+            assertThat(info.dvFlg(0)).isSameAs(info);
+            assertThat(info.getDvFlg()).isEqualTo(0);
+        }
+
+        @Test
+        @DisplayName("fluent indexCrimeFlg returns same instance")
+        void fluent_indexCrimeFlg_returnsSameInstance() {
+            ArrestInfo info = new ArrestInfo();
+            assertThat(info.indexCrimeFlg(1)).isSameAs(info);
+            assertThat(info.getIndexCrimeFlg()).isEqualTo(1);
+        }
     }
-  }
 
-  public ArrestInfo arrId(String arrId) {
-    this.arrId = arrId;
-    return this;
-  }
+    // =========================================================================
+    // equals() and hashCode()
+    // =========================================================================
 
-  /**
-   * Get arrId
-   * @return arrId
-   **/
-  @Schema(description = "")
-  
-    public String getArrId() {
-    return arrId;
-  }
+    @Nested
+    @DisplayName("equals() and hashCode()")
+    class EqualsAndHashCodeTests {
 
-  public void setArrId(String arrId) {
-    this.arrId = arrId;
-  }
+        @Test
+        @DisplayName("two instances with same arrId are equal")
+        void equals_sameArrId_returnsTrue() {
+            ArrestInfo a = new ArrestInfo();
+            a.setArrId("ARR001");
+            ArrestInfo b = new ArrestInfo();
+            b.setArrId("ARR001");
 
-  public ArrestInfo arrDt(LocalDate arrDt) {
-    this.arrDt = arrDt;
-    return this;
-  }
+            assertThat(a).isEqualTo(b);
+        }
 
-  /**
-   * Get arrDt
-   * @return arrDt
-   **/
-  @Schema(description = "")
-  
-    @Valid
-    public LocalDate getArrDt() {
-    return arrDt;
-  }
+        @Test
+        @DisplayName("two instances with different arrId are not equal")
+        void equals_differentArrId_returnsFalse() {
+            ArrestInfo a = new ArrestInfo();
+            a.setArrId("ARR001");
+            ArrestInfo b = new ArrestInfo();
+            b.setArrId("ARR002");
 
-  public void setArrDt(LocalDate arrDt) {
-    this.arrDt = arrDt;
-  }
+            assertThat(a).isNotEqualTo(b);
+        }
 
-  public ArrestInfo arrPct(String arrPct) {
-    this.arrPct = arrPct;
-    return this;
-  }
+        @Test
+        @DisplayName("same instance is equal to itself")
+        void equals_sameInstance_returnsTrue() {
+            ArrestInfo a = new ArrestInfo();
+            a.setArrId("ARR001");
 
-  /**
-   * Get arrPct
-   * @return arrPct
-   **/
-  @Schema(description = "")
-  
-    public String getArrPct() {
-    return arrPct;
-  }
+            assertThat(a).isEqualTo(a);
+        }
 
-  public void setArrPct(String arrPct) {
-    this.arrPct = arrPct;
-  }
+        @Test
+        @DisplayName("instance is not equal to null")
+        void equals_null_returnsFalse() {
+            ArrestInfo a = new ArrestInfo();
+            assertThat(a).isNotEqualTo(null);
+        }
 
-  public ArrestInfo arrPb(String arrPb) {
-    this.arrPb = arrPb;
-    return this;
-  }
+        @Test
+        @DisplayName("instance is not equal to different type")
+        void equals_differentType_returnsFalse() {
+            ArrestInfo a = new ArrestInfo();
+            assertThat(a).isNotEqualTo("string");
+        }
 
-  /**
-   * Get arrPb
-   * @return arrPb
-   **/
-  @Schema(description = "")
-  
-    public String getArrPb() {
-    return arrPb;
-  }
+        @Test
+        @DisplayName("equal instances have same hashCode")
+        void hashCode_equalInstances_samHashCode() {
+            ArrestInfo a = new ArrestInfo();
+            a.setArrId("ARR001");
+            ArrestInfo b = new ArrestInfo();
+            b.setArrId("ARR001");
 
-  public void setArrPb(String arrPb) {
-    this.arrPb = arrPb;
-  }
-
-  public ArrestInfo cmplntId(List<String> cmplntId) {
-    this.cmplntId = cmplntId;
-    return this;
-  }
-
-  public ArrestInfo addCmplntIdItem(String cmplntIdItem) {
-    if (this.cmplntId == null) {
-      this.cmplntId = new ArrayList<String>();
+            assertThat(a.hashCode()).isEqualTo(b.hashCode());
+        }
     }
-    this.cmplntId.add(cmplntIdItem);
-    return this;
-  }
 
-  /**
-   * Get cmplntId
-   * @return cmplntId
-   **/
-  @Schema(description = "")
-  
-    public List<String> getCmplntId() {
-    return cmplntId;
-  }
+    // =========================================================================
+    // toString()
+    // =========================================================================
 
-  public void setCmplntId(List<String> cmplntId) {
-    this.cmplntId = cmplntId;
-  }
+    @Nested
+    @DisplayName("toString()")
+    class ToStringTests {
 
-  public ArrestInfo topCharge(String topCharge) {
-    this.topCharge = topCharge;
-    return this;
-  }
+        @Test
+        @DisplayName("toString contains class name")
+        void toString_containsClassName() {
+            ArrestInfo info = new ArrestInfo();
+            assertThat(info.toString()).contains("ArrestInfo");
+        }
 
-  /**
-   * Get topCharge
-   * @return topCharge
-   **/
-  @Schema(description = "")
-  
-    public String getTopCharge() {
-    return topCharge;
-  }
+        @Test
+        @DisplayName("toString contains arrId value")
+        void toString_containsArrId() {
+            ArrestInfo info = new ArrestInfo();
+            info.setArrId("ARR001");
+            assertThat(info.toString()).contains("ARR001");
+        }
 
-  public void setTopCharge(String topCharge) {
-    this.topCharge = topCharge;
-  }
-
-  public ArrestInfo aoTax(String aoTax) {
-    this.aoTax = aoTax;
-    return this;
-  }
-
-  /**
-   * Get aoTax
-   * @return aoTax
-   **/
-  @Schema(description = "")
-  
-    public String getAoTax() {
-    return aoTax;
-  }
-
-  public void setAoTax(String aoTax) {
-    this.aoTax = aoTax;
-  }
-
-  public ArrestInfo aoFrstNm(String aoFrstNm) {
-    this.aoFrstNm = aoFrstNm;
-    return this;
-  }
-
-  /**
-   * Get aoFrstNm
-   * @return aoFrstNm
-   **/
-  @Schema(description = "")
-  
-    public String getAoFrstNm() {
-    return aoFrstNm;
-  }
-
-  public void setAoFrstNm(String aoFrstNm) {
-    this.aoFrstNm = aoFrstNm;
-  }
-
-  public ArrestInfo aoLastNm(String aoLastNm) {
-    this.aoLastNm = aoLastNm;
-    return this;
-  }
-
-  /**
-   * Get aoLastNm
-   * @return aoLastNm
-   **/
-  @Schema(description = "")
-  
-    public String getAoLastNm() {
-    return aoLastNm;
-  }
-
-  public void setAoLastNm(String aoLastNm) {
-    this.aoLastNm = aoLastNm;
-  }
-
-  public ArrestInfo aoCmd(String aoCmd) {
-    this.aoCmd = aoCmd;
-    return this;
-  }
-
-  /**
-   * Get aoCmd
-   * @return aoCmd
-   **/
-  @Schema(description = "")
-  
-    public String getAoCmd() {
-    return aoCmd;
-  }
-
-  public void setAoCmd(String aoCmd) {
-    this.aoCmd = aoCmd;
-  }
-
-  public ArrestInfo deftFrstNm(String deftFrstNm) {
-    this.deftFrstNm = deftFrstNm;
-    return this;
-  }
-
-  /**
-   * Get deftFrstNm
-   * @return deftFrstNm
-   **/
-  @Schema(description = "")
-  
-    public String getDeftFrstNm() {
-    return deftFrstNm;
-  }
-
-  public void setDeftFrstNm(String deftFrstNm) {
-    this.deftFrstNm = deftFrstNm;
-  }
-
-  public ArrestInfo deftLastNm(String deftLastNm) {
-    this.deftLastNm = deftLastNm;
-    return this;
-  }
-
-  /**
-   * Get deftLastNm
-   * @return deftLastNm
-   **/
-  @Schema(description = "")
-  
-    public String getDeftLastNm() {
-    return deftLastNm;
-  }
-
-  public void setDeftLastNm(String deftLastNm) {
-    this.deftLastNm = deftLastNm;
-  }
-
-  public ArrestInfo deftNysid(String deftNysid) {
-    this.deftNysid = deftNysid;
-    return this;
-  }
-
-  /**
-   * Get deftNysid
-   * @return deftNysid
-   **/
-  @Schema(description = "")
-  
-    public String getDeftNysid() {
-    return deftNysid;
-  }
-
-  public void setDeftNysid(String deftNysid) {
-    this.deftNysid = deftNysid;
-  }
-
-  public ArrestInfo arrSealedFlg(String arrSealedFlg) {
-    this.arrSealedFlg = arrSealedFlg;
-    return this;
-  }
-
-  /**
-   * Get arrSealedFlg
-   * @return arrSealedFlg
-   **/
-  @Schema(description = "")
-  
-    public String getArrSealedFlg() {
-    return arrSealedFlg;
-  }
-
-  public void setArrSealedFlg(String arrSealedFlg) {
-    this.arrSealedFlg = arrSealedFlg;
-  }
-
-  public ArrestInfo deftGender(String deftGender) {
-    this.deftGender = deftGender;
-    return this;
-  }
-
-  /**
-   * Get deftGender
-   * @return deftGender
-   **/
-  @Schema(description = "")
-  
-    public String getDeftGender() {
-    return deftGender;
-  }
-
-  public void setDeftGender(String deftGender) {
-    this.deftGender = deftGender;
-  }
-
-  public ArrestInfo deftBrthDt(LocalDate deftBrthDt) {
-    this.deftBrthDt = deftBrthDt;
-    return this;
-  }
-
-  /**
-   * Get deftBrthDt
-   * @return deftBrthDt
-   **/
-  @Schema(description = "")
-  
-    @Valid
-    public LocalDate getDeftBrthDt() {
-    return deftBrthDt;
-  }
-
-  public void setDeftBrthDt(LocalDate deftBrthDt) {
-    this.deftBrthDt = deftBrthDt;
-  }
-
-  public ArrestInfo felonyFlg(Integer felonyFlg) {
-    this.felonyFlg = felonyFlg;
-    return this;
-  }
-
-  /**
-   * Get felonyFlg
-   * @return felonyFlg
-   **/
-  @Schema(description = "")
-  
-    public Integer getFelonyFlg() {
-    return felonyFlg;
-  }
-
-  public void setFelonyFlg(Integer felonyFlg) {
-    this.felonyFlg = felonyFlg;
-  }
-
-  public ArrestInfo dvFlg(Integer dvFlg) {
-    this.dvFlg = dvFlg;
-    return this;
-  }
-
-  /**
-   * Get dvFlg
-   * @return dvFlg
-   **/
-  @Schema(description = "")
-  
-    public Integer getDvFlg() {
-    return dvFlg;
-  }
-
-  public void setDvFlg(Integer dvFlg) {
-    this.dvFlg = dvFlg;
-  }
-
-  public ArrestInfo indexCrimeFlg(Integer indexCrimeFlg) {
-    this.indexCrimeFlg = indexCrimeFlg;
-    return this;
-  }
-
-  /**
-   * Get indexCrimeFlg
-   * @return indexCrimeFlg
-   **/
-  @Schema(description = "")
-  
-    public Integer getIndexCrimeFlg() {
-    return indexCrimeFlg;
-  }
-
-  public void setIndexCrimeFlg(Integer indexCrimeFlg) {
-    this.indexCrimeFlg = indexCrimeFlg;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+        @Test
+        @DisplayName("toString shows null for unset fields")
+        void toString_showsNullForUnsetFields() {
+            ArrestInfo info = new ArrestInfo();
+            assertThat(info.toString()).contains("null");
+        }
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    ArrestInfo arrestInfo = (ArrestInfo) o;
-    return Objects.equals(this.arrId, arrestInfo.arrId) &&
-        Objects.equals(this.arrDt, arrestInfo.arrDt) &&
-        Objects.equals(this.arrPct, arrestInfo.arrPct) &&
-        Objects.equals(this.arrPb, arrestInfo.arrPb) &&
-        Objects.equals(this.cmplntId, arrestInfo.cmplntId) &&
-        Objects.equals(this.topCharge, arrestInfo.topCharge) &&
-        Objects.equals(this.aoTax, arrestInfo.aoTax) &&
-        Objects.equals(this.aoFrstNm, arrestInfo.aoFrstNm) &&
-        Objects.equals(this.aoLastNm, arrestInfo.aoLastNm) &&
-        Objects.equals(this.aoCmd, arrestInfo.aoCmd) &&
-        Objects.equals(this.deftFrstNm, arrestInfo.deftFrstNm) &&
-        Objects.equals(this.deftLastNm, arrestInfo.deftLastNm) &&
-        Objects.equals(this.deftNysid, arrestInfo.deftNysid) &&
-        Objects.equals(this.arrSealedFlg, arrestInfo.arrSealedFlg) &&
-        Objects.equals(this.deftGender, arrestInfo.deftGender) &&
-        Objects.equals(this.deftBrthDt, arrestInfo.deftBrthDt) &&
-        Objects.equals(this.felonyFlg, arrestInfo.felonyFlg) &&
-        Objects.equals(this.dvFlg, arrestInfo.dvFlg) &&
-        Objects.equals(this.indexCrimeFlg, arrestInfo.indexCrimeFlg);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(arrId, arrDt, arrPct, arrPb, cmplntId, topCharge, aoTax, aoFrstNm, aoLastNm, aoCmd, deftFrstNm, deftLastNm, deftNysid, arrSealedFlg, deftGender, deftBrthDt, felonyFlg, dvFlg, indexCrimeFlg);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ArrestInfo {\n");
-    
-    sb.append("    arrId: ").append(toIndentedString(arrId)).append("\n");
-    sb.append("    arrDt: ").append(toIndentedString(arrDt)).append("\n");
-    sb.append("    arrPct: ").append(toIndentedString(arrPct)).append("\n");
-    sb.append("    arrPb: ").append(toIndentedString(arrPb)).append("\n");
-    sb.append("    cmplntId: ").append(toIndentedString(cmplntId)).append("\n");
-    sb.append("    topCharge: ").append(toIndentedString(topCharge)).append("\n");
-    sb.append("    aoTax: ").append(toIndentedString(aoTax)).append("\n");
-    sb.append("    aoFrstNm: ").append(toIndentedString(aoFrstNm)).append("\n");
-    sb.append("    aoLastNm: ").append(toIndentedString(aoLastNm)).append("\n");
-    sb.append("    aoCmd: ").append(toIndentedString(aoCmd)).append("\n");
-    sb.append("    deftFrstNm: ").append(toIndentedString(deftFrstNm)).append("\n");
-    sb.append("    deftLastNm: ").append(toIndentedString(deftLastNm)).append("\n");
-    sb.append("    deftNysid: ").append(toIndentedString(deftNysid)).append("\n");
-    sb.append("    arrSealedFlg: ").append(toIndentedString(arrSealedFlg)).append("\n");
-    sb.append("    deftGender: ").append(toIndentedString(deftGender)).append("\n");
-    sb.append("    deftBrthDt: ").append(toIndentedString(deftBrthDt)).append("\n");
-    sb.append("    felonyFlg: ").append(toIndentedString(felonyFlg)).append("\n");
-    sb.append("    dvFlg: ").append(toIndentedString(dvFlg)).append("\n");
-    sb.append("    indexCrimeFlg: ").append(toIndentedString(indexCrimeFlg)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
 }
-
-
-
