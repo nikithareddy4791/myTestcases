@@ -1,298 +1,608 @@
-package org.nnnn.ddd.security;
+package org.nnnn.ddd.model;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
-
-import java.time.Instant;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.threeten.bp.DateTimeUtils;
+import org.threeten.bp.LocalDate;
+import org.nnnn.ddd.AppConstants;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
-@DisplayName("KeycloakAuthorityConverter Tests")
-class KeycloakAuthorityConverterTest {
+/**
+ * ArrestInfo
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-25T09:56:25.615-05:00")
 
-    private KeycloakAuthorityConverter converter;
 
-    @BeforeEach
-    void setUp() {
-        converter = new KeycloakAuthorityConverter();
+public class ArrestInfo   {
+  @JsonProperty("arrId")
+  private String arrId = null;
+
+  @JsonProperty("arrDt")
+  private LocalDate arrDt = null;
+
+  @JsonProperty("arrPct")
+  private String arrPct = null;
+
+  @JsonProperty("arrPb")
+  private String arrPb = null;
+
+  @JsonProperty("cmplntId")
+  @Valid
+  private List<String> cmplntId = null;
+
+  @JsonProperty("topCharge")
+  private String topCharge = null;
+
+  @JsonProperty("aoTax")
+  private String aoTax = null;
+
+  @JsonProperty("aoFrstNm")
+  private String aoFrstNm = null;
+
+  @JsonProperty("aoLastNm")
+  private String aoLastNm = null;
+
+  @JsonProperty("aoCmd")
+  private String aoCmd = null;
+
+  @JsonProperty("deftFrstNm")
+  private String deftFrstNm = null;
+
+  @JsonProperty("deftLastNm")
+  private String deftLastNm = null;
+
+  @JsonProperty("deftNysid")
+  private String deftNysid = null;
+
+  @JsonProperty("arrSealedFlg")
+  private String arrSealedFlg = null;
+
+  @JsonProperty("deftGender")
+  private String deftGender = null;
+
+  @JsonProperty("deftBrthDt")
+  private LocalDate deftBrthDt = null;
+
+  @JsonProperty("felonyFlg")
+  private Integer felonyFlg = null;
+
+  @JsonProperty("dvFlg")
+  private Integer dvFlg = null;
+
+  @JsonProperty("indexCrimeFlg")
+  private Integer indexCrimeFlg = null;
+
+  public ArrestInfo() {}
+  
+  public ArrestInfo(final String arrId, final String topCharge, final java.sql.Date arrDt, final String deftFrstNm, final String deftLastNm,
+      final String deftNysid) {
+    this.arrId = arrId;
+    this.topCharge = topCharge;
+    this.arrDt = DateTimeUtils.toLocalDate(arrDt);
+    this.deftFrstNm = deftFrstNm;
+    this.deftLastNm = deftLastNm;
+    this.deftNysid = deftNysid;
+  }
+
+  public ArrestInfo(final String arrId, final String topCharge, final java.sql.Date arrDt, final String deftFrstNm, final String deftLastNm,
+      final String deftNysid, final Character arrSealedFlg, final boolean maskSealed) {
+    this.arrId = arrId;
+    this.arrDt = DateTimeUtils.toLocalDate(arrDt);
+    this.arrSealedFlg = arrSealedFlg != null ? String.valueOf(arrSealedFlg) : null;
+    if (maskSealed && arrSealedFlg != null && 'Y' == arrSealedFlg) {
+      this.deftFrstNm = AppConstants.SEALED_STRING;
+      this.deftLastNm = AppConstants.SEALED_STRING;
+      this.deftNysid = AppConstants.SEALED_STRING;
+      this.topCharge = AppConstants.SEALED_STRING;
+    } else {
+      this.deftFrstNm = deftFrstNm;
+      this.deftLastNm = deftLastNm;
+      this.deftNysid = deftNysid;
+      this.topCharge = topCharge;
     }
+  }
 
-    // =========================================================================
-    // convert() — realm_access.roles path
-    // =========================================================================
-
-    @Test
-    @DisplayName("convert - extracts roles from realm_access.roles and prefixes with ROLE_")
-    void convert_extractsRolesFromRealmAccess() {
-        Map<String, Object> realmAccess = new HashMap<>();
-        realmAccess.put("roles", List.of("ANALYST", "SUPERVISOR"));
-
-        Jwt jwt = buildJwt(realmAccess, null, null);
-
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
-
-        List<String> roles = authorities.stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
-
-        assertThat(roles).contains("ROLE_ANALYST", "ROLE_SUPERVISOR");
+  // ARR.ARR_ID, ARR.ARR_DT, ARR.ARR_PCT_CD AS ARR_PCT, ARR.ARR_SEALED_FLG, 
+  // LWC.LAW_LONG_DESC AS TOP_CHARGE, PSB.PATRL_BORO_CD AS ARR_PB, OFR.OFCR_TAX_NUM AS AO_TAX, 
+  // OFR.LAST_NM AS AO_LAST_NM, OFR.FRST_NM AS AO_FRST_NM, OFR.OFCR_CMD_CD AS AO_CMD, 
+  // PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, 
+  // LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID, ARR.PD_CD, ARR.DV_FLG, PKC.LAW_CAT_CD
+  public ArrestInfo(final String arrId, final java.sql.Date arrDt, final String arrPct, final Character arrSealedFlg,
+      final String topCharge, final String arrPb, final String aoTax, final String aoFrstNm,
+      final String aoLastNm, final String aoCmd, final String deftFrstNm, final String deftLastNm,
+      final String deftNysid, final String deftGender, final java.sql.Date deftBrthDt, final String cmplntId,
+      final String kyCd, final Character dvFlg, final Character lawCatCd) {
+    this.arrId = arrId;
+    this.arrDt = DateTimeUtils.toLocalDate(arrDt);
+    this.arrPct = arrPct;
+    this.arrSealedFlg = arrSealedFlg != null ? String.valueOf(arrSealedFlg) : null;
+    this.topCharge = topCharge;
+    this.arrPb = arrPb;
+    this.aoTax = aoTax;
+    this.aoCmd = aoCmd;
+    this.aoFrstNm = aoFrstNm;
+    this.aoLastNm = aoLastNm;
+    this.deftFrstNm = deftFrstNm;
+    this.deftLastNm = deftLastNm;
+    this.deftNysid = deftNysid;
+    this.deftGender = deftGender;
+    this.deftBrthDt = deftBrthDt != null ? DateTimeUtils.toLocalDate(deftBrthDt) : null;
+    if (cmplntId != null) {
+      String[] complntIdsArr = cmplntId.split(",");
+      this.cmplntId = Arrays.asList(complntIdsArr);
     }
-
-    @Test
-    @DisplayName("convert - uppercases realm_access roles")
-    void convert_uppercasesRealmAccessRoles() {
-        Map<String, Object> realmAccess = new HashMap<>();
-        realmAccess.put("roles", List.of("analyst", "supervisor"));
-
-        Jwt jwt = buildJwt(realmAccess, null, null);
-
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
-
-        assertThat(authorities)
-                .allMatch(a -> a.getAuthority().equals(a.getAuthority().toUpperCase()));
-        assertThat(authorities).anyMatch(a -> a.getAuthority().equals("ROLE_ANALYST"));
-        assertThat(authorities).anyMatch(a -> a.getAuthority().equals("ROLE_SUPERVISOR"));
+    this.indexCrimeFlg = 0;
+    if (kyCd != null) {
+      if ("101".equals(kyCd) || "102".equals(kyCd) || "103".equals(kyCd) || "104".equals(kyCd)
+          || "105".equals(kyCd) || "106".equals(kyCd) || "107".equals(kyCd) || "109".equals(kyCd)) {
+        this.indexCrimeFlg = 1;
+      }
     }
-
-    @Test
-    @DisplayName("convert - returns empty when realm_access has no roles key")
-    void convert_returnsEmptyWhenRealmAccessHasNoRoles() {
-        Map<String, Object> realmAccess = new HashMap<>();
-        // no "roles" key
-
-        Jwt jwt = buildJwt(realmAccess, null, null);
-
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
-
-        assertThat(authorities).isEmpty();
+    this.dvFlg = 0;
+    if (dvFlg != null && "Y".equals(String.valueOf(dvFlg))) {
+      this.dvFlg = 1;
     }
-
-    @Test
-    @DisplayName("convert - returns empty when realm_access is null")
-    void convert_returnsEmptyWhenRealmAccessIsNull() {
-        Jwt jwt = buildJwt(null, null, null);
-
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
-
-        assertThat(authorities).isEmpty();
+    this.felonyFlg = 0;
+    if (lawCatCd != null && "F".equals(String.valueOf(lawCatCd))) {
+      this.felonyFlg = 1;
     }
+  }
 
-    @Test
-    @DisplayName("convert - returns empty when realm_access is not a Map")
-    void convert_returnsEmptyWhenRealmAccessIsNotMap() {
-        // realm_access is a String instead of a Map — falls through to roles claim
-        Jwt jwt = Jwt.withTokenValue("mock-token")
-                .header("alg", "RS256")
-                .claim("sub", "jdoe")
-                .claim("realm_access", "not-a-map")
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plusSeconds(3600))
-                .build();
+  public ArrestInfo arrId(String arrId) {
+    this.arrId = arrId;
+    return this;
+  }
 
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
+  /**
+   * Get arrId
+   * @return arrId
+   **/
+  @Schema(description = "")
+  
+    public String getArrId() {
+    return arrId;
+  }
 
-        // No roles claim either, so empty
-        assertThat(authorities).isEmpty();
+  public void setArrId(String arrId) {
+    this.arrId = arrId;
+  }
+
+  public ArrestInfo arrDt(LocalDate arrDt) {
+    this.arrDt = arrDt;
+    return this;
+  }
+
+  /**
+   * Get arrDt
+   * @return arrDt
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public LocalDate getArrDt() {
+    return arrDt;
+  }
+
+  public void setArrDt(LocalDate arrDt) {
+    this.arrDt = arrDt;
+  }
+
+  public ArrestInfo arrPct(String arrPct) {
+    this.arrPct = arrPct;
+    return this;
+  }
+
+  /**
+   * Get arrPct
+   * @return arrPct
+   **/
+  @Schema(description = "")
+  
+    public String getArrPct() {
+    return arrPct;
+  }
+
+  public void setArrPct(String arrPct) {
+    this.arrPct = arrPct;
+  }
+
+  public ArrestInfo arrPb(String arrPb) {
+    this.arrPb = arrPb;
+    return this;
+  }
+
+  /**
+   * Get arrPb
+   * @return arrPb
+   **/
+  @Schema(description = "")
+  
+    public String getArrPb() {
+    return arrPb;
+  }
+
+  public void setArrPb(String arrPb) {
+    this.arrPb = arrPb;
+  }
+
+  public ArrestInfo cmplntId(List<String> cmplntId) {
+    this.cmplntId = cmplntId;
+    return this;
+  }
+
+  public ArrestInfo addCmplntIdItem(String cmplntIdItem) {
+    if (this.cmplntId == null) {
+      this.cmplntId = new ArrayList<String>();
     }
+    this.cmplntId.add(cmplntIdItem);
+    return this;
+  }
 
-    // =========================================================================
-    // convert() — fallback to direct "roles" claim
-    // =========================================================================
+  /**
+   * Get cmplntId
+   * @return cmplntId
+   **/
+  @Schema(description = "")
+  
+    public List<String> getCmplntId() {
+    return cmplntId;
+  }
 
-    @Test
-    @DisplayName("convert - falls back to direct roles claim when realm_access absent")
-    void convert_fallsBackToDirectRolesClaim() {
-        Jwt jwt = Jwt.withTokenValue("mock-token")
-                .header("alg", "RS256")
-                .claim("sub", "jdoe")
-                .claim("roles", List.of("ANALYST"))
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plusSeconds(3600))
-                .build();
+  public void setCmplntId(List<String> cmplntId) {
+    this.cmplntId = cmplntId;
+  }
 
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
+  public ArrestInfo topCharge(String topCharge) {
+    this.topCharge = topCharge;
+    return this;
+  }
 
-        assertThat(authorities).anyMatch(a -> a.getAuthority().equals("ROLE_ANALYST"));
+  /**
+   * Get topCharge
+   * @return topCharge
+   **/
+  @Schema(description = "")
+  
+    public String getTopCharge() {
+    return topCharge;
+  }
+
+  public void setTopCharge(String topCharge) {
+    this.topCharge = topCharge;
+  }
+
+  public ArrestInfo aoTax(String aoTax) {
+    this.aoTax = aoTax;
+    return this;
+  }
+
+  /**
+   * Get aoTax
+   * @return aoTax
+   **/
+  @Schema(description = "")
+  
+    public String getAoTax() {
+    return aoTax;
+  }
+
+  public void setAoTax(String aoTax) {
+    this.aoTax = aoTax;
+  }
+
+  public ArrestInfo aoFrstNm(String aoFrstNm) {
+    this.aoFrstNm = aoFrstNm;
+    return this;
+  }
+
+  /**
+   * Get aoFrstNm
+   * @return aoFrstNm
+   **/
+  @Schema(description = "")
+  
+    public String getAoFrstNm() {
+    return aoFrstNm;
+  }
+
+  public void setAoFrstNm(String aoFrstNm) {
+    this.aoFrstNm = aoFrstNm;
+  }
+
+  public ArrestInfo aoLastNm(String aoLastNm) {
+    this.aoLastNm = aoLastNm;
+    return this;
+  }
+
+  /**
+   * Get aoLastNm
+   * @return aoLastNm
+   **/
+  @Schema(description = "")
+  
+    public String getAoLastNm() {
+    return aoLastNm;
+  }
+
+  public void setAoLastNm(String aoLastNm) {
+    this.aoLastNm = aoLastNm;
+  }
+
+  public ArrestInfo aoCmd(String aoCmd) {
+    this.aoCmd = aoCmd;
+    return this;
+  }
+
+  /**
+   * Get aoCmd
+   * @return aoCmd
+   **/
+  @Schema(description = "")
+  
+    public String getAoCmd() {
+    return aoCmd;
+  }
+
+  public void setAoCmd(String aoCmd) {
+    this.aoCmd = aoCmd;
+  }
+
+  public ArrestInfo deftFrstNm(String deftFrstNm) {
+    this.deftFrstNm = deftFrstNm;
+    return this;
+  }
+
+  /**
+   * Get deftFrstNm
+   * @return deftFrstNm
+   **/
+  @Schema(description = "")
+  
+    public String getDeftFrstNm() {
+    return deftFrstNm;
+  }
+
+  public void setDeftFrstNm(String deftFrstNm) {
+    this.deftFrstNm = deftFrstNm;
+  }
+
+  public ArrestInfo deftLastNm(String deftLastNm) {
+    this.deftLastNm = deftLastNm;
+    return this;
+  }
+
+  /**
+   * Get deftLastNm
+   * @return deftLastNm
+   **/
+  @Schema(description = "")
+  
+    public String getDeftLastNm() {
+    return deftLastNm;
+  }
+
+  public void setDeftLastNm(String deftLastNm) {
+    this.deftLastNm = deftLastNm;
+  }
+
+  public ArrestInfo deftNysid(String deftNysid) {
+    this.deftNysid = deftNysid;
+    return this;
+  }
+
+  /**
+   * Get deftNysid
+   * @return deftNysid
+   **/
+  @Schema(description = "")
+  
+    public String getDeftNysid() {
+    return deftNysid;
+  }
+
+  public void setDeftNysid(String deftNysid) {
+    this.deftNysid = deftNysid;
+  }
+
+  public ArrestInfo arrSealedFlg(String arrSealedFlg) {
+    this.arrSealedFlg = arrSealedFlg;
+    return this;
+  }
+
+  /**
+   * Get arrSealedFlg
+   * @return arrSealedFlg
+   **/
+  @Schema(description = "")
+  
+    public String getArrSealedFlg() {
+    return arrSealedFlg;
+  }
+
+  public void setArrSealedFlg(String arrSealedFlg) {
+    this.arrSealedFlg = arrSealedFlg;
+  }
+
+  public ArrestInfo deftGender(String deftGender) {
+    this.deftGender = deftGender;
+    return this;
+  }
+
+  /**
+   * Get deftGender
+   * @return deftGender
+   **/
+  @Schema(description = "")
+  
+    public String getDeftGender() {
+    return deftGender;
+  }
+
+  public void setDeftGender(String deftGender) {
+    this.deftGender = deftGender;
+  }
+
+  public ArrestInfo deftBrthDt(LocalDate deftBrthDt) {
+    this.deftBrthDt = deftBrthDt;
+    return this;
+  }
+
+  /**
+   * Get deftBrthDt
+   * @return deftBrthDt
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public LocalDate getDeftBrthDt() {
+    return deftBrthDt;
+  }
+
+  public void setDeftBrthDt(LocalDate deftBrthDt) {
+    this.deftBrthDt = deftBrthDt;
+  }
+
+  public ArrestInfo felonyFlg(Integer felonyFlg) {
+    this.felonyFlg = felonyFlg;
+    return this;
+  }
+
+  /**
+   * Get felonyFlg
+   * @return felonyFlg
+   **/
+  @Schema(description = "")
+  
+    public Integer getFelonyFlg() {
+    return felonyFlg;
+  }
+
+  public void setFelonyFlg(Integer felonyFlg) {
+    this.felonyFlg = felonyFlg;
+  }
+
+  public ArrestInfo dvFlg(Integer dvFlg) {
+    this.dvFlg = dvFlg;
+    return this;
+  }
+
+  /**
+   * Get dvFlg
+   * @return dvFlg
+   **/
+  @Schema(description = "")
+  
+    public Integer getDvFlg() {
+    return dvFlg;
+  }
+
+  public void setDvFlg(Integer dvFlg) {
+    this.dvFlg = dvFlg;
+  }
+
+  public ArrestInfo indexCrimeFlg(Integer indexCrimeFlg) {
+    this.indexCrimeFlg = indexCrimeFlg;
+    return this;
+  }
+
+  /**
+   * Get indexCrimeFlg
+   * @return indexCrimeFlg
+   **/
+  @Schema(description = "")
+  
+    public Integer getIndexCrimeFlg() {
+    return indexCrimeFlg;
+  }
+
+  public void setIndexCrimeFlg(Integer indexCrimeFlg) {
+    this.indexCrimeFlg = indexCrimeFlg;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
     }
-
-    @Test
-    @DisplayName("convert - falls back to direct roles claim when realm_access is not a Map")
-    void convert_fallsBackToDirectRolesClaimWhenRealmAccessNotMap() {
-        Jwt jwt = Jwt.withTokenValue("mock-token")
-                .header("alg", "RS256")
-                .claim("sub", "jdoe")
-                .claim("realm_access", "invalid")
-                .claim("roles", List.of("SUPERVISOR"))
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plusSeconds(3600))
-                .build();
-
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
-
-        assertThat(authorities).anyMatch(a -> a.getAuthority().equals("ROLE_SUPERVISOR"));
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
+    ArrestInfo arrestInfo = (ArrestInfo) o;
+    return Objects.equals(this.arrId, arrestInfo.arrId) &&
+        Objects.equals(this.arrDt, arrestInfo.arrDt) &&
+        Objects.equals(this.arrPct, arrestInfo.arrPct) &&
+        Objects.equals(this.arrPb, arrestInfo.arrPb) &&
+        Objects.equals(this.cmplntId, arrestInfo.cmplntId) &&
+        Objects.equals(this.topCharge, arrestInfo.topCharge) &&
+        Objects.equals(this.aoTax, arrestInfo.aoTax) &&
+        Objects.equals(this.aoFrstNm, arrestInfo.aoFrstNm) &&
+        Objects.equals(this.aoLastNm, arrestInfo.aoLastNm) &&
+        Objects.equals(this.aoCmd, arrestInfo.aoCmd) &&
+        Objects.equals(this.deftFrstNm, arrestInfo.deftFrstNm) &&
+        Objects.equals(this.deftLastNm, arrestInfo.deftLastNm) &&
+        Objects.equals(this.deftNysid, arrestInfo.deftNysid) &&
+        Objects.equals(this.arrSealedFlg, arrestInfo.arrSealedFlg) &&
+        Objects.equals(this.deftGender, arrestInfo.deftGender) &&
+        Objects.equals(this.deftBrthDt, arrestInfo.deftBrthDt) &&
+        Objects.equals(this.felonyFlg, arrestInfo.felonyFlg) &&
+        Objects.equals(this.dvFlg, arrestInfo.dvFlg) &&
+        Objects.equals(this.indexCrimeFlg, arrestInfo.indexCrimeFlg);
+  }
 
-    @Test
-    @DisplayName("convert - falls back to direct roles when realm_access roles is not a List")
-    void convert_fallsBackWhenRealmAccessRolesNotList() {
-        Map<String, Object> realmAccess = new HashMap<>();
-        realmAccess.put("roles", "not-a-list"); // String instead of List
+  @Override
+  public int hashCode() {
+    return Objects.hash(arrId, arrDt, arrPct, arrPb, cmplntId, topCharge, aoTax, aoFrstNm, aoLastNm, aoCmd, deftFrstNm, deftLastNm, deftNysid, arrSealedFlg, deftGender, deftBrthDt, felonyFlg, dvFlg, indexCrimeFlg);
+  }
 
-        Jwt jwt = buildJwt(realmAccess, null, List.of("ANALYST"));
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class ArrestInfo {\n");
+    
+    sb.append("    arrId: ").append(toIndentedString(arrId)).append("\n");
+    sb.append("    arrDt: ").append(toIndentedString(arrDt)).append("\n");
+    sb.append("    arrPct: ").append(toIndentedString(arrPct)).append("\n");
+    sb.append("    arrPb: ").append(toIndentedString(arrPb)).append("\n");
+    sb.append("    cmplntId: ").append(toIndentedString(cmplntId)).append("\n");
+    sb.append("    topCharge: ").append(toIndentedString(topCharge)).append("\n");
+    sb.append("    aoTax: ").append(toIndentedString(aoTax)).append("\n");
+    sb.append("    aoFrstNm: ").append(toIndentedString(aoFrstNm)).append("\n");
+    sb.append("    aoLastNm: ").append(toIndentedString(aoLastNm)).append("\n");
+    sb.append("    aoCmd: ").append(toIndentedString(aoCmd)).append("\n");
+    sb.append("    deftFrstNm: ").append(toIndentedString(deftFrstNm)).append("\n");
+    sb.append("    deftLastNm: ").append(toIndentedString(deftLastNm)).append("\n");
+    sb.append("    deftNysid: ").append(toIndentedString(deftNysid)).append("\n");
+    sb.append("    arrSealedFlg: ").append(toIndentedString(arrSealedFlg)).append("\n");
+    sb.append("    deftGender: ").append(toIndentedString(deftGender)).append("\n");
+    sb.append("    deftBrthDt: ").append(toIndentedString(deftBrthDt)).append("\n");
+    sb.append("    felonyFlg: ").append(toIndentedString(felonyFlg)).append("\n");
+    sb.append("    dvFlg: ").append(toIndentedString(dvFlg)).append("\n");
+    sb.append("    indexCrimeFlg: ").append(toIndentedString(indexCrimeFlg)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
 
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
-
-        // Falls back to direct roles claim
-        assertThat(authorities).anyMatch(a -> a.getAuthority().equals("ROLE_ANALYST"));
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
     }
-
-    // =========================================================================
-    // convert() — boroughs claim
-    // =========================================================================
-
-    @Test
-    @DisplayName("convert - extracts boroughs and prefixes with BOROUGH_")
-    void convert_extractsBoroughsWithBoroughPrefix() {
-        Jwt jwt = buildJwt(null, List.of("BRONX", "QUEENS"), null);
-
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
-
-        List<String> boroughAuthorities = authorities.stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
-
-        assertThat(boroughAuthorities).contains("BOROUGH_BRONX", "BOROUGH_QUEENS");
-    }
-
-    @Test
-    @DisplayName("convert - uppercases borough names")
-    void convert_uppercasesBoroughNames() {
-        Jwt jwt = buildJwt(null, List.of("bronx", "queens"), null);
-
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
-
-        assertThat(authorities).anyMatch(a -> a.getAuthority().equals("BOROUGH_BRONX"));
-        assertThat(authorities).anyMatch(a -> a.getAuthority().equals("BOROUGH_QUEENS"));
-    }
-
-    @Test
-    @DisplayName("convert - returns no borough authorities when boroughs claim absent")
-    void convert_returnsNoBoroughsWhenClaimAbsent() {
-        Jwt jwt = buildJwt(null, null, null);
-
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
-
-        assertThat(authorities).noneMatch(a -> a.getAuthority().startsWith("BOROUGH_"));
-    }
-
-    @Test
-    @DisplayName("convert - handles all borough names")
-    void convert_handlesAllBoroughNames() {
-        Jwt jwt = buildJwt(null,
-                Arrays.asList("BRONX", "BROOKLYN", "QUEENS", "MANHATTAN", "STATEN_ISLAND"),
-                null);
-
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
-
-        List<String> boroughAuthorities = authorities.stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
-
-        assertThat(boroughAuthorities).contains(
-                "BOROUGH_BRONX",
-                "BOROUGH_BROOKLYN",
-                "BOROUGH_QUEENS",
-                "BOROUGH_MANHATTAN",
-                "BOROUGH_STATEN_ISLAND"
-        );
-    }
-
-    // =========================================================================
-    // convert() — combined roles and boroughs
-    // =========================================================================
-
-    @Test
-    @DisplayName("convert - combines roles and boroughs into single authority list")
-    void convert_combinesRolesAndBoroughs() {
-        Map<String, Object> realmAccess = new HashMap<>();
-        realmAccess.put("roles", List.of("ANALYST"));
-
-        Jwt jwt = buildJwt(realmAccess, List.of("BRONX", "QUEENS"), null);
-
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
-
-        List<String> authorityList = authorities.stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
-
-        assertThat(authorityList).contains("ROLE_ANALYST");
-        assertThat(authorityList).contains("BOROUGH_BRONX", "BOROUGH_QUEENS");
-        assertThat(authorities).hasSize(3);
-    }
-
-    @Test
-    @DisplayName("convert - returns all ROLE_ authorities when multiple roles present")
-    void convert_returnsAllRoleAuthorities() {
-        Map<String, Object> realmAccess = new HashMap<>();
-        realmAccess.put("roles", List.of("ANALYST", "SUPERVISOR", "ADMIN"));
-
-        Jwt jwt = buildJwt(realmAccess, null, null);
-
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
-
-        assertThat(authorities).hasSize(3);
-        assertThat(authorities).allMatch(a -> a.getAuthority().startsWith("ROLE_"));
-    }
-
-    @Test
-    @DisplayName("convert - returns empty collection when no claims present")
-    void convert_returnsEmptyWhenNoClaimsPresent() {
-        Jwt jwt = Jwt.withTokenValue("mock-token")
-                .header("alg", "RS256")
-                .claim("sub", "jdoe")
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plusSeconds(3600))
-                .build();
-
-        Collection<GrantedAuthority> authorities = converter.convert(jwt);
-
-        assertThat(authorities).isEmpty();
-    }
-
-    // =========================================================================
-    // Helper — build JWT with realm_access, boroughs, and direct roles claims
-    // =========================================================================
-
-    private Jwt buildJwt(Map<String, Object> realmAccess,
-                          List<String> boroughs,
-                          List<String> directRoles) {
-        Map<String, Object> claims = new LinkedHashMap<>();
-        claims.put("sub", "jdoe");
-
-        if (realmAccess != null) {
-            claims.put("realm_access", realmAccess);
-        }
-        if (boroughs != null) {
-            claims.put("boroughs", boroughs);
-        }
-        if (directRoles != null) {
-            claims.put("roles", directRoles);
-        }
-
-        return Jwt.withTokenValue("mock-token")
-                .header("alg", "RS256")
-                .claims(c -> c.putAll(claims))
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plusSeconds(3600))
-                .build();
-    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }
+
+
+
