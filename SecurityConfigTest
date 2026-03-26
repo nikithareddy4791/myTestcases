@@ -1,0 +1,170 @@
+package org.nnnn.ddd;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DisplayName("SecurityConfig Tests")
+class SecurityConfigTest {
+
+    private SecurityConfig securityConfig;
+
+    @BeforeEach
+    void setUp() {
+        securityConfig = new SecurityConfig();
+    }
+
+    // =========================================================================
+    // jwtAuthenticationConverter() bean
+    // =========================================================================
+
+    @Test
+    @DisplayName("jwtAuthenticationConverter bean is created successfully")
+    void jwtAuthenticationConverter_beanCreatedSuccessfully() {
+        JwtAuthenticationConverter converter = securityConfig.jwtAuthenticationConverter();
+        assertThat(converter).isNotNull();
+    }
+
+    @Test
+    @DisplayName("converter maps nnnn Groups claim to ROLE_ prefixed authorities")
+    void converter_mapsNnnnGroupsToRoleAuthorities() {
+        JwtAuthenticationConverter converter = securityConfig.jwtAuthenticationConverter();
+
+        Jwt jwt = buildJwt(List.of("SG-ddd-SUPERVISOR", "SG-ddd-ANALYST-MANHATTAN"));
+
+        Collection<GrantedAuthority> authorities = converter
+                .convert(jwt).getAuthorities();
+
+        List<String> roles = authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        assertThat(roles).contains("ROLE_SG-DDD-SUPERVISOR");
+        assertThat(roles).contains("ROLE_SG-DDD-ANALYST-MANHATTAN");
+    }
+
+    @Test
+    @DisplayName("converter removes leading slash from group names")
+    void converter_removesLeadingSlash() {
+        JwtAuthenticationConverter converter = securityConfig.jwtAuthenticationConverter();
+
+        Jwt jwt = buildJwt(List.of("/SG-ddd-SUPERVISOR"));
+
+        Collection<GrantedAuthority> authorities = converter
+                .convert(jwt).getAuthorities();
+
+        List<String> roles = authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        // Slash should be removed
+        assertThat(roles).anyMatch(r -> !r.contains("/"));
+        assertThat(roles).contains("ROLE_SG-DDD-SUPERVISOR");
+    }
+
+    @Test
+    @DisplayName("converter uppercases group names")
+    void converter_uppercasesGroupNames() {
+        JwtAuthenticationConverter converter = securityConfig.jwtAuthenticationConverter();
+
+        Jwt jwt = buildJwt(List.of("sg-ddd-supervisor"));
+
+        Collection<GrantedAuthority> authorities = converter
+                .convert(jwt).getAuthorities();
+
+        List<String> roles = authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        assertThat(roles).contains("ROLE_SG-DDD-SUPERVISOR");
+    }
+
+    @Test
+    @DisplayName("converter returns empty authorities when nnnn Groups claim is null")
+    void converter_returnsEmptyAuthoritiesWhenGroupsClaimIsNull() {
+        JwtAuthenticationConverter converter = securityConfig.jwtAuthenticationConverter();
+
+        Jwt jwt = buildJwt(null);
+
+        Collection<GrantedAuthority> authorities = converter
+                .convert(jwt).getAuthorities();
+
+        assertThat(authorities).isEmpty();
+    }
+
+    @Test
+    @DisplayName("converter returns empty authorities when nnnn Groups claim is empty")
+    void converter_returnsEmptyAuthoritiesWhenGroupsClaimIsEmpty() {
+        JwtAuthenticationConverter converter = securityConfig.jwtAuthenticationConverter();
+
+        Jwt jwt = buildJwt(Collections.emptyList());
+
+        Collection<GrantedAuthority> authorities = converter
+                .convert(jwt).getAuthorities();
+
+        assertThat(authorities).isEmpty();
+    }
+
+    @Test
+    @DisplayName("converter maps multiple groups to multiple roles")
+    void converter_mapsMultipleGroupsToMultipleRoles() {
+        JwtAuthenticationConverter converter = securityConfig.jwtAuthenticationConverter();
+
+        Jwt jwt = buildJwt(Arrays.asList(
+                "SG-ddd-SUPERVISOR",
+                "SG-ddd-ANALYST-BROOKLYN",
+                "SG-ddd-ANALYST-BRONX",
+                "SG-SEALED-EVENT"
+        ));
+
+        Collection<GrantedAuthority> authorities = converter
+                .convert(jwt).getAuthorities();
+
+        assertThat(authorities).hasSize(4);
+    }
+
+    @Test
+    @DisplayName("all authorities have ROLE_ prefix")
+    void converter_allAuthoritiesHaveRolePrefix() {
+        JwtAuthenticationConverter converter = securityConfig.jwtAuthenticationConverter();
+
+        Jwt jwt = buildJwt(Arrays.asList("SG-ddd-SUPERVISOR", "SG-ddd-ANALYST-MANHATTAN"));
+
+        Collection<GrantedAuthority> authorities = converter
+                .convert(jwt).getAuthorities();
+
+        assertThat(authorities).allMatch(a -> a.getAuthority().startsWith("ROLE_"));
+    }
+
+    // =========================================================================
+    // Helper — build a mock JWT with given groups claim
+    // =========================================================================
+
+    private Jwt buildJwt(List<String> groups) {
+        Map<String, Object> claims;
+        if (groups != null) {
+            claims = Map.of("nnnn Groups", groups, "sub", "jdoe");
+        } else {
+            claims = Map.of("sub", "jdoe");
+        }
+
+        return Jwt.withTokenValue("mock-token")
+                .header("alg", "RS256")
+                .claims(c -> c.putAll(claims))
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(3600))
+                .build();
+    }
+}
