@@ -1,467 +1,426 @@
 package org.nnnn.ddd.model;
 
-import java.util.Objects;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.ArrayList;
-import java.util.List;
-import org.nnnn.ddd.model.ADA;
-import org.nnnn.ddd.model.ArrestInfo;
-import org.nnnn.ddd.model.CaseTag;
-import org.nnnn.ddd.model.Category;
-import org.nnnn.ddd.model.dddOffice;
-import org.nnnn.ddd.model.Status;
-import org.nnnn.ddd.model.User;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.threeten.bp.LocalDate;
-import org.springframework.validation.annotation.Validated;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
 
-/**
- * dddCaseSummary
- */
-@Validated
-@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-03-04T09:49:39.555-05:00")
-
-
-public class dddCaseSummary   {
-  @JsonProperty("id")
-  private Integer id = null;
-
-  @JsonProperty("parentId")
-  private Integer parentId = null;
-
-  @JsonProperty("arrId")
-  private String arrId = null;
-
-  @JsonProperty("ddd")
-  private dddOffice ddd = null;
-
-  @JsonProperty("status")
-  private Status status = null;
-
-  @JsonProperty("assignedNm")
-  private String assignedNm = null;
-
-  @JsonProperty("assignedNmInfo")
-  private User assignedNmInfo = null;
-
-  @JsonProperty("requestDt")
-  private LocalDate requestDt = null;
-
-  @JsonProperty("dueDt")
-  private LocalDate dueDt = null;
-
-  @JsonProperty("completeDt")
-  private LocalDate completeDt = null;
-
-  @JsonProperty("proactiveFlg")
-  private Integer proactiveFlg = null;
-
-  @JsonProperty("activeFlg")
-  private Integer activeFlg = null;
-
-  @JsonProperty("category")
-  private Category category = null;
-
-  @JsonProperty("arrest")
-  private ArrestInfo arrest = null;
-
-  @JsonProperty("ada")
-  private ADA ada = null;
-
-  @JsonProperty("tags")
-  @Valid
-  private List<CaseTag> tags = null;
-
-  public dddCaseSummary id(Integer id) {
-    this.id = id;
-    return this;
-  }
-
-  /**
-   * Get id
-   * @return id
-   **/
-  @Schema(example = "1", description = "")
-  
-    public Integer getId() {
-    return id;
-  }
-
-  public void setId(Integer id) {
-    this.id = id;
-  }
-
-  public dddCaseSummary parentId(Integer parentId) {
-    this.parentId = parentId;
-    return this;
-  }
-
-  /**
-   * Get parentId
-   * @return parentId
-   **/
-  @Schema(description = "")
-  
-    public Integer getParentId() {
-    return parentId;
-  }
-
-  public void setParentId(Integer parentId) {
-    this.parentId = parentId;
-  }
-
-  public dddCaseSummary arrId(String arrId) {
-    this.arrId = arrId;
-    return this;
-  }
-
-  /**
-   * Get arrId
-   * @return arrId
-   **/
-  @Schema(description = "")
-  
-    public String getArrId() {
-    return arrId;
-  }
-
-  public void setArrId(String arrId) {
-    this.arrId = arrId;
-  }
-
-  public dddCaseSummary ddd(dddOffice ddd) {
-    this.ddd = ddd;
-    return this;
-  }
-
-  /**
-   * Get ddd
-   * @return ddd
-   **/
-  @Schema(description = "")
-  
-    @Valid
-    public dddOffice getddd() {
-    return ddd;
-  }
-
-  public void setddd(dddOffice ddd) {
-    this.ddd = ddd;
-  }
-
-  public dddCaseSummary status(Status status) {
-    this.status = status;
-    return this;
-  }
-
-  /**
-   * Get status
-   * @return status
-   **/
-  @Schema(description = "")
-  
-    @Valid
-    public Status getStatus() {
-    return status;
-  }
-
-  public void setStatus(Status status) {
-    this.status = status;
-  }
-
-  public dddCaseSummary assignedNm(String assignedNm) {
-    this.assignedNm = assignedNm;
-    return this;
-  }
-
-  /**
-   * Get assignedNm
-   * @return assignedNm
-   **/
-  @Schema(description = "")
-  
-    public String getAssignedNm() {
-    return assignedNm;
-  }
-
-  public void setAssignedNm(String assignedNm) {
-    this.assignedNm = assignedNm;
-  }
-
-  public dddCaseSummary assignedNmInfo(User assignedNmInfo) {
-    this.assignedNmInfo = assignedNmInfo;
-    return this;
-  }
-
-  /**
-   * Get assignedNmInfo
-   * @return assignedNmInfo
-   **/
-  @Schema(description = "")
-  
-    @Valid
-    public User getAssignedNmInfo() {
-    return assignedNmInfo;
-  }
-
-  public void setAssignedNmInfo(User assignedNmInfo) {
-    this.assignedNmInfo = assignedNmInfo;
-  }
-
-  public dddCaseSummary requestDt(LocalDate requestDt) {
-    this.requestDt = requestDt;
-    return this;
-  }
-
-  /**
-   * Get requestDt
-   * @return requestDt
-   **/
-  @Schema(description = "")
-  
-    @Valid
-    public LocalDate getRequestDt() {
-    return requestDt;
-  }
-
-  public void setRequestDt(LocalDate requestDt) {
-    this.requestDt = requestDt;
-  }
-
-  public dddCaseSummary dueDt(LocalDate dueDt) {
-    this.dueDt = dueDt;
-    return this;
-  }
-
-  /**
-   * Get dueDt
-   * @return dueDt
-   **/
-  @Schema(description = "")
-  
-    @Valid
-    public LocalDate getDueDt() {
-    return dueDt;
-  }
-
-  public void setDueDt(LocalDate dueDt) {
-    this.dueDt = dueDt;
-  }
-
-  public dddCaseSummary completeDt(LocalDate completeDt) {
-    this.completeDt = completeDt;
-    return this;
-  }
-
-  /**
-   * Get completeDt
-   * @return completeDt
-   **/
-  @Schema(description = "")
-  
-    @Valid
-    public LocalDate getCompleteDt() {
-    return completeDt;
-  }
-
-  public void setCompleteDt(LocalDate completeDt) {
-    this.completeDt = completeDt;
-  }
-
-  public dddCaseSummary proactiveFlg(Integer proactiveFlg) {
-    this.proactiveFlg = proactiveFlg;
-    return this;
-  }
-
-  /**
-   * Get proactiveFlg
-   * @return proactiveFlg
-   **/
-  @Schema(description = "")
-  
-    public Integer getProactiveFlg() {
-    return proactiveFlg;
-  }
-
-  public void setProactiveFlg(Integer proactiveFlg) {
-    this.proactiveFlg = proactiveFlg;
-  }
-
-  public dddCaseSummary activeFlg(Integer activeFlg) {
-    this.activeFlg = activeFlg;
-    return this;
-  }
-
-  /**
-   * Get activeFlg
-   * @return activeFlg
-   **/
-  @Schema(description = "")
-  
-    public Integer getActiveFlg() {
-    return activeFlg;
-  }
-
-  public void setActiveFlg(Integer activeFlg) {
-    this.activeFlg = activeFlg;
-  }
-
-  public dddCaseSummary category(Category category) {
-    this.category = category;
-    return this;
-  }
-
-  /**
-   * Get category
-   * @return category
-   **/
-  @Schema(description = "")
-  
-    @Valid
-    public Category getCategory() {
-    return category;
-  }
-
-  public void setCategory(Category category) {
-    this.category = category;
-  }
-
-  public dddCaseSummary arrest(ArrestInfo arrest) {
-    this.arrest = arrest;
-    return this;
-  }
-
-  /**
-   * Get arrest
-   * @return arrest
-   **/
-  @Schema(description = "")
-  
-    @Valid
-    public ArrestInfo getArrest() {
-    return arrest;
-  }
-
-  public void setArrest(ArrestInfo arrest) {
-    this.arrest = arrest;
-  }
-
-  public dddCaseSummary ada(ADA ada) {
-    this.ada = ada;
-    return this;
-  }
-
-  /**
-   * Get ada
-   * @return ada
-   **/
-  @Schema(description = "")
-  
-    @Valid
-    public ADA getAda() {
-    return ada;
-  }
-
-  public void setAda(ADA ada) {
-    this.ada = ada;
-  }
-
-  public dddCaseSummary tags(List<CaseTag> tags) {
-    this.tags = tags;
-    return this;
-  }
-
-  public dddCaseSummary addTagsItem(CaseTag tagsItem) {
-    if (this.tags == null) {
-      this.tags = new ArrayList<CaseTag>();
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DisplayName("dddCaseSummary Model Tests")
+class DddCaseSummaryTest {
+
+    // =========================================================================
+    // Default constructor
+    // =========================================================================
+
+    @Test
+    @DisplayName("default constructor creates instance with null fields")
+    void defaultConstructor_createsInstanceWithNullFields() {
+        dddCaseSummary s = new dddCaseSummary();
+        assertThat(s).isNotNull();
+        assertThat(s.getId()).isNull();
+        assertThat(s.getArrId()).isNull();
+        assertThat(s.getAssignedNm()).isNull();
+        assertThat(s.getTags()).isNull();
+        assertThat(s.getStatus()).isNull();
+        assertThat(s.getArrest()).isNull();
     }
-    this.tags.add(tagsItem);
-    return this;
-  }
 
-  /**
-   * Get tags
-   * @return tags
-   **/
-  @Schema(description = "")
-      @Valid
-    public List<CaseTag> getTags() {
-    return tags;
-  }
+    // =========================================================================
+    // Getters and Setters
+    // =========================================================================
 
-  public void setTags(List<CaseTag> tags) {
-    this.tags = tags;
-  }
+    @Nested
+    @DisplayName("Getters and Setters")
+    class GettersSettersTests {
 
+        @Test
+        @DisplayName("id getter and setter")
+        void id_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            s.setId(100);
+            assertThat(s.getId()).isEqualTo(100);
+        }
 
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+        @Test
+        @DisplayName("parentId getter and setter")
+        void parentId_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            s.setParentId(50);
+            assertThat(s.getParentId()).isEqualTo(50);
+        }
+
+        @Test
+        @DisplayName("arrId getter and setter")
+        void arrId_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            s.setArrId("ARR001");
+            assertThat(s.getArrId()).isEqualTo("ARR001");
+        }
+
+        @Test
+        @DisplayName("assignedNm getter and setter")
+        void assignedNm_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            s.setAssignedNm("jdoe");
+            assertThat(s.getAssignedNm()).isEqualTo("jdoe");
+        }
+
+        @Test
+        @DisplayName("assignedNmInfo getter and setter")
+        void assignedNmInfo_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            User user = new User();
+            user.setUsername("jdoe");
+            s.setAssignedNmInfo(user);
+            assertThat(s.getAssignedNmInfo().getUsername()).isEqualTo("jdoe");
+        }
+
+        @Test
+        @DisplayName("requestDt getter and setter")
+        void requestDt_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            LocalDate date = LocalDate.now();
+            s.setRequestDt(date);
+            assertThat(s.getRequestDt()).isEqualTo(date);
+        }
+
+        @Test
+        @DisplayName("dueDt getter and setter")
+        void dueDt_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            LocalDate date = LocalDate.now().plusDays(30);
+            s.setDueDt(date);
+            assertThat(s.getDueDt()).isEqualTo(date);
+        }
+
+        @Test
+        @DisplayName("completeDt getter and setter")
+        void completeDt_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            LocalDate date = LocalDate.now();
+            s.setCompleteDt(date);
+            assertThat(s.getCompleteDt()).isEqualTo(date);
+        }
+
+        @Test
+        @DisplayName("proactiveFlg getter and setter")
+        void proactiveFlg_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            s.setProactiveFlg(1);
+            assertThat(s.getProactiveFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("activeFlg getter and setter")
+        void activeFlg_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            s.setActiveFlg(1);
+            assertThat(s.getActiveFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("ddd getter and setter")
+        void ddd_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            dddOffice office = new dddOffice();
+            office.setId(3);
+            s.setddd(office);
+            assertThat(s.getddd().getId()).isEqualTo(3);
+        }
+
+        @Test
+        @DisplayName("status getter and setter")
+        void status_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            Status status = new Status();
+            status.setId(2);
+            s.setStatus(status);
+            assertThat(s.getStatus().getId()).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("category getter and setter")
+        void category_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            Category cat = new Category();
+            cat.setId(1);
+            s.setCategory(cat);
+            assertThat(s.getCategory().getId()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("arrest getter and setter")
+        void arrest_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            ArrestInfo arrest = new ArrestInfo();
+            arrest.setArrId("ARR001");
+            s.setArrest(arrest);
+            assertThat(s.getArrest().getArrId()).isEqualTo("ARR001");
+        }
+
+        @Test
+        @DisplayName("ada getter and setter")
+        void ada_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            ADA ada = new ADA();
+            ada.setId(1);
+            s.setAda(ada);
+            assertThat(s.getAda().getId()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("tags getter and setter")
+        void tags_getterAndSetter() {
+            dddCaseSummary s = new dddCaseSummary();
+            CaseTag tag = new CaseTag();
+            s.setTags(List.of(tag));
+            assertThat(s.getTags()).hasSize(1);
+        }
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    // =========================================================================
+    // Fluent builder methods
+    // =========================================================================
+
+    @Nested
+    @DisplayName("Fluent Builder Methods")
+    class FluentBuilderTests {
+
+        @Test
+        @DisplayName("fluent id returns same instance")
+        void fluent_id() {
+            dddCaseSummary s = new dddCaseSummary();
+            assertThat(s.id(100)).isSameAs(s);
+            assertThat(s.getId()).isEqualTo(100);
+        }
+
+        @Test
+        @DisplayName("fluent arrId returns same instance")
+        void fluent_arrId() {
+            dddCaseSummary s = new dddCaseSummary();
+            assertThat(s.arrId("ARR001")).isSameAs(s);
+            assertThat(s.getArrId()).isEqualTo("ARR001");
+        }
+
+        @Test
+        @DisplayName("fluent assignedNm returns same instance")
+        void fluent_assignedNm() {
+            dddCaseSummary s = new dddCaseSummary();
+            assertThat(s.assignedNm("jdoe")).isSameAs(s);
+            assertThat(s.getAssignedNm()).isEqualTo("jdoe");
+        }
+
+        @Test
+        @DisplayName("fluent status returns same instance")
+        void fluent_status() {
+            dddCaseSummary s = new dddCaseSummary();
+            Status status = new Status();
+            assertThat(s.status(status)).isSameAs(s);
+            assertThat(s.getStatus()).isEqualTo(status);
+        }
+
+        @Test
+        @DisplayName("fluent ddd returns same instance")
+        void fluent_ddd() {
+            dddCaseSummary s = new dddCaseSummary();
+            dddOffice office = new dddOffice();
+            assertThat(s.ddd(office)).isSameAs(s);
+            assertThat(s.getddd()).isEqualTo(office);
+        }
+
+        @Test
+        @DisplayName("fluent activeFlg returns same instance")
+        void fluent_activeFlg() {
+            dddCaseSummary s = new dddCaseSummary();
+            assertThat(s.activeFlg(1)).isSameAs(s);
+            assertThat(s.getActiveFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("fluent arrest returns same instance")
+        void fluent_arrest() {
+            dddCaseSummary s = new dddCaseSummary();
+            ArrestInfo arrest = new ArrestInfo();
+            assertThat(s.arrest(arrest)).isSameAs(s);
+            assertThat(s.getArrest()).isEqualTo(arrest);
+        }
+
+        @Test
+        @DisplayName("fluent category returns same instance")
+        void fluent_category() {
+            dddCaseSummary s = new dddCaseSummary();
+            Category cat = new Category();
+            assertThat(s.category(cat)).isSameAs(s);
+            assertThat(s.getCategory()).isEqualTo(cat);
+        }
+
+        @Test
+        @DisplayName("fluent ada returns same instance")
+        void fluent_ada() {
+            dddCaseSummary s = new dddCaseSummary();
+            ADA ada = new ADA();
+            assertThat(s.ada(ada)).isSameAs(s);
+            assertThat(s.getAda()).isEqualTo(ada);
+        }
+
+        @Test
+        @DisplayName("fluent tags returns same instance")
+        void fluent_tags() {
+            dddCaseSummary s = new dddCaseSummary();
+            List<CaseTag> tags = List.of(new CaseTag());
+            assertThat(s.tags(tags)).isSameAs(s);
+            assertThat(s.getTags()).isEqualTo(tags);
+        }
+
+        @Test
+        @DisplayName("fluent proactiveFlg returns same instance")
+        void fluent_proactiveFlg() {
+            dddCaseSummary s = new dddCaseSummary();
+            assertThat(s.proactiveFlg(1)).isSameAs(s);
+            assertThat(s.getProactiveFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("fluent parentId returns same instance")
+        void fluent_parentId() {
+            dddCaseSummary s = new dddCaseSummary();
+            assertThat(s.parentId(50)).isSameAs(s);
+            assertThat(s.getParentId()).isEqualTo(50);
+        }
     }
-    dddCaseSummary dddCaseSummary = (dddCaseSummary) o;
-    return Objects.equals(this.id, dddCaseSummary.id) &&
-        Objects.equals(this.parentId, dddCaseSummary.parentId) &&
-        Objects.equals(this.arrId, dddCaseSummary.arrId) &&
-        Objects.equals(this.ddd, dddCaseSummary.ddd) &&
-        Objects.equals(this.status, dddCaseSummary.status) &&
-        Objects.equals(this.assignedNm, dddCaseSummary.assignedNm) &&
-        Objects.equals(this.assignedNmInfo, dddCaseSummary.assignedNmInfo) &&
-        Objects.equals(this.requestDt, dddCaseSummary.requestDt) &&
-        Objects.equals(this.dueDt, dddCaseSummary.dueDt) &&
-        Objects.equals(this.completeDt, dddCaseSummary.completeDt) &&
-        Objects.equals(this.proactiveFlg, dddCaseSummary.proactiveFlg) &&
-        Objects.equals(this.activeFlg, dddCaseSummary.activeFlg) &&
-        Objects.equals(this.category, dddCaseSummary.category) &&
-        Objects.equals(this.arrest, dddCaseSummary.arrest) &&
-        Objects.equals(this.ada, dddCaseSummary.ada) &&
-        Objects.equals(this.tags, dddCaseSummary.tags);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, parentId, arrId, ddd, status, assignedNm, assignedNmInfo, requestDt, dueDt, completeDt, proactiveFlg, activeFlg, category, arrest, ada, tags);
-  }
+    // =========================================================================
+    // addTagsItem
+    // =========================================================================
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class dddCaseSummary {\n");
-    
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
-    sb.append("    parentId: ").append(toIndentedString(parentId)).append("\n");
-    sb.append("    arrId: ").append(toIndentedString(arrId)).append("\n");
-    sb.append("    ddd: ").append(toIndentedString(ddd)).append("\n");
-    sb.append("    status: ").append(toIndentedString(status)).append("\n");
-    sb.append("    assignedNm: ").append(toIndentedString(assignedNm)).append("\n");
-    sb.append("    assignedNmInfo: ").append(toIndentedString(assignedNmInfo)).append("\n");
-    sb.append("    requestDt: ").append(toIndentedString(requestDt)).append("\n");
-    sb.append("    dueDt: ").append(toIndentedString(dueDt)).append("\n");
-    sb.append("    completeDt: ").append(toIndentedString(completeDt)).append("\n");
-    sb.append("    proactiveFlg: ").append(toIndentedString(proactiveFlg)).append("\n");
-    sb.append("    activeFlg: ").append(toIndentedString(activeFlg)).append("\n");
-    sb.append("    category: ").append(toIndentedString(category)).append("\n");
-    sb.append("    arrest: ").append(toIndentedString(arrest)).append("\n");
-    sb.append("    ada: ").append(toIndentedString(ada)).append("\n");
-    sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+    @Nested
+    @DisplayName("addTagsItem")
+    class AddTagsItemTests {
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
+        @Test
+        @DisplayName("initializes list when null and adds item")
+        void addTagsItem_initializesAndAdds() {
+            dddCaseSummary s = new dddCaseSummary();
+            assertThat(s.getTags()).isNull();
+            s.addTagsItem(new CaseTag());
+            assertThat(s.getTags()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("appends to existing list")
+        void addTagsItem_appendsToExisting() {
+            dddCaseSummary s = new dddCaseSummary();
+            s.addTagsItem(new CaseTag());
+            s.addTagsItem(new CaseTag());
+            assertThat(s.getTags()).hasSize(2);
+        }
+
+        @Test
+        @DisplayName("returns same instance")
+        void addTagsItem_returnsSameInstance() {
+            dddCaseSummary s = new dddCaseSummary();
+            assertThat(s.addTagsItem(new CaseTag())).isSameAs(s);
+        }
     }
-    return o.toString().replace("\n", "\n    ");
-  }
+
+    // =========================================================================
+    // equals() and hashCode()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("equals() and hashCode()")
+    class EqualsHashCodeTests {
+
+        @Test
+        @DisplayName("same fields are equal")
+        void equals_sameFields_returnsTrue() {
+            dddCaseSummary a = new dddCaseSummary();
+            a.setId(100);
+            a.setArrId("ARR001");
+            dddCaseSummary b = new dddCaseSummary();
+            b.setId(100);
+            b.setArrId("ARR001");
+            assertThat(a).isEqualTo(b);
+        }
+
+        @Test
+        @DisplayName("different id not equal")
+        void equals_differentId_returnsFalse() {
+            dddCaseSummary a = new dddCaseSummary();
+            a.setId(100);
+            dddCaseSummary b = new dddCaseSummary();
+            b.setId(200);
+            assertThat(a).isNotEqualTo(b);
+        }
+
+        @Test
+        @DisplayName("same instance equal to itself")
+        void equals_sameInstance() {
+            dddCaseSummary a = new dddCaseSummary();
+            assertThat(a).isEqualTo(a);
+        }
+
+        @Test
+        @DisplayName("not equal to null")
+        void equals_null_returnsFalse() {
+            assertThat(new dddCaseSummary()).isNotEqualTo(null);
+        }
+
+        @Test
+        @DisplayName("not equal to different type")
+        void equals_differentType_returnsFalse() {
+            assertThat(new dddCaseSummary()).isNotEqualTo("string");
+        }
+
+        @Test
+        @DisplayName("equal instances have same hashCode")
+        void hashCode_equalInstances() {
+            dddCaseSummary a = new dddCaseSummary();
+            a.setId(100);
+            dddCaseSummary b = new dddCaseSummary();
+            b.setId(100);
+            assertThat(a.hashCode()).isEqualTo(b.hashCode());
+        }
+    }
+
+    // =========================================================================
+    // toString()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("toString()")
+    class ToStringTests {
+
+        @Test
+        @DisplayName("contains class name")
+        void toString_containsClassName() {
+            assertThat(new dddCaseSummary().toString()).contains("dddCaseSummary");
+        }
+
+        @Test
+        @DisplayName("contains id value when set")
+        void toString_containsId() {
+            dddCaseSummary s = new dddCaseSummary();
+            s.setId(100);
+            assertThat(s.toString()).contains("100");
+        }
+
+        @Test
+        @DisplayName("contains arrId when set")
+        void toString_containsArrId() {
+            dddCaseSummary s = new dddCaseSummary();
+            s.setArrId("ARR001");
+            assertThat(s.toString()).contains("ARR001");
+        }
+
+        @Test
+        @DisplayName("shows null for unset fields")
+        void toString_showsNull() {
+            assertThat(new dddCaseSummary().toString()).contains("null");
+        }
+    }
 }
