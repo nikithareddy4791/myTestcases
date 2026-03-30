@@ -1,158 +1,303 @@
 package org.nnnn.ddd.model;
 
-import java.util.Objects;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import io.swagger.v3.oas.annotations.media.Schema;
-import org.springframework.validation.annotation.Validated;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
-/**
- * ReferenceCode
- */
-@Validated
-@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-10T13:32:19.578-05:00")
+import static org.assertj.core.api.Assertions.assertThat;
 
+@DisplayName("ReferenceCode Model Tests")
+class ReferenceCodeTest {
 
-public class ReferenceCode   {
-  @JsonProperty("id")
-  private Integer id = null;
+    // =========================================================================
+    // Constructors
+    // =========================================================================
 
-  @JsonProperty("codeType")
-  private String codeType = null;
-
-  @JsonProperty("codeVal")
-  private String codeVal = null;
-
-  @JsonProperty("codeDesc")
-  private String codeDesc = null;
-
-  public ReferenceCode(Integer id, String codeType, String codeVal, String codeDesc) {
-    this.id = id;
-    this.codeType = codeType;
-    this.codeVal = codeVal;
-    this.codeDesc = codeDesc;
-  }
-
-  public ReferenceCode id(Integer id) {
-    this.id = id;
-    return this;
-  }
-
-  /**
-   * Get id
-   * @return id
-   **/
-  @Schema(description = "")
-  
-    public Integer getId() {
-    return id;
-  }
-
-  public void setId(Integer id) {
-    this.id = id;
-  }
-
-  public ReferenceCode codeType(String codeType) {
-    this.codeType = codeType;
-    return this;
-  }
-
-  /**
-   * Get codeType
-   * @return codeType
-   **/
-  @Schema(description = "")
-  
-    public String getCodeType() {
-    return codeType;
-  }
-
-  public void setCodeType(String codeType) {
-    this.codeType = codeType;
-  }
-
-  public ReferenceCode codeVal(String codeVal) {
-    this.codeVal = codeVal;
-    return this;
-  }
-
-  /**
-   * Get codeVal
-   * @return codeVal
-   **/
-  @Schema(description = "")
-  
-    public String getCodeVal() {
-    return codeVal;
-  }
-
-  public void setCodeVal(String codeVal) {
-    this.codeVal = codeVal;
-  }
-
-  public ReferenceCode codeDesc(String codeDesc) {
-    this.codeDesc = codeDesc;
-    return this;
-  }
-
-  /**
-   * Get codeDesc
-   * @return codeDesc
-   **/
-  @Schema(description = "")
-  
-    public String getCodeDesc() {
-    return codeDesc;
-  }
-
-  public void setCodeDesc(String codeDesc) {
-    this.codeDesc = codeDesc;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    @Test
+    @DisplayName("4-arg constructor sets all fields")
+    void fourArgConstructor_setsAllFields() {
+        ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+        assertThat(rc.getId()).isEqualTo(1);
+        assertThat(rc.getCodeType()).isEqualTo("CHARGE_TYPE");
+        assertThat(rc.getCodeVal()).isEqualTo("F");
+        assertThat(rc.getCodeDesc()).isEqualTo("Felony");
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    @Test
+    @DisplayName("4-arg constructor with null values")
+    void fourArgConstructor_nullValues() {
+        ReferenceCode rc = new ReferenceCode(null, null, null, null);
+        assertThat(rc.getId()).isNull();
+        assertThat(rc.getCodeType()).isNull();
+        assertThat(rc.getCodeVal()).isNull();
+        assertThat(rc.getCodeDesc()).isNull();
     }
-    ReferenceCode referenceCode = (ReferenceCode) o;
-    return Objects.equals(this.id, referenceCode.id) &&
-        Objects.equals(this.codeType, referenceCode.codeType) &&
-        Objects.equals(this.codeVal, referenceCode.codeVal) &&
-        Objects.equals(this.codeDesc, referenceCode.codeDesc);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, codeType, codeVal, codeDesc);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ReferenceCode {\n");
-    
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
-    sb.append("    codeType: ").append(toIndentedString(codeType)).append("\n");
-    sb.append("    codeVal: ").append(toIndentedString(codeVal)).append("\n");
-    sb.append("    codeDesc: ").append(toIndentedString(codeDesc)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
+    @Test
+    @DisplayName("4-arg constructor with misdemeanor values")
+    void fourArgConstructor_misdemeanor() {
+        ReferenceCode rc = new ReferenceCode(2, "CHARGE_TYPE", "M", "Misdemeanor");
+        assertThat(rc.getId()).isEqualTo(2);
+        assertThat(rc.getCodeVal()).isEqualTo("M");
+        assertThat(rc.getCodeDesc()).isEqualTo("Misdemeanor");
     }
-    return o.toString().replace("\n", "\n    ");
-  }
+
+    // =========================================================================
+    // Getters and Setters
+    // =========================================================================
+
+    @Nested
+    @DisplayName("Getters and Setters")
+    class GettersSettersTests {
+
+        @Test
+        @DisplayName("id getter and setter")
+        void id_getterAndSetter() {
+            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+            rc.setId(99);
+            assertThat(rc.getId()).isEqualTo(99);
+        }
+
+        @Test
+        @DisplayName("codeType getter and setter")
+        void codeType_getterAndSetter() {
+            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+            rc.setCodeType("DV_TYPE");
+            assertThat(rc.getCodeType()).isEqualTo("DV_TYPE");
+        }
+
+        @Test
+        @DisplayName("codeVal getter and setter")
+        void codeVal_getterAndSetter() {
+            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+            rc.setCodeVal("M");
+            assertThat(rc.getCodeVal()).isEqualTo("M");
+        }
+
+        @Test
+        @DisplayName("codeDesc getter and setter")
+        void codeDesc_getterAndSetter() {
+            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+            rc.setCodeDesc("Misdemeanor");
+            assertThat(rc.getCodeDesc()).isEqualTo("Misdemeanor");
+        }
+
+        @Test
+        @DisplayName("all fields set independently")
+        void allFields_setIndependently() {
+            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+            rc.setId(10);
+            rc.setCodeType("DV_TYPE");
+            rc.setCodeVal("Y");
+            rc.setCodeDesc("Domestic Violence");
+            assertThat(rc.getId()).isEqualTo(10);
+            assertThat(rc.getCodeType()).isEqualTo("DV_TYPE");
+            assertThat(rc.getCodeVal()).isEqualTo("Y");
+            assertThat(rc.getCodeDesc()).isEqualTo("Domestic Violence");
+        }
+
+        @Test
+        @DisplayName("setter accepts null")
+        void setter_acceptsNull() {
+            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+            rc.setCodeType(null);
+            rc.setCodeVal(null);
+            rc.setCodeDesc(null);
+            assertThat(rc.getCodeType()).isNull();
+            assertThat(rc.getCodeVal()).isNull();
+            assertThat(rc.getCodeDesc()).isNull();
+        }
+    }
+
+    // =========================================================================
+    // Fluent Builder Methods
+    // =========================================================================
+
+    @Nested
+    @DisplayName("Fluent Builder Methods")
+    class FluentBuilderTests {
+
+        @Test
+        @DisplayName("fluent id returns same instance")
+        void fluent_id() {
+            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+            assertThat(rc.id(99)).isSameAs(rc);
+            assertThat(rc.getId()).isEqualTo(99);
+        }
+
+        @Test
+        @DisplayName("fluent codeType returns same instance")
+        void fluent_codeType() {
+            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+            assertThat(rc.codeType("DV_TYPE")).isSameAs(rc);
+            assertThat(rc.getCodeType()).isEqualTo("DV_TYPE");
+        }
+
+        @Test
+        @DisplayName("fluent codeVal returns same instance")
+        void fluent_codeVal() {
+            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+            assertThat(rc.codeVal("M")).isSameAs(rc);
+            assertThat(rc.getCodeVal()).isEqualTo("M");
+        }
+
+        @Test
+        @DisplayName("fluent codeDesc returns same instance")
+        void fluent_codeDesc() {
+            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+            assertThat(rc.codeDesc("Misdemeanor")).isSameAs(rc);
+            assertThat(rc.getCodeDesc()).isEqualTo("Misdemeanor");
+        }
+
+        @Test
+        @DisplayName("fluent chaining works")
+        void fluent_chaining() {
+            ReferenceCode rc = new ReferenceCode(1, "X", "X", "X")
+                    .id(5)
+                    .codeType("DV_TYPE")
+                    .codeVal("Y")
+                    .codeDesc("Domestic Violence");
+            assertThat(rc.getId()).isEqualTo(5);
+            assertThat(rc.getCodeType()).isEqualTo("DV_TYPE");
+            assertThat(rc.getCodeVal()).isEqualTo("Y");
+            assertThat(rc.getCodeDesc()).isEqualTo("Domestic Violence");
+        }
+    }
+
+    // =========================================================================
+    // equals() and hashCode()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("equals() and hashCode()")
+    class EqualsHashCodeTests {
+
+        @Test
+        @DisplayName("same fields are equal")
+        void equals_sameFields() {
+            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
+                    .isEqualTo(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"));
+        }
+
+        @Test
+        @DisplayName("different id not equal")
+        void equals_differentId() {
+            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
+                    .isNotEqualTo(new ReferenceCode(2, "CHARGE_TYPE", "F", "Felony"));
+        }
+
+        @Test
+        @DisplayName("different codeType not equal")
+        void equals_differentCodeType() {
+            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
+                    .isNotEqualTo(new ReferenceCode(1, "DV_TYPE", "F", "Felony"));
+        }
+
+        @Test
+        @DisplayName("different codeVal not equal")
+        void equals_differentCodeVal() {
+            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
+                    .isNotEqualTo(new ReferenceCode(1, "CHARGE_TYPE", "M", "Felony"));
+        }
+
+        @Test
+        @DisplayName("different codeDesc not equal")
+        void equals_differentCodeDesc() {
+            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
+                    .isNotEqualTo(new ReferenceCode(1, "CHARGE_TYPE", "F", "Misdemeanor"));
+        }
+
+        @Test
+        @DisplayName("all null fields are equal")
+        void equals_allNullFields() {
+            assertThat(new ReferenceCode(null, null, null, null))
+                    .isEqualTo(new ReferenceCode(null, null, null, null));
+        }
+
+        @Test
+        @DisplayName("same instance equal to itself")
+        void equals_sameInstance() {
+            ReferenceCode a = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+            assertThat(a).isEqualTo(a);
+        }
+
+        @Test
+        @DisplayName("not equal to null")
+        void equals_null() {
+            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
+                    .isNotEqualTo(null);
+        }
+
+        @Test
+        @DisplayName("not equal to different type")
+        void equals_differentType() {
+            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
+                    .isNotEqualTo("string");
+        }
+
+        @Test
+        @DisplayName("equal instances have same hashCode")
+        void hashCode_equalInstances() {
+            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony").hashCode())
+                    .isEqualTo(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony").hashCode());
+        }
+
+        @Test
+        @DisplayName("different instances have different hashCode")
+        void hashCode_differentInstances() {
+            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony").hashCode())
+                    .isNotEqualTo(new ReferenceCode(2, "DV_TYPE", "M", "Misdemeanor").hashCode());
+        }
+    }
+
+    // =========================================================================
+    // toString() — also covers toIndentedString()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("toString()")
+    class ToStringTests {
+
+        @Test
+        @DisplayName("contains class name")
+        void toString_containsClassName() {
+            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony").toString())
+                    .contains("ReferenceCode");
+        }
+
+        @Test
+        @DisplayName("contains all field values")
+        void toString_containsAllValues() {
+            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+            String result = rc.toString();
+            assertThat(result).contains("1");
+            assertThat(result).contains("CHARGE_TYPE");
+            assertThat(result).contains("F");
+            assertThat(result).contains("Felony");
+        }
+
+        @Test
+        @DisplayName("contains all field names")
+        void toString_containsAllFieldNames() {
+            String result = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony").toString();
+            assertThat(result).contains("id");
+            assertThat(result).contains("codeType");
+            assertThat(result).contains("codeVal");
+            assertThat(result).contains("codeDesc");
+        }
+
+        @Test
+        @DisplayName("null fields show null - covers toIndentedString(null)")
+        void toString_nullFields() {
+            assertThat(new ReferenceCode(null, null, null, null).toString())
+                    .contains("null");
+        }
+
+        @Test
+        @DisplayName("multiline value indented - covers toIndentedString newline replacement")
+        void toString_multilineValue() {
+            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "line1\nline2", "Felony");
+            assertThat(rc.toString()).contains("line1").contains("line2");
+        }
+    }
 }
