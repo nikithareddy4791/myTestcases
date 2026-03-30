@@ -1,303 +1,851 @@
 package org.nnnn.ddd.model;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
+/**
+ * ModelApiResponse
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-10T13:32:19.578-05:00")
 
-@DisplayName("ReferenceCode Model Tests")
-class ReferenceCodeTest {
 
-    // =========================================================================
-    // Constructors
-    // =========================================================================
+public class ModelApiResponse   {
+  @JsonProperty("code")
+  private Integer code = null;
 
-    @Test
-    @DisplayName("4-arg constructor sets all fields")
-    void fourArgConstructor_setsAllFields() {
-        ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-        assertThat(rc.getId()).isEqualTo(1);
-        assertThat(rc.getCodeType()).isEqualTo("CHARGE_TYPE");
-        assertThat(rc.getCodeVal()).isEqualTo("F");
-        assertThat(rc.getCodeDesc()).isEqualTo("Felony");
+  @JsonProperty("type")
+  private String type = null;
+
+  @JsonProperty("message")
+  private String message = null;
+
+  public ModelApiResponse code(Integer code) {
+    this.code = code;
+    return this;
+  }
+
+  /**
+   * Get code
+   * @return code
+   **/
+  @Schema(description = "")
+  
+    public Integer getCode() {
+    return code;
+  }
+
+  public void setCode(Integer code) {
+    this.code = code;
+  }
+
+  public ModelApiResponse type(String type) {
+    this.type = type;
+    return this;
+  }
+
+  /**
+   * Get type
+   * @return type
+   **/
+  @Schema(description = "")
+  
+    public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  public ModelApiResponse message(String message) {
+    this.message = message;
+    return this;
+  }
+
+  /**
+   * Get message
+   * @return message
+   **/
+  @Schema(description = "")
+  
+    public String getMessage() {
+    return message;
+  }
+
+  public void setMessage(String message) {
+    this.message = message;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
     }
-
-    @Test
-    @DisplayName("4-arg constructor with null values")
-    void fourArgConstructor_nullValues() {
-        ReferenceCode rc = new ReferenceCode(null, null, null, null);
-        assertThat(rc.getId()).isNull();
-        assertThat(rc.getCodeType()).isNull();
-        assertThat(rc.getCodeVal()).isNull();
-        assertThat(rc.getCodeDesc()).isNull();
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
+    ModelApiResponse _apiResponse = (ModelApiResponse) o;
+    return Objects.equals(this.code, _apiResponse.code) &&
+        Objects.equals(this.type, _apiResponse.type) &&
+        Objects.equals(this.message, _apiResponse.message);
+  }
 
-    @Test
-    @DisplayName("4-arg constructor with misdemeanor values")
-    void fourArgConstructor_misdemeanor() {
-        ReferenceCode rc = new ReferenceCode(2, "CHARGE_TYPE", "M", "Misdemeanor");
-        assertThat(rc.getId()).isEqualTo(2);
-        assertThat(rc.getCodeVal()).isEqualTo("M");
-        assertThat(rc.getCodeDesc()).isEqualTo("Misdemeanor");
+  @Override
+  public int hashCode() {
+    return Objects.hash(code, type, message);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class ModelApiResponse {\n");
+    
+    sb.append("    code: ").append(toIndentedString(code)).append("\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
+    sb.append("    message: ").append(toIndentedString(message)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
     }
+    return o.toString().replace("\n", "\n    ");
+  }
+}
 
-    // =========================================================================
-    // Getters and Setters
-    // =========================================================================
 
-    @Nested
-    @DisplayName("Getters and Setters")
-    class GettersSettersTests {
+=================
 
-        @Test
-        @DisplayName("id getter and setter")
-        void id_getterAndSetter() {
-            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            rc.setId(99);
-            assertThat(rc.getId()).isEqualTo(99);
-        }
 
-        @Test
-        @DisplayName("codeType getter and setter")
-        void codeType_getterAndSetter() {
-            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            rc.setCodeType("DV_TYPE");
-            assertThat(rc.getCodeType()).isEqualTo("DV_TYPE");
-        }
+package org.nnnn.ddd.model;
 
-        @Test
-        @DisplayName("codeVal getter and setter")
-        void codeVal_getterAndSetter() {
-            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            rc.setCodeVal("M");
-            assertThat(rc.getCodeVal()).isEqualTo("M");
-        }
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.core.io.Resource;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
-        @Test
-        @DisplayName("codeDesc getter and setter")
-        void codeDesc_getterAndSetter() {
-            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            rc.setCodeDesc("Misdemeanor");
-            assertThat(rc.getCodeDesc()).isEqualTo("Misdemeanor");
-        }
+/**
+ * CaseIdNoteBody
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-03-16T09:33:26.070-04:00")
 
-        @Test
-        @DisplayName("all fields set independently")
-        void allFields_setIndependently() {
-            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            rc.setId(10);
-            rc.setCodeType("DV_TYPE");
-            rc.setCodeVal("Y");
-            rc.setCodeDesc("Domestic Violence");
-            assertThat(rc.getId()).isEqualTo(10);
-            assertThat(rc.getCodeType()).isEqualTo("DV_TYPE");
-            assertThat(rc.getCodeVal()).isEqualTo("Y");
-            assertThat(rc.getCodeDesc()).isEqualTo("Domestic Violence");
-        }
 
-        @Test
-        @DisplayName("setter accepts null")
-        void setter_acceptsNull() {
-            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            rc.setCodeType(null);
-            rc.setCodeVal(null);
-            rc.setCodeDesc(null);
-            assertThat(rc.getCodeType()).isNull();
-            assertThat(rc.getCodeVal()).isNull();
-            assertThat(rc.getCodeDesc()).isNull();
-        }
+public class CaseIdNoteBody   {
+  @JsonProperty("noteDesc")
+  private String noteDesc = null;
+
+  @JsonProperty("fileNm")
+  private String fileNm = null;
+
+  @JsonProperty("fileContent")
+  private Resource fileContent = null;
+
+  public CaseIdNoteBody noteDesc(String noteDesc) {
+    this.noteDesc = noteDesc;
+    return this;
+  }
+
+  /**
+   * Get noteDesc
+   * @return noteDesc
+   **/
+  @Schema(description = "")
+  
+    public String getNoteDesc() {
+    return noteDesc;
+  }
+
+  public void setNoteDesc(String noteDesc) {
+    this.noteDesc = noteDesc;
+  }
+
+  public CaseIdNoteBody fileNm(String fileNm) {
+    this.fileNm = fileNm;
+    return this;
+  }
+
+  /**
+   * Get fileNm
+   * @return fileNm
+   **/
+  @Schema(description = "")
+  
+    public String getFileNm() {
+    return fileNm;
+  }
+
+  public void setFileNm(String fileNm) {
+    this.fileNm = fileNm;
+  }
+
+  public CaseIdNoteBody fileContent(Resource fileContent) {
+    this.fileContent = fileContent;
+    return this;
+  }
+
+  /**
+   * Get fileContent
+   * @return fileContent
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public Resource getFileContent() {
+    return fileContent;
+  }
+
+  public void setFileContent(Resource fileContent) {
+    this.fileContent = fileContent;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
     }
-
-    // =========================================================================
-    // Fluent Builder Methods
-    // =========================================================================
-
-    @Nested
-    @DisplayName("Fluent Builder Methods")
-    class FluentBuilderTests {
-
-        @Test
-        @DisplayName("fluent id returns same instance")
-        void fluent_id() {
-            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            assertThat(rc.id(99)).isSameAs(rc);
-            assertThat(rc.getId()).isEqualTo(99);
-        }
-
-        @Test
-        @DisplayName("fluent codeType returns same instance")
-        void fluent_codeType() {
-            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            assertThat(rc.codeType("DV_TYPE")).isSameAs(rc);
-            assertThat(rc.getCodeType()).isEqualTo("DV_TYPE");
-        }
-
-        @Test
-        @DisplayName("fluent codeVal returns same instance")
-        void fluent_codeVal() {
-            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            assertThat(rc.codeVal("M")).isSameAs(rc);
-            assertThat(rc.getCodeVal()).isEqualTo("M");
-        }
-
-        @Test
-        @DisplayName("fluent codeDesc returns same instance")
-        void fluent_codeDesc() {
-            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            assertThat(rc.codeDesc("Misdemeanor")).isSameAs(rc);
-            assertThat(rc.getCodeDesc()).isEqualTo("Misdemeanor");
-        }
-
-        @Test
-        @DisplayName("fluent chaining works")
-        void fluent_chaining() {
-            ReferenceCode rc = new ReferenceCode(1, "X", "X", "X")
-                    .id(5)
-                    .codeType("DV_TYPE")
-                    .codeVal("Y")
-                    .codeDesc("Domestic Violence");
-            assertThat(rc.getId()).isEqualTo(5);
-            assertThat(rc.getCodeType()).isEqualTo("DV_TYPE");
-            assertThat(rc.getCodeVal()).isEqualTo("Y");
-            assertThat(rc.getCodeDesc()).isEqualTo("Domestic Violence");
-        }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
+    CaseIdNoteBody caseIdNoteBody = (CaseIdNoteBody) o;
+    return Objects.equals(this.noteDesc, caseIdNoteBody.noteDesc) &&
+        Objects.equals(this.fileNm, caseIdNoteBody.fileNm) &&
+        Objects.equals(this.fileContent, caseIdNoteBody.fileContent);
+  }
 
-    // =========================================================================
-    // equals() and hashCode()
-    // =========================================================================
+  @Override
+  public int hashCode() {
+    return Objects.hash(noteDesc, fileNm, fileContent);
+  }
 
-    @Nested
-    @DisplayName("equals() and hashCode()")
-    class EqualsHashCodeTests {
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class CaseIdNoteBody {\n");
+    
+    sb.append("    noteDesc: ").append(toIndentedString(noteDesc)).append("\n");
+    sb.append("    fileNm: ").append(toIndentedString(fileNm)).append("\n");
+    sb.append("    fileContent: ").append(toIndentedString(fileContent)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
 
-        @Test
-        @DisplayName("same fields are equal")
-        void equals_sameFields() {
-            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
-                    .isEqualTo(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"));
-        }
-
-        @Test
-        @DisplayName("different id not equal")
-        void equals_differentId() {
-            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
-                    .isNotEqualTo(new ReferenceCode(2, "CHARGE_TYPE", "F", "Felony"));
-        }
-
-        @Test
-        @DisplayName("different codeType not equal")
-        void equals_differentCodeType() {
-            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
-                    .isNotEqualTo(new ReferenceCode(1, "DV_TYPE", "F", "Felony"));
-        }
-
-        @Test
-        @DisplayName("different codeVal not equal")
-        void equals_differentCodeVal() {
-            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
-                    .isNotEqualTo(new ReferenceCode(1, "CHARGE_TYPE", "M", "Felony"));
-        }
-
-        @Test
-        @DisplayName("different codeDesc not equal")
-        void equals_differentCodeDesc() {
-            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
-                    .isNotEqualTo(new ReferenceCode(1, "CHARGE_TYPE", "F", "Misdemeanor"));
-        }
-
-        @Test
-        @DisplayName("all null fields are equal")
-        void equals_allNullFields() {
-            assertThat(new ReferenceCode(null, null, null, null))
-                    .isEqualTo(new ReferenceCode(null, null, null, null));
-        }
-
-        @Test
-        @DisplayName("same instance equal to itself")
-        void equals_sameInstance() {
-            ReferenceCode a = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            assertThat(a).isEqualTo(a);
-        }
-
-        @Test
-        @DisplayName("not equal to null")
-        void equals_null() {
-            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
-                    .isNotEqualTo(null);
-        }
-
-        @Test
-        @DisplayName("not equal to different type")
-        void equals_differentType() {
-            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony"))
-                    .isNotEqualTo("string");
-        }
-
-        @Test
-        @DisplayName("equal instances have same hashCode")
-        void hashCode_equalInstances() {
-            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony").hashCode())
-                    .isEqualTo(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony").hashCode());
-        }
-
-        @Test
-        @DisplayName("different instances have different hashCode")
-        void hashCode_differentInstances() {
-            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony").hashCode())
-                    .isNotEqualTo(new ReferenceCode(2, "DV_TYPE", "M", "Misdemeanor").hashCode());
-        }
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
     }
+    return o.toString().replace("\n", "\n    ");
+  }
+}
 
-    // =========================================================================
-    // toString() — also covers toIndentedString()
-    // =========================================================================
+===============================package org.nnnn.ddd.model;
 
-    @Nested
-    @DisplayName("toString()")
-    class ToStringTests {
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
-        @Test
-        @DisplayName("contains class name")
-        void toString_containsClassName() {
-            assertThat(new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony").toString())
-                    .contains("ReferenceCode");
-        }
+/**
+ * CaseTag
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-24T16:05:11.523-05:00")
 
-        @Test
-        @DisplayName("contains all field values")
-        void toString_containsAllValues() {
-            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            String result = rc.toString();
-            assertThat(result).contains("1");
-            assertThat(result).contains("CHARGE_TYPE");
-            assertThat(result).contains("F");
-            assertThat(result).contains("Felony");
-        }
 
-        @Test
-        @DisplayName("contains all field names")
-        void toString_containsAllFieldNames() {
-            String result = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony").toString();
-            assertThat(result).contains("id");
-            assertThat(result).contains("codeType");
-            assertThat(result).contains("codeVal");
-            assertThat(result).contains("codeDesc");
-        }
+public class CaseTag   {
+  @JsonProperty("id")
+  private Integer id = null;
 
-        @Test
-        @DisplayName("null fields show null - covers toIndentedString(null)")
-        void toString_nullFields() {
-            assertThat(new ReferenceCode(null, null, null, null).toString())
-                    .contains("null");
-        }
+  @JsonProperty("caseId")
+  private Integer caseId = null;
 
-        @Test
-        @DisplayName("multiline value indented - covers toIndentedString newline replacement")
-        void toString_multilineValue() {
-            ReferenceCode rc = new ReferenceCode(1, "CHARGE_TYPE", "line1\nline2", "Felony");
-            assertThat(rc.toString()).contains("line1").contains("line2");
-        }
+  @JsonProperty("tagId")
+  private Integer tagId = null;
+
+  @JsonProperty("tagDesc")
+  private String tagDesc = null;
+
+  public CaseTag id(Integer id) {
+    this.id = id;
+    return this;
+  }
+
+  public CaseTag() {}
+
+  /**
+   * Get id
+   * @return id
+   **/
+  @Schema(example = "1", description = "")
+  
+    public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public CaseTag caseId(Integer caseId) {
+    this.caseId = caseId;
+    return this;
+  }
+
+  /**
+   * Get caseId
+   * @return caseId
+   **/
+  @Schema(description = "")
+  
+    public Integer getCaseId() {
+    return caseId;
+  }
+
+  public void setCaseId(Integer caseId) {
+    this.caseId = caseId;
+  }
+
+  public CaseTag tagId(Integer tagId) {
+    this.tagId = tagId;
+    return this;
+  }
+
+  /**
+   * Get tagId
+   * @return tagId
+   **/
+  @Schema(description = "")
+  
+    public Integer getTagId() {
+    return tagId;
+  }
+
+  public void setTagId(Integer tagId) {
+    this.tagId = tagId;
+  }
+
+  public CaseTag tagDesc(String tagDesc) {
+    this.tagDesc = tagDesc;
+    return this;
+  }
+
+  /**
+   * Get tagDesc
+   * @return tagDesc
+   **/
+  @Schema(description = "")
+  
+    public String getTagDesc() {
+    return tagDesc;
+  }
+
+  public void setTagDesc(String tagDesc) {
+    this.tagDesc = tagDesc;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
     }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    CaseTag caseTag = (CaseTag) o;
+    return Objects.equals(this.id, caseTag.id) &&
+        Objects.equals(this.caseId, caseTag.caseId) &&
+        Objects.equals(this.tagId, caseTag.tagId) &&
+        Objects.equals(this.tagDesc, caseTag.tagDesc);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, caseId, tagId, tagDesc);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class CaseTag {\n");
+    
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    caseId: ").append(toIndentedString(caseId)).append("\n");
+    sb.append("    tagId: ").append(toIndentedString(tagId)).append("\n");
+    sb.append("    tagDesc: ").append(toIndentedString(tagDesc)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
+}
+========================================
+
+
+package org.nnnn.ddd.model;
+
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.nnnn.ddd.model.CaseUpload;
+import org.threeten.bp.OffsetDateTime;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
+/**
+ * CaseNote
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-10T13:32:19.578-05:00")
+
+
+public class CaseNote   {
+  @JsonProperty("id")
+  private Integer id = null;
+
+  @JsonProperty("caseId")
+  private Integer caseId = null;
+
+  @JsonProperty("userNm")
+  private String userNm = null;
+
+  @JsonProperty("noteDesc")
+  private String noteDesc = null;
+
+  @JsonProperty("upload")
+  private CaseUpload upload = null;
+
+  @JsonProperty("rowInsertTs")
+  private OffsetDateTime rowInsertTs = null;
+
+  public CaseNote id(Integer id) {
+    this.id = id;
+    return this;
+  }
+
+  /**
+   * Get id
+   * @return id
+   **/
+  @Schema(example = "1", description = "")
+  
+    public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public CaseNote caseId(Integer caseId) {
+    this.caseId = caseId;
+    return this;
+  }
+
+  /**
+   * Get caseId
+   * @return caseId
+   **/
+  @Schema(description = "")
+  
+    public Integer getCaseId() {
+    return caseId;
+  }
+
+  public void setCaseId(Integer caseId) {
+    this.caseId = caseId;
+  }
+
+  public CaseNote userNm(String userNm) {
+    this.userNm = userNm;
+    return this;
+  }
+
+  /**
+   * Get userNm
+   * @return userNm
+   **/
+  @Schema(description = "")
+  
+    public String getUserNm() {
+    return userNm;
+  }
+
+  public void setUserNm(String userNm) {
+    this.userNm = userNm;
+  }
+
+  public CaseNote noteDesc(String noteDesc) {
+    this.noteDesc = noteDesc;
+    return this;
+  }
+
+  /**
+   * Get noteDesc
+   * @return noteDesc
+   **/
+  @Schema(description = "")
+  
+    public String getNoteDesc() {
+    return noteDesc;
+  }
+
+  public void setNoteDesc(String noteDesc) {
+    this.noteDesc = noteDesc;
+  }
+
+  public CaseNote upload(CaseUpload upload) {
+    this.upload = upload;
+    return this;
+  }
+
+  /**
+   * Get upload
+   * @return upload
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public CaseUpload getUpload() {
+    return upload;
+  }
+
+  public void setUpload(CaseUpload upload) {
+    this.upload = upload;
+  }
+
+  public CaseNote rowInsertTs(OffsetDateTime rowInsertTs) {
+    this.rowInsertTs = rowInsertTs;
+    return this;
+  }
+
+  /**
+   * Get rowInsertTs
+   * @return rowInsertTs
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public OffsetDateTime getRowInsertTs() {
+    return rowInsertTs;
+  }
+
+  public void setRowInsertTs(OffsetDateTime rowInsertTs) {
+    this.rowInsertTs = rowInsertTs;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    CaseNote caseNote = (CaseNote) o;
+    return Objects.equals(this.id, caseNote.id) &&
+        Objects.equals(this.caseId, caseNote.caseId) &&
+        Objects.equals(this.userNm, caseNote.userNm) &&
+        Objects.equals(this.noteDesc, caseNote.noteDesc) &&
+        Objects.equals(this.upload, caseNote.upload) &&
+        Objects.equals(this.rowInsertTs, caseNote.rowInsertTs);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, caseId, userNm, noteDesc, upload, rowInsertTs);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class CaseNote {\n");
+    
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    caseId: ").append(toIndentedString(caseId)).append("\n");
+    sb.append("    userNm: ").append(toIndentedString(userNm)).append("\n");
+    sb.append("    noteDesc: ").append(toIndentedString(noteDesc)).append("\n");
+    sb.append("    upload: ").append(toIndentedString(upload)).append("\n");
+    sb.append("    rowInsertTs: ").append(toIndentedString(rowInsertTs)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
+}
+
+
+===============================
+
+package org.nnnn.ddd.model;
+
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.threeten.bp.OffsetDateTime;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
+/**
+ * CaseUpload
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-03-16T10:35:06.591-04:00")
+
+
+public class CaseUpload   {
+  @JsonProperty("id")
+  private Integer id = null;
+
+  @JsonProperty("caseId")
+  private Integer caseId = null;
+
+  @JsonProperty("fileNm")
+  private String fileNm = null;
+
+  @JsonProperty("userNm")
+  private String userNm = null;
+
+  @JsonProperty("deletedFlg")
+  private Integer deletedFlg = null;
+
+  @JsonProperty("rowInsertTs")
+  private OffsetDateTime rowInsertTs = null;
+
+  @JsonProperty("rowUpdtTs")
+  private OffsetDateTime rowUpdtTs = null;
+
+  public CaseUpload id(Integer id) {
+    this.id = id;
+    return this;
+  }
+
+  /**
+   * Get id
+   * @return id
+   **/
+  @Schema(example = "1", description = "")
+  
+    public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public CaseUpload caseId(Integer caseId) {
+    this.caseId = caseId;
+    return this;
+  }
+
+  /**
+   * Get caseId
+   * @return caseId
+   **/
+  @Schema(description = "")
+  
+    public Integer getCaseId() {
+    return caseId;
+  }
+
+  public void setCaseId(Integer caseId) {
+    this.caseId = caseId;
+  }
+
+  public CaseUpload fileNm(String fileNm) {
+    this.fileNm = fileNm;
+    return this;
+  }
+
+  /**
+   * Get fileNm
+   * @return fileNm
+   **/
+  @Schema(description = "")
+  
+    public String getFileNm() {
+    return fileNm;
+  }
+
+  public void setFileNm(String fileNm) {
+    this.fileNm = fileNm;
+  }
+
+  public CaseUpload userNm(String userNm) {
+    this.userNm = userNm;
+    return this;
+  }
+
+  /**
+   * Get userNm
+   * @return userNm
+   **/
+  @Schema(description = "")
+  
+    public String getUserNm() {
+    return userNm;
+  }
+
+  public void setUserNm(String userNm) {
+    this.userNm = userNm;
+  }
+
+  public CaseUpload deletedFlg(Integer deletedFlg) {
+    this.deletedFlg = deletedFlg;
+    return this;
+  }
+
+  /**
+   * Get deletedFlg
+   * @return deletedFlg
+   **/
+  @Schema(description = "")
+  
+    public Integer getDeletedFlg() {
+    return deletedFlg;
+  }
+
+  public void setDeletedFlg(Integer deletedFlg) {
+    this.deletedFlg = deletedFlg;
+  }
+
+  public CaseUpload rowInsertTs(OffsetDateTime rowInsertTs) {
+    this.rowInsertTs = rowInsertTs;
+    return this;
+  }
+
+  /**
+   * Get rowInsertTs
+   * @return rowInsertTs
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public OffsetDateTime getRowInsertTs() {
+    return rowInsertTs;
+  }
+
+  public void setRowInsertTs(OffsetDateTime rowInsertTs) {
+    this.rowInsertTs = rowInsertTs;
+  }
+
+  public CaseUpload rowUpdtTs(OffsetDateTime rowUpdtTs) {
+    this.rowUpdtTs = rowUpdtTs;
+    return this;
+  }
+
+  /**
+   * Get rowUpdtTs
+   * @return rowUpdtTs
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public OffsetDateTime getRowUpdtTs() {
+    return rowUpdtTs;
+  }
+
+  public void setRowUpdtTs(OffsetDateTime rowUpdtTs) {
+    this.rowUpdtTs = rowUpdtTs;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    CaseUpload caseUpload = (CaseUpload) o;
+    return Objects.equals(this.id, caseUpload.id) &&
+        Objects.equals(this.caseId, caseUpload.caseId) &&
+        Objects.equals(this.fileNm, caseUpload.fileNm) &&
+        Objects.equals(this.userNm, caseUpload.userNm) &&
+        Objects.equals(this.deletedFlg, caseUpload.deletedFlg) &&
+        Objects.equals(this.rowInsertTs, caseUpload.rowInsertTs) &&
+        Objects.equals(this.rowUpdtTs, caseUpload.rowUpdtTs);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, caseId, fileNm, userNm, deletedFlg, rowInsertTs, rowUpdtTs);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class CaseUpload {\n");
+    
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    caseId: ").append(toIndentedString(caseId)).append("\n");
+    sb.append("    fileNm: ").append(toIndentedString(fileNm)).append("\n");
+    sb.append("    userNm: ").append(toIndentedString(userNm)).append("\n");
+    sb.append("    deletedFlg: ").append(toIndentedString(deletedFlg)).append("\n");
+    sb.append("    rowInsertTs: ").append(toIndentedString(rowInsertTs)).append("\n");
+    sb.append("    rowUpdtTs: ").append(toIndentedString(rowUpdtTs)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }
