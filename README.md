@@ -1,431 +1,974 @@
 package io.swagger.configuration;
 
-import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonTokenId;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.datatype.threetenbp.DecimalUtils;
-import com.fasterxml.jackson.datatype.threetenbp.deser.ThreeTenDateTimeDeserializerBase;
-import com.fasterxml.jackson.datatype.threetenbp.function.BiFunction;
-import com.fasterxml.jackson.datatype.threetenbp.function.Function;
-import org.threeten.bp.DateTimeException;
-import org.threeten.bp.DateTimeUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.threetenbp.ThreeTenModule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.threeten.bp.Instant;
 import org.threeten.bp.OffsetDateTime;
-import org.threeten.bp.ZoneId;
 import org.threeten.bp.ZonedDateTime;
-import org.threeten.bp.format.DateTimeFormatter;
-import org.threeten.bp.temporal.Temporal;
-import org.threeten.bp.temporal.TemporalAccessor;
 
-import java.io.IOException;
-import java.math.BigDecimal;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Deserializer for ThreeTen temporal {@link Instant}s, {@link OffsetDateTime}, and {@link ZonedDateTime}s.
- * Adapted from the jackson threetenbp InstantDeserializer to add support for deserializing rfc822 format.
- *
- * @author Nick Williams
- */
-public class CustomInstantDeserializer<T extends Temporal>
-    extends ThreeTenDateTimeDeserializerBase<T> {
-  private static final long serialVersionUID = 1L;
+@DisplayName("CustomInstantDeserializer Tests")
+class CustomInstantDeserializerTest {
 
-  public static final CustomInstantDeserializer<Instant> INSTANT = new CustomInstantDeserializer<Instant>(
-      Instant.class, DateTimeFormatter.ISO_INSTANT,
-      new Function<TemporalAccessor, Instant>() {
-        @Override
-        public Instant apply(TemporalAccessor temporalAccessor) {
-          return Instant.from(temporalAccessor);
-        }
-      },
-      new Function<FromIntegerArguments, Instant>() {
-        @Override
-        public Instant apply(FromIntegerArguments a) {
-          return Instant.ofEpochMilli(a.value);
-        }
-      },
-      new Function<FromDecimalArguments, Instant>() {
-        @Override
-        public Instant apply(FromDecimalArguments a) {
-          return Instant.ofEpochSecond(a.integer, a.fraction);
-        }
-      },
-      null
-  );
+    private ObjectMapper objectMapper;
 
-  public static final CustomInstantDeserializer<OffsetDateTime> OFFSET_DATE_TIME = new CustomInstantDeserializer<OffsetDateTime>(
-      OffsetDateTime.class, DateTimeFormatter.ISO_OFFSET_DATE_TIME,
-      new Function<TemporalAccessor, OffsetDateTime>() {
-        @Override
-        public OffsetDateTime apply(TemporalAccessor temporalAccessor) {
-          return OffsetDateTime.from(temporalAccessor);
-        }
-      },
-      new Function<FromIntegerArguments, OffsetDateTime>() {
-        @Override
-        public OffsetDateTime apply(FromIntegerArguments a) {
-          return OffsetDateTime.ofInstant(Instant.ofEpochMilli(a.value), a.zoneId);
-        }
-      },
-      new Function<FromDecimalArguments, OffsetDateTime>() {
-        @Override
-        public OffsetDateTime apply(FromDecimalArguments a) {
-          return OffsetDateTime.ofInstant(Instant.ofEpochSecond(a.integer, a.fraction), a.zoneId);
-        }
-      },
-      new BiFunction<OffsetDateTime, ZoneId, OffsetDateTime>() {
-        @Override
-        public OffsetDateTime apply(OffsetDateTime d, ZoneId z) {
-          return d.withOffsetSameInstant(z.getRules().getOffset(d.toLocalDateTime()));
-        }
-      }
-  );
-
-  public static final CustomInstantDeserializer<ZonedDateTime> ZONED_DATE_TIME = new CustomInstantDeserializer<ZonedDateTime>(
-      ZonedDateTime.class, DateTimeFormatter.ISO_ZONED_DATE_TIME,
-      new Function<TemporalAccessor, ZonedDateTime>() {
-        @Override
-        public ZonedDateTime apply(TemporalAccessor temporalAccessor) {
-          return ZonedDateTime.from(temporalAccessor);
-        }
-      },
-      new Function<FromIntegerArguments, ZonedDateTime>() {
-        @Override
-        public ZonedDateTime apply(FromIntegerArguments a) {
-          return ZonedDateTime.ofInstant(Instant.ofEpochMilli(a.value), a.zoneId);
-        }
-      },
-      new Function<FromDecimalArguments, ZonedDateTime>() {
-        @Override
-        public ZonedDateTime apply(FromDecimalArguments a) {
-          return ZonedDateTime.ofInstant(Instant.ofEpochSecond(a.integer, a.fraction), a.zoneId);
-        }
-      },
-      new BiFunction<ZonedDateTime, ZoneId, ZonedDateTime>() {
-        @Override
-        public ZonedDateTime apply(ZonedDateTime zonedDateTime, ZoneId zoneId) {
-          return zonedDateTime.withZoneSameInstant(zoneId);
-        }
-      }
-  );
-
-  protected final Function<FromIntegerArguments, T> fromMilliseconds;
-
-  protected final Function<FromDecimalArguments, T> fromNanoseconds;
-
-  protected final Function<TemporalAccessor, T> parsedToValue;
-
-  protected final BiFunction<T, ZoneId, T> adjust;
-
-  protected CustomInstantDeserializer(Class<T> supportedType,
-                    DateTimeFormatter parser,
-                    Function<TemporalAccessor, T> parsedToValue,
-                    Function<FromIntegerArguments, T> fromMilliseconds,
-                    Function<FromDecimalArguments, T> fromNanoseconds,
-                    BiFunction<T, ZoneId, T> adjust) {
-    super(supportedType, parser);
-    this.parsedToValue = parsedToValue;
-    this.fromMilliseconds = fromMilliseconds;
-    this.fromNanoseconds = fromNanoseconds;
-    this.adjust = adjust == null ? new BiFunction<T, ZoneId, T>() {
-      @Override
-      public T apply(T t, ZoneId zoneId) {
-        return t;
-      }
-    } : adjust;
-  }
-
-  @SuppressWarnings("unchecked")
-  protected CustomInstantDeserializer(CustomInstantDeserializer<T> base, DateTimeFormatter f) {
-    super((Class<T>) base.handledType(), f);
-    parsedToValue = base.parsedToValue;
-    fromMilliseconds = base.fromMilliseconds;
-    fromNanoseconds = base.fromNanoseconds;
-    adjust = base.adjust;
-  }
-
-  @Override
-  protected ThreeTenDateTimeDeserializerBase<T> withDateFormat(DateTimeFormatter dtf) {
-    if (dtf == _formatter) {
-      return this;
+    @BeforeEach
+    void setUp() {
+        objectMapper = new ObjectMapper();
+        ThreeTenModule module = new ThreeTenModule();
+        module.addDeserializer(Instant.class, CustomInstantDeserializer.INSTANT);
+        module.addDeserializer(OffsetDateTime.class, CustomInstantDeserializer.OFFSET_DATE_TIME);
+        module.addDeserializer(ZonedDateTime.class, CustomInstantDeserializer.ZONED_DATE_TIME);
+        objectMapper.registerModule(module);
     }
-    return new CustomInstantDeserializer<T>(this, dtf);
-  }
 
-  @Override
-  public T deserialize(JsonParser parser, DeserializationContext context) throws IOException {
-    //NOTE: Timestamps contain no timezone info, and are always in configured TZ. Only
-    //string values have to be adjusted to the configured TZ.
-    switch (parser.getCurrentTokenId()) {
-      case JsonTokenId.ID_NUMBER_FLOAT: {
-        BigDecimal value = parser.getDecimalValue();
-        long seconds = value.longValue();
-        int nanoseconds = DecimalUtils.extractNanosecondDecimal(value, seconds);
-        return fromNanoseconds.apply(new FromDecimalArguments(
-            seconds, nanoseconds, getZone(context)));
-      }
+    // -------------------------------------------------------------------------
+    // Static constant sanity checks
+    // -------------------------------------------------------------------------
 
-      case JsonTokenId.ID_NUMBER_INT: {
-        long timestamp = parser.getLongValue();
-        if (context.isEnabled(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)) {
-          return this.fromNanoseconds.apply(new FromDecimalArguments(
-              timestamp, 0, this.getZone(context)
-          ));
-        }
-        return this.fromMilliseconds.apply(new FromIntegerArguments(
-            timestamp, this.getZone(context)
-        ));
-      }
-
-      case JsonTokenId.ID_STRING: {
-        String string = parser.getText().trim();
-        if (string.length() == 0) {
-          return null;
-        }
-        if (string.endsWith("+0000")) {
-          string = string.substring(0, string.length() - 5) + "Z";
-        }
-        T value;
-        try {
-          TemporalAccessor acc = _formatter.parse(string);
-          value = parsedToValue.apply(acc);
-          if (context.isEnabled(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)) {
-            return adjust.apply(value, this.getZone(context));
-          }
-        } catch (DateTimeException e) {
-          throw _peelDTE(e);
-        }
-        return value;
-      }
+    @Test
+    @DisplayName("INSTANT static constant should not be null")
+    void instantConstantShouldNotBeNull() {
+        assertNotNull(CustomInstantDeserializer.INSTANT);
     }
-    //throw context.mappingException("Expected type float, integer, or string.");
-    throw new IOException("Expected type float, integer, or string.");
-  }
 
-  private ZoneId getZone(DeserializationContext context) {
-    // Instants are always in UTC, so don't waste compute cycles
-    return (_valueClass == Instant.class) ? null : DateTimeUtils.toZoneId(context.getTimeZone());
-  }
-
-  private static class FromIntegerArguments {
-    public final long value;
-    public final ZoneId zoneId;
-
-    private FromIntegerArguments(long value, ZoneId zoneId) {
-      this.value = value;
-      this.zoneId = zoneId;
+    @Test
+    @DisplayName("OFFSET_DATE_TIME static constant should not be null")
+    void offsetDateTimeConstantShouldNotBeNull() {
+        assertNotNull(CustomInstantDeserializer.OFFSET_DATE_TIME);
     }
-  }
 
-  private static class FromDecimalArguments {
-    public final long integer;
-    public final int fraction;
-    public final ZoneId zoneId;
-
-    private FromDecimalArguments(long integer, int fraction, ZoneId zoneId) {
-      this.integer = integer;
-      this.fraction = fraction;
-      this.zoneId = zoneId;
+    @Test
+    @DisplayName("ZONED_DATE_TIME static constant should not be null")
+    void zonedDateTimeConstantShouldNotBeNull() {
+        assertNotNull(CustomInstantDeserializer.ZONED_DATE_TIME);
     }
-  }
 
-  @Override
-	protected ThreeTenDateTimeDeserializerBase<T> withLeniency(Boolean arg0) {
-		return this;
-	}
+    // -------------------------------------------------------------------------
+    // Instant deserialization
+    // -------------------------------------------------------------------------
 
-	@Override
-	protected ThreeTenDateTimeDeserializerBase<T> withShape(Shape arg0) {
-		return this;
-	}
-  
+    @Nested
+    @DisplayName("Instant Deserialization")
+    class InstantDeserializationTests {
+
+        @Test
+        @DisplayName("Should deserialize ISO-8601 UTC string to Instant")
+        void shouldDeserializeIsoUtcStringToInstant() throws Exception {
+            String json = "\"2024-06-15T10:30:00Z\"";
+            Instant result = objectMapper.readValue(json, Instant.class);
+            assertNotNull(result);
+            assertEquals(Instant.parse("2024-06-15T10:30:00Z"), result);
+        }
+
+        @Test
+        @DisplayName("Should deserialize epoch millis (integer) to Instant")
+        void shouldDeserializeEpochMillisToInstant() throws Exception {
+            objectMapper.configure(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS, false);
+            long epochMillis = 1718447400000L;
+            String json = String.valueOf(epochMillis);
+            Instant result = objectMapper.readValue(json, Instant.class);
+            assertNotNull(result);
+            assertEquals(Instant.ofEpochMilli(epochMillis), result);
+        }
+
+        @Test
+        @DisplayName("Should deserialize epoch seconds (float) to Instant")
+        void shouldDeserializeEpochSecondsFloatToInstant() throws Exception {
+            String json = "1718447400.5";
+            Instant result = objectMapper.readValue(json, Instant.class);
+            assertNotNull(result);
+            assertEquals(1718447400L, result.getEpochSecond());
+        }
+
+        @Test
+        @DisplayName("Should return null for empty string")
+        void shouldReturnNullForEmptyString() throws Exception {
+            String json = "\"\"";
+            Instant result = objectMapper.readValue(json, Instant.class);
+            assertNull(result);
+        }
+
+        @Test
+        @DisplayName("Should handle +0000 suffix by converting to Z")
+        void shouldHandlePlusZeroTimezone() throws Exception {
+            // +0000 is normalized to Z inside the deserializer
+            String json = "\"2024-06-15T10:30:00+0000\"";
+            Instant result = objectMapper.readValue(json, Instant.class);
+            assertNotNull(result);
+            assertEquals(Instant.parse("2024-06-15T10:30:00Z"), result);
+        }
+
+        @Test
+        @DisplayName("Should deserialize epoch as nanoseconds when feature is enabled")
+        void shouldDeserializeEpochAsNanosecondsWhenFeatureEnabled() throws Exception {
+            objectMapper.configure(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS, true);
+            long epochSeconds = 1718447400L;
+            String json = String.valueOf(epochSeconds);
+            Instant result = objectMapper.readValue(json, Instant.class);
+            assertNotNull(result);
+            assertEquals(Instant.ofEpochSecond(epochSeconds, 0), result);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // OffsetDateTime deserialization
+    // -------------------------------------------------------------------------
+
+    @Nested
+    @DisplayName("OffsetDateTime Deserialization")
+    class OffsetDateTimeDeserializationTests {
+
+        @Test
+        @DisplayName("Should deserialize ISO offset date-time string")
+        void shouldDeserializeIsoOffsetDateTimeString() throws Exception {
+            String json = "\"2024-06-15T10:30:00+05:30\"";
+            OffsetDateTime result = objectMapper.readValue(json, OffsetDateTime.class);
+            assertNotNull(result);
+            assertEquals(OffsetDateTime.parse("2024-06-15T10:30:00+05:30"), result);
+        }
+
+        @Test
+        @DisplayName("Should deserialize epoch millis to OffsetDateTime")
+        void shouldDeserializeEpochMillisToOffsetDateTime() throws Exception {
+            objectMapper.configure(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS, false);
+            long epochMillis = 1718447400000L;
+            OffsetDateTime result = objectMapper.readValue(String.valueOf(epochMillis), OffsetDateTime.class);
+            assertNotNull(result);
+        }
+
+        @Test
+        @DisplayName("Should deserialize epoch seconds (float) to OffsetDateTime")
+        void shouldDeserializeEpochSecondsFloatToOffsetDateTime() throws Exception {
+            String json = "1718447400.0";
+            OffsetDateTime result = objectMapper.readValue(json, OffsetDateTime.class);
+            assertNotNull(result);
+            assertEquals(1718447400L, result.toEpochSecond());
+        }
+
+        @Test
+        @DisplayName("Should return null for empty string")
+        void shouldReturnNullForEmptyStringOffsetDateTime() throws Exception {
+            String json = "\"\"";
+            OffsetDateTime result = objectMapper.readValue(json, OffsetDateTime.class);
+            assertNull(result);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // ZonedDateTime deserialization
+    // -------------------------------------------------------------------------
+
+    @Nested
+    @DisplayName("ZonedDateTime Deserialization")
+    class ZonedDateTimeDeserializationTests {
+
+        @Test
+        @DisplayName("Should deserialize ISO zoned date-time string")
+        void shouldDeserializeIsoZonedDateTimeString() throws Exception {
+            String json = "\"2024-06-15T10:30:00+05:30[Asia/Kolkata]\"";
+            ZonedDateTime result = objectMapper.readValue(json, ZonedDateTime.class);
+            assertNotNull(result);
+            assertEquals("Asia/Kolkata", result.getZone().getId());
+        }
+
+        @Test
+        @DisplayName("Should deserialize epoch millis to ZonedDateTime")
+        void shouldDeserializeEpochMillisToZonedDateTime() throws Exception {
+            objectMapper.configure(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS, false);
+            long epochMillis = 1718447400000L;
+            ZonedDateTime result = objectMapper.readValue(String.valueOf(epochMillis), ZonedDateTime.class);
+            assertNotNull(result);
+        }
+
+        @Test
+        @DisplayName("Should deserialize decimal seconds to ZonedDateTime")
+        void shouldDeserializeDecimalSecondsToZonedDateTime() throws Exception {
+            String json = "1718447400.0";
+            ZonedDateTime result = objectMapper.readValue(json, ZonedDateTime.class);
+            assertNotNull(result);
+        }
+
+        @Test
+        @DisplayName("Should return null for empty string")
+        void shouldReturnNullForEmptyStringZonedDateTime() throws Exception {
+            String json = "\"\"";
+            ZonedDateTime result = objectMapper.readValue(json, ZonedDateTime.class);
+            assertNull(result);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Error cases
+    // -------------------------------------------------------------------------
+
+    @Nested
+    @DisplayName("Error Handling")
+    class ErrorHandlingTests {
+
+        @Test
+        @DisplayName("Should throw exception for invalid date-time string for Instant")
+        void shouldThrowExceptionForInvalidInstantString() {
+            String json = "\"not-a-date\"";
+            assertThrows(Exception.class, () -> objectMapper.readValue(json, Instant.class));
+        }
+
+        @Test
+        @DisplayName("Should throw exception for invalid date-time string for OffsetDateTime")
+        void shouldThrowExceptionForInvalidOffsetDateTimeString() {
+            String json = "\"not-a-date\"";
+            assertThrows(Exception.class, () -> objectMapper.readValue(json, OffsetDateTime.class));
+        }
+
+        @Test
+        @DisplayName("Should throw exception for invalid date-time string for ZonedDateTime")
+        void shouldThrowExceptionForInvalidZonedDateTimeString() {
+            String json = "\"not-a-date\"";
+            assertThrows(Exception.class, () -> objectMapper.readValue(json, ZonedDateTime.class));
+        }
+    }
 }
 
 
-==================
-package io.swagger.configuration;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+package io.swagger.configuration;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
-@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-02T09:36:47.836-05:00")
-@Configuration
-public class SwaggerDocumentationConfig {
-    /* 
-    @Bean
-    public Docket customImplementation(){
-        return new Docket(DocumentationType.OAS_30)
-                .select()
-                    .apis(RequestHandlerSelectors.basePackage("org.nnnn.ddd.api"))
-                    .build()
-                .directModelSubstitute(org.threeten.bp.LocalDate.class, java.sql.Date.class)
-                .directModelSubstitute(org.threeten.bp.OffsetDateTime.class, java.util.Date.class)
-                .apiInfo(apiInfo());
+import static org.junit.jupiter.api.Assertions.*;
+
+@DisplayName("SwaggerDocumentationConfig Tests")
+class SwaggerDocumentationConfigTest {
+
+    private SwaggerDocumentationConfig config;
+
+    @BeforeEach
+    void setUp() {
+        config = new SwaggerDocumentationConfig();
     }
 
-    ApiInfo apiInfo() {
-        return new ApiInfoBuilder()
-            .title("Swagger Petstore - OpenAPI 3.0")
-            .description("This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about Swagger at [https://swagger.io](https://swagger.io). In the third iteration of the pet store, we've switched to the design first approach! You can now help us improve the API whether it's by making changes to the definition itself or to the code. That way, with time, we can improve the API in general, and expose some of the new features in OAS3.  Some useful links: - [The Pet Store repository](https://github.com/swagger-api/swagger-petstore) - [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)")
-            .license("Apache 2.0")
-            .licenseUrl("https://www.apache.org/licenses/LICENSE-2.0.html")
-            .termsOfServiceUrl("")
-            .version("1.0.12")
-            .contact(new Contact("","", "apiteam@swagger.io"))
-            .build();
-    }
-    */
-
-    @Bean
-    public OpenAPI openApi() {
-        return new OpenAPI()
-            .info(new Info()
-                .title("Swagger Petstore - OpenAPI 3.0")
-                .description("This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about Swagger at [https://swagger.io](https://swagger.io). In the third iteration of the pet store, we've switched to the design first approach! You can now help us improve the API whether it's by making changes to the definition itself or to the code. That way, with time, we can improve the API in general, and expose some of the new features in OAS3.  Some useful links: - [The Pet Store repository](https://github.com/swagger-api/swagger-petstore) - [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)")
-                .termsOfService("")
-                .version("1.0.12")
-                .license(new License()
-                    .name("Apache 2.0")
-                    .url("https://www.apache.org/licenses/LICENSE-2.0.html"))
-                .contact(new io.swagger.v3.oas.models.info.Contact()
-                    .email("apiteam@swagger.io")));
+    @Test
+    @DisplayName("openApi() bean should not return null")
+    void openApiBeanShouldNotBeNull() {
+        OpenAPI openAPI = config.openApi();
+        assertNotNull(openAPI);
     }
 
+    @Test
+    @DisplayName("OpenAPI info should not be null")
+    void openApiInfoShouldNotBeNull() {
+        OpenAPI openAPI = config.openApi();
+        assertNotNull(openAPI.getInfo());
+    }
+
+    @Test
+    @DisplayName("OpenAPI title should match expected value")
+    void openApiTitleShouldMatch() {
+        Info info = config.openApi().getInfo();
+        assertEquals("Swagger Petstore - OpenAPI 3.0", info.getTitle());
+    }
+
+    @Test
+    @DisplayName("OpenAPI version should match expected value")
+    void openApiVersionShouldMatch() {
+        Info info = config.openApi().getInfo();
+        assertEquals("1.0.12", info.getVersion());
+    }
+
+    @Test
+    @DisplayName("OpenAPI description should not be null or empty")
+    void openApiDescriptionShouldNotBeNullOrEmpty() {
+        Info info = config.openApi().getInfo();
+        assertNotNull(info.getDescription());
+        assertFalse(info.getDescription().isEmpty());
+    }
+
+    @Test
+    @DisplayName("OpenAPI terms of service should be empty string")
+    void openApiTermsOfServiceShouldBeEmptyString() {
+        Info info = config.openApi().getInfo();
+        assertEquals("", info.getTermsOfService());
+    }
+
+    @Test
+    @DisplayName("OpenAPI license should not be null")
+    void openApiLicenseShouldNotBeNull() {
+        Info info = config.openApi().getInfo();
+        assertNotNull(info.getLicense());
+    }
+
+    @Test
+    @DisplayName("OpenAPI license name should be Apache 2.0")
+    void openApiLicenseNameShouldBeApache() {
+        License license = config.openApi().getInfo().getLicense();
+        assertEquals("Apache 2.0", license.getName());
+    }
+
+    @Test
+    @DisplayName("OpenAPI license URL should point to Apache license")
+    void openApiLicenseUrlShouldMatch() {
+        License license = config.openApi().getInfo().getLicense();
+        assertEquals("https://www.apache.org/licenses/LICENSE-2.0.html", license.getUrl());
+    }
+
+    @Test
+    @DisplayName("OpenAPI contact should not be null")
+    void openApiContactShouldNotBeNull() {
+        Info info = config.openApi().getInfo();
+        assertNotNull(info.getContact());
+    }
+
+    @Test
+    @DisplayName("OpenAPI contact email should match expected value")
+    void openApiContactEmailShouldMatch() {
+        Info info = config.openApi().getInfo();
+        assertEquals("apiteam@swagger.io", info.getContact().getEmail());
+    }
+
+    @Test
+    @DisplayName("openApi() should return a new instance on each call")
+    void openApiShouldReturnNewInstanceOnEachCall() {
+        OpenAPI first = config.openApi();
+        OpenAPI second = config.openApi();
+        assertNotSame(first, second);
+    }
 }
 
 
-==========================
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 package io.swagger.configuration;
 
-import org.springframework.context.annotation.Configuration;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.servlet.config.annotation.ResourceChainRegistration;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistration;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-02T09:36:47.836-05:00")
-@Configuration
-public class SwaggerUiConfiguration implements WebMvcConfigurer {
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.
-            addResourceHandler("/swagger-ui/**")
-                .addResourceLocations("classpath:/META-INF/resources/webjars/springfox-swagger-ui/")
-                .resourceChain(false);
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("SwaggerUiConfiguration Tests")
+class SwaggerUiConfigurationTest {
+
+    private SwaggerUiConfiguration swaggerUiConfiguration;
+
+    @Mock
+    private ResourceHandlerRegistry resourceHandlerRegistry;
+
+    @Mock
+    private ResourceHandlerRegistration resourceHandlerRegistration;
+
+    @Mock
+    private ResourceChainRegistration resourceChainRegistration;
+
+    @Mock
+    private ViewControllerRegistry viewControllerRegistry;
+
+    @Mock
+    private ViewControllerRegistration viewControllerRegistration;
+
+    @BeforeEach
+    void setUp() {
+        swaggerUiConfiguration = new SwaggerUiConfiguration();
     }
 
-    @Override
-    public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/swagger-ui/").setViewName("forward:/swagger-ui/index.html");
+    @Test
+    @DisplayName("addResourceHandlers should register /swagger-ui/** handler")
+    void shouldRegisterSwaggerUiResourceHandler() {
+        when(resourceHandlerRegistry.addResourceHandler("/swagger-ui/**"))
+                .thenReturn(resourceHandlerRegistration);
+        when(resourceHandlerRegistration.addResourceLocations(anyString()))
+                .thenReturn(resourceHandlerRegistration);
+        when(resourceHandlerRegistration.resourceChain(false))
+                .thenReturn(resourceChainRegistration);
+
+        swaggerUiConfiguration.addResourceHandlers(resourceHandlerRegistry);
+
+        verify(resourceHandlerRegistry).addResourceHandler("/swagger-ui/**");
+    }
+
+    @Test
+    @DisplayName("addResourceHandlers should set correct classpath resource location")
+    void shouldSetCorrectResourceLocation() {
+        when(resourceHandlerRegistry.addResourceHandler("/swagger-ui/**"))
+                .thenReturn(resourceHandlerRegistration);
+        when(resourceHandlerRegistration.addResourceLocations(anyString()))
+                .thenReturn(resourceHandlerRegistration);
+        when(resourceHandlerRegistration.resourceChain(false))
+                .thenReturn(resourceChainRegistration);
+
+        swaggerUiConfiguration.addResourceHandlers(resourceHandlerRegistry);
+
+        verify(resourceHandlerRegistration)
+                .addResourceLocations("classpath:/META-INF/resources/webjars/springfox-swagger-ui/");
+    }
+
+    @Test
+    @DisplayName("addResourceHandlers should disable resource chain caching")
+    void shouldDisableResourceChain() {
+        when(resourceHandlerRegistry.addResourceHandler("/swagger-ui/**"))
+                .thenReturn(resourceHandlerRegistration);
+        when(resourceHandlerRegistration.addResourceLocations(anyString()))
+                .thenReturn(resourceHandlerRegistration);
+        when(resourceHandlerRegistration.resourceChain(false))
+                .thenReturn(resourceChainRegistration);
+
+        swaggerUiConfiguration.addResourceHandlers(resourceHandlerRegistry);
+
+        verify(resourceHandlerRegistration).resourceChain(false);
+    }
+
+    @Test
+    @DisplayName("addViewControllers should register /swagger-ui/ view controller")
+    void shouldRegisterSwaggerUiViewController() {
+        when(viewControllerRegistry.addViewController("/swagger-ui/"))
+                .thenReturn(viewControllerRegistration);
+
+        swaggerUiConfiguration.addViewControllers(viewControllerRegistry);
+
+        verify(viewControllerRegistry).addViewController("/swagger-ui/");
+    }
+
+    @Test
+    @DisplayName("addViewControllers should forward /swagger-ui/ to index.html")
+    void shouldForwardSwaggerUiToIndexHtml() {
+        when(viewControllerRegistry.addViewController("/swagger-ui/"))
+                .thenReturn(viewControllerRegistration);
+
+        swaggerUiConfiguration.addViewControllers(viewControllerRegistry);
+
+        verify(viewControllerRegistration).setViewName("forward:/swagger-ui/index.html");
+    }
+
+    @Test
+    @DisplayName("SwaggerUiConfiguration should implement WebMvcConfigurer")
+    void shouldImplementWebMvcConfigurer() {
+        assertInstanceOf(
+                org.springframework.web.servlet.config.annotation.WebMvcConfigurer.class,
+                swaggerUiConfiguration
+        );
     }
 }
 
 
-======================
-
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 package io.swagger.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.threetenbp.ThreeTenModule;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.threeten.bp.Instant;
 import org.threeten.bp.OffsetDateTime;
 import org.threeten.bp.ZonedDateTime;
 
-@Configuration
-public class JacksonConfiguration {
+import static org.junit.jupiter.api.Assertions.*;
 
-  @Bean
-  @ConditionalOnMissingBean(ThreeTenModule.class)
-  ThreeTenModule threeTenModule() {
-    ThreeTenModule module = new ThreeTenModule();
-    module.addDeserializer(Instant.class, CustomInstantDeserializer.INSTANT);
-    module.addDeserializer(OffsetDateTime.class, CustomInstantDeserializer.OFFSET_DATE_TIME);
-    module.addDeserializer(ZonedDateTime.class, CustomInstantDeserializer.ZONED_DATE_TIME);
-    return module;
-  }
+@DisplayName("JacksonConfiguration Tests")
+class JacksonConfigurationTest {
+
+    private JacksonConfiguration jacksonConfiguration;
+
+    @BeforeEach
+    void setUp() {
+        jacksonConfiguration = new JacksonConfiguration();
+    }
+
+    @Test
+    @DisplayName("threeTenModule() bean should not return null")
+    void threeTenModuleShouldNotBeNull() {
+        ThreeTenModule module = jacksonConfiguration.threeTenModule();
+        assertNotNull(module);
+    }
+
+    @Test
+    @DisplayName("threeTenModule() should return a ThreeTenModule instance")
+    void shouldReturnThreeTenModuleInstance() {
+        ThreeTenModule module = jacksonConfiguration.threeTenModule();
+        assertInstanceOf(ThreeTenModule.class, module);
+    }
+
+    @Test
+    @DisplayName("Module should register Instant deserializer — Instant string is parseable")
+    void moduleShouldRegisterInstantDeserializer() throws Exception {
+        ThreeTenModule module = jacksonConfiguration.threeTenModule();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(module);
+
+        String json = "\"2024-06-15T10:30:00Z\"";
+        Instant result = mapper.readValue(json, Instant.class);
+
+        assertNotNull(result);
+        assertEquals(Instant.parse("2024-06-15T10:30:00Z"), result);
+    }
+
+    @Test
+    @DisplayName("Module should register OffsetDateTime deserializer — OffsetDateTime string is parseable")
+    void moduleShouldRegisterOffsetDateTimeDeserializer() throws Exception {
+        ThreeTenModule module = jacksonConfiguration.threeTenModule();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(module);
+
+        String json = "\"2024-06-15T10:30:00+05:30\"";
+        OffsetDateTime result = mapper.readValue(json, OffsetDateTime.class);
+
+        assertNotNull(result);
+        assertEquals(OffsetDateTime.parse("2024-06-15T10:30:00+05:30"), result);
+    }
+
+    @Test
+    @DisplayName("Module should register ZonedDateTime deserializer — ZonedDateTime string is parseable")
+    void moduleShouldRegisterZonedDateTimeDeserializer() throws Exception {
+        ThreeTenModule module = jacksonConfiguration.threeTenModule();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(module);
+
+        String json = "\"2024-06-15T10:30:00+05:30[Asia/Kolkata]\"";
+        ZonedDateTime result = mapper.readValue(json, ZonedDateTime.class);
+
+        assertNotNull(result);
+        assertEquals("Asia/Kolkata", result.getZone().getId());
+    }
+
+    @Test
+    @DisplayName("threeTenModule() should return a new instance on each invocation")
+    void shouldReturnNewInstanceOnEachCall() {
+        ThreeTenModule first = jacksonConfiguration.threeTenModule();
+        ThreeTenModule second = jacksonConfiguration.threeTenModule();
+        assertNotSame(first, second);
+    }
+
+    @Test
+    @DisplayName("Registered Instant deserializer should be CustomInstantDeserializer.INSTANT")
+    void instantDeserializerShouldBeCustomInstantDeserializer() throws Exception {
+        ThreeTenModule module = jacksonConfiguration.threeTenModule();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(module);
+
+        // Verify the custom +0000 → Z normalization behaviour, which is unique
+        // to CustomInstantDeserializer (proving it — not the default — was registered).
+        String json = "\"2024-06-15T10:30:00+0000\"";
+        Instant result = mapper.readValue(json, Instant.class);
+        assertEquals(Instant.parse("2024-06-15T10:30:00Z"), result);
+    }
 }
 
 
-=======================
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 package io.swagger.configuration;
 
-import org.springframework.core.convert.converter.Converter;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.threeten.bp.LocalDateTime;
-import org.threeten.bp.format.DateTimeFormatter;
 
-public class LocalDateTimeConverter implements Converter<String, LocalDateTime> {
-    private final DateTimeFormatter formatter;
+import static org.junit.jupiter.api.Assertions.*;
 
-    public LocalDateTimeConverter(String dateFormat) {
-        this.formatter = DateTimeFormatter.ofPattern(dateFormat);
+@DisplayName("LocalDateTimeConverter Tests")
+class LocalDateTimeConverterTest {
+
+    // -------------------------------------------------------------------------
+    // Happy-path conversions
+    // -------------------------------------------------------------------------
+
+    @Nested
+    @DisplayName("Valid Conversions")
+    class ValidConversionTests {
+
+        @Test
+        @DisplayName("Should convert a standard ISO-like pattern yyyy-MM-dd HH:mm:ss")
+        void shouldConvertStandardPattern() {
+            LocalDateTimeConverter converter = new LocalDateTimeConverter("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime result = converter.convert("2024-06-15 10:30:45");
+            assertNotNull(result);
+            assertEquals(2024, result.getYear());
+            assertEquals(6, result.getMonthValue());
+            assertEquals(15, result.getDayOfMonth());
+            assertEquals(10, result.getHour());
+            assertEquals(30, result.getMinute());
+            assertEquals(45, result.getSecond());
+        }
+
+        @Test
+        @DisplayName("Should convert date-only pattern yyyy-MM-dd with zero time")
+        void shouldConvertDateOnlyPattern() {
+            LocalDateTimeConverter converter = new LocalDateTimeConverter("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime result = converter.convert("2024-01-01 00:00:00");
+            assertNotNull(result);
+            assertEquals(LocalDateTime.of(2024, 1, 1, 0, 0, 0), result);
+        }
+
+        @Test
+        @DisplayName("Should convert with slashed date pattern dd/MM/yyyy HH:mm")
+        void shouldConvertSlashedDatePattern() {
+            LocalDateTimeConverter converter = new LocalDateTimeConverter("dd/MM/yyyy HH:mm");
+            LocalDateTime result = converter.convert("15/06/2024 10:30");
+            assertNotNull(result);
+            assertEquals(2024, result.getYear());
+            assertEquals(6, result.getMonthValue());
+            assertEquals(15, result.getDayOfMonth());
+        }
+
+        @Test
+        @DisplayName("Should convert leap-day date correctly")
+        void shouldConvertLeapDayDate() {
+            LocalDateTimeConverter converter = new LocalDateTimeConverter("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime result = converter.convert("2024-02-29 12:00:00");
+            assertNotNull(result);
+            assertEquals(29, result.getDayOfMonth());
+            assertEquals(2, result.getMonthValue());
+        }
+
+        @Test
+        @DisplayName("Should convert end-of-day time boundary")
+        void shouldConvertEndOfDayBoundary() {
+            LocalDateTimeConverter converter = new LocalDateTimeConverter("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime result = converter.convert("2024-12-31 23:59:59");
+            assertNotNull(result);
+            assertEquals(23, result.getHour());
+            assertEquals(59, result.getMinute());
+            assertEquals(59, result.getSecond());
+        }
     }
 
-    @Override
-    public LocalDateTime convert(String source) {
-        if(source == null || source.isEmpty()) {
-            return null;
+    // -------------------------------------------------------------------------
+    // Null / empty input
+    // -------------------------------------------------------------------------
+
+    @Nested
+    @DisplayName("Null and Empty Input Handling")
+    class NullAndEmptyInputTests {
+
+        @Test
+        @DisplayName("Should return null when source is null")
+        void shouldReturnNullForNullInput() {
+            LocalDateTimeConverter converter = new LocalDateTimeConverter("yyyy-MM-dd HH:mm:ss");
+            assertNull(converter.convert(null));
         }
-        return LocalDateTime.parse(source, this.formatter);
+
+        @Test
+        @DisplayName("Should return null when source is empty string")
+        void shouldReturnNullForEmptyString() {
+            LocalDateTimeConverter converter = new LocalDateTimeConverter("yyyy-MM-dd HH:mm:ss");
+            assertNull(converter.convert(""));
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Invalid input
+    // -------------------------------------------------------------------------
+
+    @Nested
+    @DisplayName("Invalid Input Handling")
+    class InvalidInputTests {
+
+        @Test
+        @DisplayName("Should throw exception for wrong format")
+        void shouldThrowForWrongFormat() {
+            LocalDateTimeConverter converter = new LocalDateTimeConverter("yyyy-MM-dd HH:mm:ss");
+            assertThrows(Exception.class, () -> converter.convert("not-a-date"));
+        }
+
+        @Test
+        @DisplayName("Should throw exception for date-only string when time is required by pattern")
+        void shouldThrowForDateOnlyWhenTimeRequired() {
+            LocalDateTimeConverter converter = new LocalDateTimeConverter("yyyy-MM-dd HH:mm:ss");
+            assertThrows(Exception.class, () -> converter.convert("2024-06-15"));
+        }
+
+        @Test
+        @DisplayName("Should throw exception for invalid month value")
+        void shouldThrowForInvalidMonth() {
+            LocalDateTimeConverter converter = new LocalDateTimeConverter("yyyy-MM-dd HH:mm:ss");
+            assertThrows(Exception.class, () -> converter.convert("2024-13-01 10:00:00"));
+        }
     }
 }
 
 
-===========================
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 package io.swagger.configuration;
 
-import org.springframework.core.convert.converter.Converter;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.threeten.bp.LocalDate;
-import org.threeten.bp.format.DateTimeFormatter;
 
-public class LocalDateConverter implements Converter<String, LocalDate> {
-    private final DateTimeFormatter formatter;
+import static org.junit.jupiter.api.Assertions.*;
 
-    public LocalDateConverter(String dateFormat) {
-        this.formatter = DateTimeFormatter.ofPattern(dateFormat);
+@DisplayName("LocalDateConverter Tests")
+class LocalDateConverterTest {
+
+    // -------------------------------------------------------------------------
+    // Happy-path conversions
+    // -------------------------------------------------------------------------
+
+    @Nested
+    @DisplayName("Valid Conversions")
+    class ValidConversionTests {
+
+        @Test
+        @DisplayName("Should convert standard ISO date string yyyy-MM-dd")
+        void shouldConvertIsoDateString() {
+            LocalDateConverter converter = new LocalDateConverter("yyyy-MM-dd");
+            LocalDate result = converter.convert("2024-06-15");
+            assertNotNull(result);
+            assertEquals(LocalDate.of(2024, 6, 15), result);
+        }
+
+        @Test
+        @DisplayName("Should convert slashed date format dd/MM/yyyy")
+        void shouldConvertSlashedDateFormat() {
+            LocalDateConverter converter = new LocalDateConverter("dd/MM/yyyy");
+            LocalDate result = converter.convert("15/06/2024");
+            assertNotNull(result);
+            assertEquals(LocalDate.of(2024, 6, 15), result);
+        }
+
+        @Test
+        @DisplayName("Should convert MM-dd-yyyy US format")
+        void shouldConvertUsSeparatedFormat() {
+            LocalDateConverter converter = new LocalDateConverter("MM-dd-yyyy");
+            LocalDate result = converter.convert("06-15-2024");
+            assertNotNull(result);
+            assertEquals(LocalDate.of(2024, 6, 15), result);
+        }
+
+        @Test
+        @DisplayName("Should convert leap day February 29")
+        void shouldConvertLeapDay() {
+            LocalDateConverter converter = new LocalDateConverter("yyyy-MM-dd");
+            LocalDate result = converter.convert("2024-02-29");
+            assertNotNull(result);
+            assertEquals(29, result.getDayOfMonth());
+            assertEquals(2, result.getMonthValue());
+        }
+
+        @Test
+        @DisplayName("Should convert year boundary date December 31")
+        void shouldConvertYearBoundaryDate() {
+            LocalDateConverter converter = new LocalDateConverter("yyyy-MM-dd");
+            LocalDate result = converter.convert("2024-12-31");
+            assertNotNull(result);
+            assertEquals(LocalDate.of(2024, 12, 31), result);
+        }
+
+        @Test
+        @DisplayName("Should convert first day of year January 01")
+        void shouldConvertFirstDayOfYear() {
+            LocalDateConverter converter = new LocalDateConverter("yyyy-MM-dd");
+            LocalDate result = converter.convert("2024-01-01");
+            assertNotNull(result);
+            assertEquals(LocalDate.of(2024, 1, 1), result);
+        }
+
+        @Test
+        @DisplayName("Should convert date with short year pattern yy-MM-dd")
+        void shouldConvertShortYearPattern() {
+            LocalDateConverter converter = new LocalDateConverter("yy-MM-dd");
+            LocalDate result = converter.convert("24-06-15");
+            assertNotNull(result);
+            assertEquals(6, result.getMonthValue());
+            assertEquals(15, result.getDayOfMonth());
+        }
     }
 
-    @Override
-    public LocalDate convert(String source) {
-        if(source == null || source.isEmpty()) {
-            return null;
+    // -------------------------------------------------------------------------
+    // Null / empty input
+    // -------------------------------------------------------------------------
+
+    @Nested
+    @DisplayName("Null and Empty Input Handling")
+    class NullAndEmptyInputTests {
+
+        @Test
+        @DisplayName("Should return null when source is null")
+        void shouldReturnNullForNullInput() {
+            LocalDateConverter converter = new LocalDateConverter("yyyy-MM-dd");
+            assertNull(converter.convert(null));
         }
-        return LocalDate.parse(source, this.formatter);
+
+        @Test
+        @DisplayName("Should return null when source is empty string")
+        void shouldReturnNullForEmptyString() {
+            LocalDateConverter converter = new LocalDateConverter("yyyy-MM-dd");
+            assertNull(converter.convert(""));
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Invalid input
+    // -------------------------------------------------------------------------
+
+    @Nested
+    @DisplayName("Invalid Input Handling")
+    class InvalidInputTests {
+
+        @Test
+        @DisplayName("Should throw exception for completely invalid string")
+        void shouldThrowForInvalidString() {
+            LocalDateConverter converter = new LocalDateConverter("yyyy-MM-dd");
+            assertThrows(Exception.class, () -> converter.convert("not-a-date"));
+        }
+
+        @Test
+        @DisplayName("Should throw exception for wrong format pattern mismatch")
+        void shouldThrowForFormatMismatch() {
+            LocalDateConverter converter = new LocalDateConverter("yyyy-MM-dd");
+            assertThrows(Exception.class, () -> converter.convert("15/06/2024"));
+        }
+
+        @Test
+        @DisplayName("Should throw exception for invalid day value")
+        void shouldThrowForInvalidDay() {
+            LocalDateConverter converter = new LocalDateConverter("yyyy-MM-dd");
+            assertThrows(Exception.class, () -> converter.convert("2024-06-32"));
+        }
+
+        @Test
+        @DisplayName("Should throw exception for invalid month value")
+        void shouldThrowForInvalidMonth() {
+            LocalDateConverter converter = new LocalDateConverter("yyyy-MM-dd");
+            assertThrows(Exception.class, () -> converter.convert("2024-13-01"));
+        }
+
+        @Test
+        @DisplayName("Should throw exception for non-leap year February 29")
+        void shouldThrowForNonLeapYearFeb29() {
+            LocalDateConverter converter = new LocalDateConverter("yyyy-MM-dd");
+            assertThrows(Exception.class, () -> converter.convert("2023-02-29"));
+        }
     }
 }
 
 
-========================
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 package io.swagger.configuration;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-/**
- * Home redirection to swagger api documentation 
- */
-@Controller
-public class HomeController {
-    @RequestMapping(value = "/")
-    public String index() {
-        System.out.println("/swagger-ui/index.html");
-        return "redirect:/swagger-ui/";
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("HomeController Tests")
+class HomeControllerTest {
+
+    private HomeController homeController;
+    private MockMvc mockMvc;
+
+    @BeforeEach
+    void setUp() {
+        homeController = new HomeController();
+        mockMvc = MockMvcBuilders.standaloneSetup(homeController).build();
+    }
+
+    // -------------------------------------------------------------------------
+    // Unit-level: return value
+    // -------------------------------------------------------------------------
+
+    @Test
+    @DisplayName("index() should return redirect to /swagger-ui/")
+    void indexShouldReturnRedirectView() {
+        String result = homeController.index();
+        assertEquals("redirect:/swagger-ui/", result);
+    }
+
+    @Test
+    @DisplayName("index() should not return null")
+    void indexShouldNotReturnNull() {
+        assertNotNull(homeController.index());
+    }
+
+    @Test
+    @DisplayName("index() return value should start with 'redirect:'")
+    void indexReturnValueShouldStartWithRedirect() {
+        String result = homeController.index();
+        assertTrue(result.startsWith("redirect:"));
+    }
+
+    // -------------------------------------------------------------------------
+    // MockMvc-level: HTTP behaviour
+    // -------------------------------------------------------------------------
+
+    @Test
+    @DisplayName("GET / should return 3xx redirect response")
+    void getHomeShouldReturnRedirect() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    @DisplayName("GET / should redirect to /swagger-ui/")
+    void getHomeShouldRedirectToSwaggerUi() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(redirectedUrl("/swagger-ui/"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Type check
+    // -------------------------------------------------------------------------
+
+    @Test
+    @DisplayName("HomeController should be annotated as a Spring Controller")
+    void homeControllerShouldBeAnnotatedAsController() {
+        assertNotNull(HomeController.class.getAnnotation(
+                org.springframework.stereotype.Controller.class));
+    }
+
+    @Test
+    @DisplayName("index() method should have @RequestMapping for '/'")
+    void indexMethodShouldHaveRequestMapping() throws Exception {
+        var annotation = HomeController.class
+                .getMethod("index")
+                .getAnnotation(org.springframework.web.bind.annotation.RequestMapping.class);
+        assertNotNull(annotation);
+        assertArrayEquals(new String[]{"/"}, annotation.value());
     }
 }
-
 
 
 
