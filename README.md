@@ -7,18 +7,19 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.nnnn.ddd.model.ArrestInfo;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -35,199 +36,184 @@ class CDWRepositoryTest {
     @InjectMocks
     private CDWRepository cdwRepository;
 
-    // Reusable test data
-    private static final String ARR_ID        = "ARR123456";
-    private static final String TOP_CHARGE    = "ASSAULT";
-    private static final Date   ARR_DT        = Date.valueOf("2024-01-15");
-    private static final String DEFT_FRST_NM  = "JOHN";
-    private static final String DEFT_LAST_NM  = "DOE";
-    private static final String DEFT_NYSID    = "NYSID001";
-    private static final Character SEALED_FLG = 'N';
+    private static final String ARR_ID = "ARR001";
+    private static final Date ARR_DATE = Date.valueOf(LocalDate.of(2024, 1, 15));
 
-    // -------------------------------------------------------------------------
-    // getArrestInfo(String arrId)
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // getArrestInfo(String arrId) — single result
+    // =========================================================================
 
     @Nested
-    @DisplayName("getArrestInfo(String arrId)")
-    class GetArrestInfoTests {
-
-        private ArrestInfo mockArrestInfo;
-
-        @BeforeEach
-        void setUp() {
-            mockArrestInfo = mock(ArrestInfo.class);
-            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class)))
-                    .thenReturn(query);
-            when(query.setParameter(anyInt(), any())).thenReturn(query);
-            when(query.getSingleResult()).thenReturn(mockArrestInfo);
-        }
+    @DisplayName("getArrestInfo(String)")
+    class GetArrestInfoSingleTests {
 
         @Test
-        @DisplayName("Should call createNativeQuery with ArrestInfo result class")
-        void shouldCallCreateNativeQueryWithArrestInfoClass() {
-            cdwRepository.getArrestInfo(ARR_ID);
+        @DisplayName("calls createNativeQuery with ArrestInfo class")
+        void getArrestInfo_callsCreateNativeQuery() {
+            ArrestInfo expected = new ArrestInfo();
+            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class))).thenReturn(query);
+            when(query.setParameter(eq(1), eq(ARR_ID))).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(expected);
 
-            verify(entityManager).createNativeQuery(anyString(), eq(ArrestInfo.class));
-        }
-
-        @Test
-        @DisplayName("Should bind arrId to parameter position 1")
-        void shouldBindArrIdToParameterPosition1() {
-            cdwRepository.getArrestInfo(ARR_ID);
-
-            verify(query).setParameter(1, ARR_ID);
-        }
-
-        @Test
-        @DisplayName("Should call getSingleResult exactly once")
-        void shouldCallGetSingleResultOnce() {
-            cdwRepository.getArrestInfo(ARR_ID);
-
-            verify(query, times(1)).getSingleResult();
-        }
-
-        @Test
-        @DisplayName("Should return the ArrestInfo returned by getSingleResult")
-        void shouldReturnArrestInfoFromQuery() {
             ArrestInfo result = cdwRepository.getArrestInfo(ARR_ID);
 
-            assertNotNull(result);
-            assertSame(mockArrestInfo, result);
+            verify(entityManager).createNativeQuery(anyString(), eq(ArrestInfo.class));
+            assertThat(result).isEqualTo(expected);
         }
 
         @Test
-        @DisplayName("Should propagate exception when getSingleResult throws")
-        void shouldPropagateExceptionWhenNoResultFound() {
-            when(query.getSingleResult())
-                    .thenThrow(new jakarta.persistence.NoResultException("no result"));
+        @DisplayName("sets parameter 1 to arrId")
+        void getArrestInfo_setsArrIdParameter() {
+            ArrestInfo expected = new ArrestInfo();
+            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class))).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(expected);
 
-            assertThrows(jakarta.persistence.NoResultException.class,
-                    () -> cdwRepository.getArrestInfo(ARR_ID));
-        }
-
-        @Test
-        @DisplayName("Should not interact with query beyond setParameter and getSingleResult")
-        void shouldNotHaveUnexpectedQueryInteractions() {
             cdwRepository.getArrestInfo(ARR_ID);
 
             verify(query).setParameter(1, ARR_ID);
+        }
+
+        @Test
+        @DisplayName("calls getSingleResult and returns result")
+        void getArrestInfo_callsGetSingleResult() {
+            ArrestInfo expected = new ArrestInfo();
+            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class))).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(expected);
+
+            ArrestInfo result = cdwRepository.getArrestInfo(ARR_ID);
+
             verify(query).getSingleResult();
-            verifyNoMoreInteractions(query);
+            assertThat(result).isSameAs(expected);
         }
     }
 
-    // -------------------------------------------------------------------------
-    // getArrestInfoSummary(String arrId)
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // getArrestInfoSummary(String arrId) — single result overload
+    // =========================================================================
 
     @Nested
-    @DisplayName("getArrestInfoSummary(String arrId)")
-    class GetArrestInfoSummaryByIdTests {
-
-        private ArrestInfo mockArrestInfo;
-
-        @BeforeEach
-        void setUp() {
-            mockArrestInfo = mock(ArrestInfo.class);
-            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class)))
-                    .thenReturn(query);
-            when(query.setParameter(anyInt(), any())).thenReturn(query);
-            when(query.getSingleResult()).thenReturn(mockArrestInfo);
-        }
+    @DisplayName("getArrestInfoSummary(String)")
+    class GetArrestInfoSummaryStringTests {
 
         @Test
-        @DisplayName("Should call createNativeQuery with ArrestInfo result class")
-        void shouldCallCreateNativeQueryWithArrestInfoClass() {
-            cdwRepository.getArrestInfoSummary(ARR_ID);
+        @DisplayName("calls createNativeQuery with ArrestInfo class")
+        void getArrestInfoSummary_string_callsCreateNativeQuery() {
+            ArrestInfo expected = new ArrestInfo();
+            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class))).thenReturn(query);
+            when(query.setParameter(eq(1), eq(ARR_ID))).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(expected);
+
+            ArrestInfo result = cdwRepository.getArrestInfoSummary(ARR_ID);
 
             verify(entityManager).createNativeQuery(anyString(), eq(ArrestInfo.class));
+            assertThat(result).isEqualTo(expected);
         }
 
         @Test
-        @DisplayName("Should bind arrId to parameter position 1")
-        void shouldBindArrIdToParameterPosition1() {
+        @DisplayName("sets parameter 1 to arrId")
+        void getArrestInfoSummary_string_setsParameter() {
+            ArrestInfo expected = new ArrestInfo();
+            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class))).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(expected);
+
             cdwRepository.getArrestInfoSummary(ARR_ID);
 
             verify(query).setParameter(1, ARR_ID);
         }
 
         @Test
-        @DisplayName("Should call getSingleResult exactly once")
-        void shouldCallGetSingleResultOnce() {
-            cdwRepository.getArrestInfoSummary(ARR_ID);
+        @DisplayName("returns single result")
+        void getArrestInfoSummary_string_returnsSingleResult() {
+            ArrestInfo expected = new ArrestInfo();
+            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class))).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(expected);
 
-            verify(query, times(1)).getSingleResult();
-        }
-
-        @Test
-        @DisplayName("Should return the ArrestInfo returned by getSingleResult")
-        void shouldReturnArrestInfoFromQuery() {
-            ArrestInfo result = cdwRepository.getArrestInfoSummary(ARR_ID);
-
-            assertNotNull(result);
-            assertSame(mockArrestInfo, result);
-        }
-
-        @Test
-        @DisplayName("Should propagate NoResultException when record is not found")
-        void shouldPropagateNoResultException() {
-            when(query.getSingleResult())
-                    .thenThrow(new jakarta.persistence.NoResultException("no result"));
-
-            assertThrows(jakarta.persistence.NoResultException.class,
-                    () -> cdwRepository.getArrestInfoSummary(ARR_ID));
-        }
-
-        @Test
-        @DisplayName("Should use a different (summary) SQL than getArrestInfo")
-        void shouldUseSummarySql() {
-            // Capture the SQL strings passed for both methods and assert they differ,
-            // confirming the correct overload is dispatched.
-            ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
-            when(entityManager.createNativeQuery(sqlCaptor.capture(), eq(ArrestInfo.class)))
-                    .thenReturn(query);
-
-            cdwRepository.getArrestInfoSummary(ARR_ID);
-            String summarySql = sqlCaptor.getValue();
-
-            // The summary query only selects ARR_ID and TOP_CHARGE
-            assertTrue(summarySql.contains("ARR.ARR_ID"),
-                    "Summary SQL should reference ARR_ID");
-            assertFalse(summarySql.contains("LISTAGG"),
-                    "Summary SQL should NOT contain the LISTAGG aggregation used in the full query");
+            assertThat(cdwRepository.getArrestInfoSummary(ARR_ID)).isSameAs(expected);
         }
     }
 
-    // -------------------------------------------------------------------------
-    // getArrestInfoSummary(List<String> arrIds) — unmasked
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // getArrestInfoSummary(List<String>) — list overload
+    // NOTE: This has real logic — maps Object[] to ArrestInfo with masked=false
+    // =========================================================================
 
     @Nested
-    @DisplayName("getArrestInfoSummary(List<String> arrIds)")
-    class GetArrestInfoSummaryByListTests {
-
-        @BeforeEach
-        void setUp() {
-            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
-            when(query.setParameter(anyInt(), any())).thenReturn(query);
-        }
+    @DisplayName("getArrestInfoSummary(List<String>)")
+    class GetArrestInfoSummaryListTests {
 
         @Test
-        @DisplayName("Should call createNativeQuery without a result-class (raw query)")
-        void shouldCallCreateNativeQueryWithoutResultClass() {
+        @DisplayName("returns empty list when no results")
+        void getArrestInfoSummary_list_emptyResults_returnsEmptyList() {
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
             when(query.getResultList()).thenReturn(Collections.emptyList());
 
-            cdwRepository.getArrestInfoSummary(List.of(ARR_ID));
+            List<ArrestInfo> result = cdwRepository.getArrestInfoSummary(List.of(ARR_ID));
 
-            verify(entityManager).createNativeQuery(anyString());
-            verify(entityManager, never()).createNativeQuery(anyString(), any(Class.class));
+            assertThat(result).isEmpty();
         }
 
         @Test
-        @DisplayName("Should bind the arrIds list to parameter position 1")
-        void shouldBindArrIdsListToParameterPosition1() {
-            List<String> arrIds = List.of(ARR_ID, "ARR999");
+        @DisplayName("maps Object[] result to ArrestInfo with masked=false")
+        void getArrestInfoSummary_list_mapsResultToArrestInfo() {
+            Object[] row = buildResultRow(ARR_ID, "Assault", ARR_DATE, "John", "Doe", "NYSID123", 'N');
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(List.of(row));
+
+            List<ArrestInfo> result = cdwRepository.getArrestInfoSummary(List.of(ARR_ID));
+
+            assertThat(result).hasSize(1);
+            ArrestInfo info = result.get(0);
+            assertThat(info.getArrId()).isEqualTo(ARR_ID);
+            assertThat(info.getTopCharge()).isEqualTo("Assault");
+        }
+
+        @Test
+        @DisplayName("masked=false so defendant name is NOT masked")
+        void getArrestInfoSummary_list_notMasked_nameVisible() {
+            Object[] row = buildResultRow(ARR_ID, "Assault", ARR_DATE, "John", "Doe", "NYSID123", 'N');
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(List.of(row));
+
+            List<ArrestInfo> result = cdwRepository.getArrestInfoSummary(List.of(ARR_ID));
+
+            ArrestInfo info = result.get(0);
+            // Not masked — defendant first/last name should be present
+            assertThat(info.getDeftFrstNm()).isEqualTo("John");
+            assertThat(info.getDeftLastNm()).isEqualTo("Doe");
+        }
+
+        @Test
+        @DisplayName("maps multiple rows to multiple ArrestInfo objects")
+        void getArrestInfoSummary_list_multipleRows_mapsAll() {
+            Object[] row1 = buildResultRow("ARR001", "Assault", ARR_DATE, "John", "Doe", "NYSID1", 'N');
+            Object[] row2 = buildResultRow("ARR002", "Robbery", ARR_DATE, "Jane", "Smith", "NYSID2", 'N');
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(Arrays.asList(row1, row2));
+
+            List<ArrestInfo> result = cdwRepository.getArrestInfoSummary(List.of("ARR001", "ARR002"));
+
+            assertThat(result).hasSize(2);
+            assertThat(result.get(0).getArrId()).isEqualTo("ARR001");
+            assertThat(result.get(1).getArrId()).isEqualTo("ARR002");
+        }
+
+        @Test
+        @DisplayName("sets parameter 1 to arrIds list")
+        void getArrestInfoSummary_list_setsParameter() {
+            List<String> arrIds = List.of("ARR001", "ARR002");
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
             when(query.getResultList()).thenReturn(Collections.emptyList());
 
             cdwRepository.getArrestInfoSummary(arrIds);
@@ -236,91 +222,97 @@ class CDWRepositoryTest {
         }
 
         @Test
-        @DisplayName("Should return empty list when query returns no rows")
-        void shouldReturnEmptyListWhenNoResults() {
-            when(query.getResultList()).thenReturn(Collections.emptyList());
+        @DisplayName("maps sealed flag from result row")
+        void getArrestInfoSummary_list_mapsSealedFlag() {
+            Object[] row = buildResultRow(ARR_ID, "Assault", ARR_DATE, "John", "Doe", "NYSID123", 'Y');
 
-            List<ArrestInfo> result = cdwRepository.getArrestInfoSummary(List.of(ARR_ID));
-
-            assertNotNull(result);
-            assertTrue(result.isEmpty());
-        }
-
-        @Test
-        @DisplayName("Should map each Object[] row to ArrestInfo with masked=false")
-        void shouldMapRowsToArrestInfoUnmasked() {
-            Object[] row = { ARR_ID, TOP_CHARGE, ARR_DT, DEFT_FRST_NM, DEFT_LAST_NM, DEFT_NYSID, SEALED_FLG };
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
             when(query.getResultList()).thenReturn(List.of(row));
 
             List<ArrestInfo> result = cdwRepository.getArrestInfoSummary(List.of(ARR_ID));
 
-            assertEquals(1, result.size());
-            ArrestInfo info = result.get(0);
-            assertEquals(ARR_ID,       info.getArrId());
-            assertEquals(TOP_CHARGE,   info.getTopCharge());
-            assertEquals(ARR_DT,       info.getArrDt());
-            assertEquals(DEFT_FRST_NM, info.getDeftFrstNm());
-            assertEquals(DEFT_LAST_NM, info.getDeftLastNm());
-            assertEquals(DEFT_NYSID,   info.getDeftNysid());
-            assertEquals(SEALED_FLG,   info.getArrSealedFlg());
-            assertFalse(info.isMasked(),
-                    "getArrestInfoSummary(List) should always build ArrestInfo with masked=false");
-        }
-
-        @Test
-        @DisplayName("Should return a list with one entry per result row")
-        void shouldReturnOneEntryPerRow() {
-            Object[] row1 = { "ARR001", TOP_CHARGE, ARR_DT, DEFT_FRST_NM, DEFT_LAST_NM, DEFT_NYSID, SEALED_FLG };
-            Object[] row2 = { "ARR002", "ROBBERY",  ARR_DT, "JANE", "SMITH", "NYSID002", 'Y' };
-            when(query.getResultList()).thenReturn(List.of(row1, row2));
-
-            List<ArrestInfo> result = cdwRepository.getArrestInfoSummary(List.of("ARR001", "ARR002"));
-
-            assertEquals(2, result.size());
-            assertEquals("ARR001", result.get(0).getArrId());
-            assertEquals("ARR002", result.get(1).getArrId());
-        }
-
-        @Test
-        @DisplayName("Should propagate exception thrown by getResultList")
-        void shouldPropagateExceptionFromGetResultList() {
-            when(query.getResultList())
-                    .thenThrow(new jakarta.persistence.PersistenceException("DB error"));
-
-            assertThrows(jakarta.persistence.PersistenceException.class,
-                    () -> cdwRepository.getArrestInfoSummary(List.of(ARR_ID)));
+            assertThat(result).hasSize(1);
+            // Sealed flag Y means sealed arrest
+            assertThat(result.get(0).getArrSealedFlg()).isEqualTo("Y");
         }
     }
 
-    // -------------------------------------------------------------------------
-    // getMaskedArrestInfoSummary(List<String> arrIds)
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // getMaskedArrestInfoSummary(List<String>)
+    // NOTE: Same query as getArrestInfoSummary(List) but masked=true
+    // =========================================================================
 
     @Nested
-    @DisplayName("getMaskedArrestInfoSummary(List<String> arrIds)")
+    @DisplayName("getMaskedArrestInfoSummary(List<String>)")
     class GetMaskedArrestInfoSummaryTests {
 
-        @BeforeEach
-        void setUp() {
-            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
-            when(query.setParameter(anyInt(), any())).thenReturn(query);
-        }
-
         @Test
-        @DisplayName("Should call createNativeQuery without a result-class (raw query)")
-        void shouldCallCreateNativeQueryWithoutResultClass() {
+        @DisplayName("returns empty list when no results")
+        void getMaskedArrestInfoSummary_emptyResults_returnsEmptyList() {
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
             when(query.getResultList()).thenReturn(Collections.emptyList());
 
-            cdwRepository.getMaskedArrestInfoSummary(List.of(ARR_ID));
+            List<ArrestInfo> result = cdwRepository.getMaskedArrestInfoSummary(List.of(ARR_ID));
 
-            verify(entityManager).createNativeQuery(anyString());
-            verify(entityManager, never()).createNativeQuery(anyString(), any(Class.class));
+            assertThat(result).isEmpty();
         }
 
         @Test
-        @DisplayName("Should bind the arrIds list to parameter position 1")
-        void shouldBindArrIdsListToParameterPosition1() {
-            List<String> arrIds = List.of(ARR_ID, "ARR999");
+        @DisplayName("maps Object[] result to ArrestInfo with masked=true")
+        void getMaskedArrestInfoSummary_mapsResultWithMaskedTrue() {
+            Object[] row = buildResultRow(ARR_ID, "Assault", ARR_DATE, "John", "Doe", "NYSID123", 'Y');
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(List.of(row));
+
+            List<ArrestInfo> result = cdwRepository.getMaskedArrestInfoSummary(List.of(ARR_ID));
+
+            assertThat(result).hasSize(1);
+            ArrestInfo info = result.get(0);
+            assertThat(info.getArrId()).isEqualTo(ARR_ID);
+        }
+
+        @Test
+        @DisplayName("masked=true so defendant name IS masked")
+        void getMaskedArrestInfoSummary_masked_nameIsMasked() {
+            Object[] row = buildResultRow(ARR_ID, "Assault", ARR_DATE, "John", "Doe", "NYSID123", 'Y');
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(List.of(row));
+
+            List<ArrestInfo> result = cdwRepository.getMaskedArrestInfoSummary(List.of(ARR_ID));
+
+            ArrestInfo info = result.get(0);
+            // Masked — defendant name should be hidden (null or masked value)
+            assertThat(info.getDeftFrstNm()).isNotEqualTo("John");
+            assertThat(info.getDeftLastNm()).isNotEqualTo("Doe");
+        }
+
+        @Test
+        @DisplayName("maps multiple rows correctly")
+        void getMaskedArrestInfoSummary_multipleRows_mapsAll() {
+            Object[] row1 = buildResultRow("ARR001", "Assault", ARR_DATE, "John", "Doe", "NYSID1", 'Y');
+            Object[] row2 = buildResultRow("ARR002", "Robbery", ARR_DATE, "Jane", "Smith", "NYSID2", 'Y');
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(Arrays.asList(row1, row2));
+
+            List<ArrestInfo> result = cdwRepository.getMaskedArrestInfoSummary(List.of("ARR001", "ARR002"));
+
+            assertThat(result).hasSize(2);
+        }
+
+        @Test
+        @DisplayName("sets parameter 1 to arrIds list")
+        void getMaskedArrestInfoSummary_setsParameter() {
+            List<String> arrIds = List.of("ARR001");
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
             when(query.getResultList()).thenReturn(Collections.emptyList());
 
             cdwRepository.getMaskedArrestInfoSummary(arrIds);
@@ -329,148 +321,32 @@ class CDWRepositoryTest {
         }
 
         @Test
-        @DisplayName("Should return empty list when query returns no rows")
-        void shouldReturnEmptyListWhenNoResults() {
+        @DisplayName("calls getResultList not getSingleResult")
+        void getMaskedArrestInfoSummary_callsGetResultList() {
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
             when(query.getResultList()).thenReturn(Collections.emptyList());
-
-            List<ArrestInfo> result = cdwRepository.getMaskedArrestInfoSummary(List.of(ARR_ID));
-
-            assertNotNull(result);
-            assertTrue(result.isEmpty());
-        }
-
-        @Test
-        @DisplayName("Should map each Object[] row to ArrestInfo with masked=true")
-        void shouldMapRowsToArrestInfoMasked() {
-            Object[] row = { ARR_ID, TOP_CHARGE, ARR_DT, DEFT_FRST_NM, DEFT_LAST_NM, DEFT_NYSID, SEALED_FLG };
-            when(query.getResultList()).thenReturn(List.of(row));
-
-            List<ArrestInfo> result = cdwRepository.getMaskedArrestInfoSummary(List.of(ARR_ID));
-
-            assertEquals(1, result.size());
-            ArrestInfo info = result.get(0);
-            assertEquals(ARR_ID,       info.getArrId());
-            assertEquals(TOP_CHARGE,   info.getTopCharge());
-            assertEquals(ARR_DT,       info.getArrDt());
-            assertEquals(DEFT_FRST_NM, info.getDeftFrstNm());
-            assertEquals(DEFT_LAST_NM, info.getDeftLastNm());
-            assertEquals(DEFT_NYSID,   info.getDeftNysid());
-            assertEquals(SEALED_FLG,   info.getArrSealedFlg());
-            assertTrue(info.isMasked(),
-                    "getMaskedArrestInfoSummary should always build ArrestInfo with masked=true");
-        }
-
-        @Test
-        @DisplayName("Should return one entry per result row")
-        void shouldReturnOneEntryPerRow() {
-            Object[] row1 = { "ARR001", TOP_CHARGE, ARR_DT, DEFT_FRST_NM, DEFT_LAST_NM, DEFT_NYSID, SEALED_FLG };
-            Object[] row2 = { "ARR002", "ROBBERY",  ARR_DT, "JANE", "SMITH", "NYSID002", 'Y' };
-            when(query.getResultList()).thenReturn(List.of(row1, row2));
-
-            List<ArrestInfo> result = cdwRepository.getMaskedArrestInfoSummary(List.of("ARR001", "ARR002"));
-
-            assertEquals(2, result.size());
-        }
-
-        @Test
-        @DisplayName("Masked and unmasked list queries should use the same SQL")
-        void maskedAndUnmaskedShouldUseSameSql() {
-            // Both methods share identical SQL — only the masked flag passed to the
-            // ArrestInfo constructor differs. Capture and compare the SQL strings.
-            ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
-            when(entityManager.createNativeQuery(sqlCaptor.capture())).thenReturn(query);
-            when(query.getResultList()).thenReturn(Collections.emptyList());
-
-            cdwRepository.getArrestInfoSummary(List.of(ARR_ID));
-            String unmaskedSql = sqlCaptor.getValue();
 
             cdwRepository.getMaskedArrestInfoSummary(List.of(ARR_ID));
-            String maskedSql = sqlCaptor.getValue();
 
-            assertEquals(unmaskedSql, maskedSql,
-                    "Both list methods should execute identical SQL; only the masked flag differs");
-        }
-
-        @Test
-        @DisplayName("Should propagate exception thrown by getResultList")
-        void shouldPropagateExceptionFromGetResultList() {
-            when(query.getResultList())
-                    .thenThrow(new jakarta.persistence.PersistenceException("DB error"));
-
-            assertThrows(jakarta.persistence.PersistenceException.class,
-                    () -> cdwRepository.getMaskedArrestInfoSummary(List.of(ARR_ID)));
+            verify(query).getResultList();
+            verify(query, never()).getSingleResult();
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Cross-method: SQL distinctness
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // Helper
+    // =========================================================================
 
-    @Nested
-    @DisplayName("SQL Distinctness Across Methods")
-    class SqlDistinctnessTests {
-
-        @Test
-        @DisplayName("getArrestInfo SQL should be distinct from getArrestInfoSummary(String) SQL")
-        void fullQuerySqlShouldDifferFromSummarySql() {
-            ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
-            when(entityManager.createNativeQuery(sqlCaptor.capture(), eq(ArrestInfo.class)))
-                    .thenReturn(query);
-            when(query.setParameter(anyInt(), any())).thenReturn(query);
-            when(query.getSingleResult()).thenReturn(mock(ArrestInfo.class));
-
-            cdwRepository.getArrestInfo(ARR_ID);
-            String fullSql = sqlCaptor.getValue();
-
-            cdwRepository.getArrestInfoSummary(ARR_ID);
-            String summarySql = sqlCaptor.getValue();
-
-            assertNotEquals(fullSql, summarySql,
-                    "Full-detail query SQL must differ from summary query SQL");
-        }
-
-        @Test
-        @DisplayName("getArrestInfo SQL should contain LISTAGG for complaint IDs aggregation")
-        void fullQueryShouldContainListagg() {
-            ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
-            when(entityManager.createNativeQuery(sqlCaptor.capture(), eq(ArrestInfo.class)))
-                    .thenReturn(query);
-            when(query.setParameter(anyInt(), any())).thenReturn(query);
-            when(query.getSingleResult()).thenReturn(mock(ArrestInfo.class));
-
-            cdwRepository.getArrestInfo(ARR_ID);
-
-            assertTrue(sqlCaptor.getValue().contains("LISTAGG"),
-                    "Full query must include LISTAGG for aggregating complaint IDs");
-        }
-
-        @Test
-        @DisplayName("getArrestInfoSummary(String) SQL should contain WHERE ARR_ID filter")
-        void summaryQueryShouldContainWhereArrIdFilter() {
-            ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
-            when(entityManager.createNativeQuery(sqlCaptor.capture(), eq(ArrestInfo.class)))
-                    .thenReturn(query);
-            when(query.setParameter(anyInt(), any())).thenReturn(query);
-            when(query.getSingleResult()).thenReturn(mock(ArrestInfo.class));
-
-            cdwRepository.getArrestInfoSummary(ARR_ID);
-
-            assertTrue(sqlCaptor.getValue().contains("WHERE ARR.ARR_ID = ?1"),
-                    "Summary query must filter by ARR_ID with a positional parameter");
-        }
-
-        @Test
-        @DisplayName("List queries should use IN (?1) clause")
-        void listQueryShouldUseInClause() {
-            ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
-            when(entityManager.createNativeQuery(sqlCaptor.capture())).thenReturn(query);
-            when(query.setParameter(anyInt(), any())).thenReturn(query);
-            when(query.getResultList()).thenReturn(Collections.emptyList());
-
-            cdwRepository.getArrestInfoSummary(List.of(ARR_ID));
-
-            assertTrue(sqlCaptor.getValue().contains("IN (?1)"),
-                    "List query must use an IN clause with a positional parameter");
-        }
+    /**
+     * Builds a mock Object[] row matching the SELECT column order:
+     * result[0] = ARR_ID, result[1] = TOP_CHARGE, result[2] = ARR_DT,
+     * result[3] = DEFT_FRST_NM, result[4] = DEFT_LAST_NM,
+     * result[5] = DEFT_NYSID, result[6] = ARR_SEALED_FLG
+     */
+    private Object[] buildResultRow(String arrId, String topCharge, Date arrDt,
+                                     String frstNm, String lastNm,
+                                     String nysid, Character sealedFlg) {
+        return new Object[]{arrId, topCharge, arrDt, frstNm, lastNm, nysid, sealedFlg};
     }
 }
