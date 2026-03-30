@@ -1,29 +1,17 @@
-// In CaseServiceControllerTest.java
-
-@Test
-@WithMockUser
-void deleteCaseUploadById_success_returns200() throws Exception {
-    doNothing().when(caseService).deleteFile(100, 1);
-
-    mockMvc.perform(delete("/case/100/upload/1")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-}
-
-@Test
-@WithMockUser
-void deleteCaseUploadById_noAcceptHeader_returns501() throws Exception {
-    mockMvc.perform(delete("/case/100/upload/1"))
-            .andExpect(status().isNotImplemented());
-}
-
-@Test
-@WithMockUser
-void deleteCaseUploadById_serviceThrowsException_returns500() throws Exception {
-    doThrow(new RuntimeException("unexpected error"))
-            .when(caseService).deleteFile(100, 1);
-
-    mockMvc.perform(delete("/case/100/upload/1")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isInternalServerError());
-}
+[ERROR] Errors: 
+[ERROR]   EmailServiceTest.sendOverdueEmail_comingDueCases_bodyContainsComingDueInfo:396 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_comingDueOnly_sendsEmail:283 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_emailBody_containsOverdueCaseInfo:317 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_localProfile_logsInsteadOfSending:122 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_multipleOverdueCases_usesPlural:342 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_multipleUsers_eachGetOwnEmail:427 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_nonLocalProfile_sendsEmailToUser:142 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_nonProdProfile_usesNonProdSubject:244 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_prodProfile_usesProdSubject:226 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_regularUser_bodyContainsRankAndLastName:359 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_regularUser_emailHasCc:161 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_testUserTSG_emailGoesToSupportOnly:180 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_testUserV_emailGoesToSupportOnly:204 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_testUser_bodyDoesNotContainRankName:378 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[ERROR]   EmailServiceTest.sendOverdueEmail_userInBothMaps_sendsOnlyOneEmail:298 » NullPointer Cannot invoke "org.nnnn.ddd.entity.StatusList.getStatusDesc()" because the return value of "org.nnnn.ddd.entity.dddCase.getStatus()" is null
+[INFO] 
