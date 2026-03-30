@@ -1,288 +1,549 @@
 package org.nnnn.ddd.model;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
+/**
+ * Item
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-10T13:32:19.578-05:00")
 
-@DisplayName("Error Model Tests")
-class ErrorModelTest {
 
-    // =========================================================================
-    // Default constructor
-    // =========================================================================
+public class Item   {
+  @JsonProperty("id")
+  private Integer id = null;
 
-    @Test
-    @DisplayName("default constructor creates instance with null fields")
-    void defaultConstructor_createsInstanceWithNullFields() {
-        Error e = new Error();
-        assertThat(e).isNotNull();
-        assertThat(e.getCode()).isNull();
-        assertThat(e.getMessage()).isNull();
+  @JsonProperty("itemDesc")
+  private String itemDesc = null;
+
+  @JsonProperty("inactiveFlg")
+  private Integer inactiveFlg = null;
+
+  public Item(Integer id, String itemDesc, Integer inactiveFlg) {
+    this.id = id;
+    this.itemDesc = itemDesc;
+    this.inactiveFlg = inactiveFlg;
+  }
+
+  public Item id(Integer id) {
+    this.id = id;
+    return this;
+  }
+
+  /**
+   * Get id
+   * @return id
+   **/
+  @Schema(example = "10", description = "")
+  
+    public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public Item itemDesc(String itemDesc) {
+    this.itemDesc = itemDesc;
+    return this;
+  }
+
+  /**
+   * Get itemDesc
+   * @return itemDesc
+   **/
+  @Schema(example = "ECMS", description = "")
+  
+    public String getItemDesc() {
+    return itemDesc;
+  }
+
+  public void setItemDesc(String itemDesc) {
+    this.itemDesc = itemDesc;
+  }
+
+  public Item inactiveFlg(Integer inactiveFlg) {
+    this.inactiveFlg = inactiveFlg;
+    return this;
+  }
+
+  /**
+   * Get inactiveFlg
+   * @return inactiveFlg
+   **/
+  @Schema(description = "")
+  
+    public Integer getInactiveFlg() {
+    return inactiveFlg;
+  }
+
+  public void setInactiveFlg(Integer inactiveFlg) {
+    this.inactiveFlg = inactiveFlg;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
     }
-
-    // =========================================================================
-    // Getters and Setters
-    // =========================================================================
-
-    @Nested
-    @DisplayName("Getters and Setters")
-    class GettersSettersTests {
-
-        @Test
-        @DisplayName("code getter and setter")
-        void code_getterAndSetter() {
-            Error e = new Error();
-            e.setCode("1001");
-            assertThat(e.getCode()).isEqualTo("1001");
-        }
-
-        @Test
-        @DisplayName("message getter and setter")
-        void message_getterAndSetter() {
-            Error e = new Error();
-            e.setMessage("Case not found");
-            assertThat(e.getMessage()).isEqualTo("Case not found");
-        }
-
-        @Test
-        @DisplayName("code setter overwrites previous value")
-        void code_setterOverwritesPrevious() {
-            Error e = new Error();
-            e.setCode("1001");
-            e.setCode("1002");
-            assertThat(e.getCode()).isEqualTo("1002");
-        }
-
-        @Test
-        @DisplayName("message setter overwrites previous value")
-        void message_setterOverwritesPrevious() {
-            Error e = new Error();
-            e.setMessage("First message");
-            e.setMessage("Second message");
-            assertThat(e.getMessage()).isEqualTo("Second message");
-        }
-
-        @Test
-        @DisplayName("code setter accepts null")
-        void code_setterAcceptsNull() {
-            Error e = new Error();
-            e.setCode("1001");
-            e.setCode(null);
-            assertThat(e.getCode()).isNull();
-        }
-
-        @Test
-        @DisplayName("message setter accepts null")
-        void message_setterAcceptsNull() {
-            Error e = new Error();
-            e.setMessage("some message");
-            e.setMessage(null);
-            assertThat(e.getMessage()).isNull();
-        }
-
-        @Test
-        @DisplayName("both fields set independently")
-        void bothFields_setIndependently() {
-            Error e = new Error();
-            e.setCode("1004");
-            e.setMessage("Sealed access denied");
-            assertThat(e.getCode()).isEqualTo("1004");
-            assertThat(e.getMessage()).isEqualTo("Sealed access denied");
-        }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
+    Item item = (Item) o;
+    return Objects.equals(this.id, item.id) &&
+        Objects.equals(this.itemDesc, item.itemDesc) &&
+        Objects.equals(this.inactiveFlg, item.inactiveFlg);
+  }
 
-    // =========================================================================
-    // Fluent Builder Methods
-    // =========================================================================
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, itemDesc, inactiveFlg);
+  }
 
-    @Nested
-    @DisplayName("Fluent Builder Methods")
-    class FluentBuilderTests {
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class Item {\n");
+    
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    itemDesc: ").append(toIndentedString(itemDesc)).append("\n");
+    sb.append("    inactiveFlg: ").append(toIndentedString(inactiveFlg)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
 
-        @Test
-        @DisplayName("fluent code returns same instance")
-        void fluent_code() {
-            Error e = new Error();
-            assertThat(e.code("1001")).isSameAs(e);
-            assertThat(e.getCode()).isEqualTo("1001");
-        }
-
-        @Test
-        @DisplayName("fluent message returns same instance")
-        void fluent_message() {
-            Error e = new Error();
-            assertThat(e.message("Case not found")).isSameAs(e);
-            assertThat(e.getMessage()).isEqualTo("Case not found");
-        }
-
-        @Test
-        @DisplayName("fluent chaining works")
-        void fluent_chaining() {
-            Error e = new Error()
-                    .code("1002")
-                    .message("Sealed access denied");
-            assertThat(e.getCode()).isEqualTo("1002");
-            assertThat(e.getMessage()).isEqualTo("Sealed access denied");
-        }
-
-        @Test
-        @DisplayName("fluent chaining with all error codes")
-        void fluent_chainingWithErrorCodes() {
-            Error sealed = new Error().code("1002").message("SEALED_ACCESS_PERM");
-            Error caseAccess = new Error().code("1004").message("CASE_ACCESS_PERM");
-            Error notFound = new Error().code("1006").message("ARR_NOT_FOUND");
-
-            assertThat(sealed.getCode()).isEqualTo("1002");
-            assertThat(caseAccess.getCode()).isEqualTo("1004");
-            assertThat(notFound.getCode()).isEqualTo("1006");
-        }
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
     }
-
-    // =========================================================================
-    // equals() and hashCode()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("equals() and hashCode()")
-    class EqualsHashCodeTests {
-
-        @Test
-        @DisplayName("same fields are equal")
-        void equals_sameFields_returnsTrue() {
-            Error a = new Error().code("1001").message("Not found");
-            Error b = new Error().code("1001").message("Not found");
-            assertThat(a).isEqualTo(b);
-        }
-
-        @Test
-        @DisplayName("different code not equal")
-        void equals_differentCode_returnsFalse() {
-            Error a = new Error().code("1001").message("Not found");
-            Error b = new Error().code("1002").message("Not found");
-            assertThat(a).isNotEqualTo(b);
-        }
-
-        @Test
-        @DisplayName("different message not equal")
-        void equals_differentMessage_returnsFalse() {
-            Error a = new Error().code("1001").message("Not found");
-            Error b = new Error().code("1001").message("Access denied");
-            assertThat(a).isNotEqualTo(b);
-        }
-
-        @Test
-        @DisplayName("both null fields are equal")
-        void equals_bothNullFields_returnsTrue() {
-            Error a = new Error();
-            Error b = new Error();
-            assertThat(a).isEqualTo(b);
-        }
-
-        @Test
-        @DisplayName("same instance equal to itself")
-        void equals_sameInstance() {
-            Error a = new Error().code("1001").message("Not found");
-            assertThat(a).isEqualTo(a);
-        }
-
-        @Test
-        @DisplayName("not equal to null")
-        void equals_null_returnsFalse() {
-            assertThat(new Error()).isNotEqualTo(null);
-        }
-
-        @Test
-        @DisplayName("not equal to different type")
-        void equals_differentType_returnsFalse() {
-            assertThat(new Error()).isNotEqualTo("string");
-        }
-
-        @Test
-        @DisplayName("equal instances have same hashCode")
-        void hashCode_equalInstances() {
-            Error a = new Error().code("1001").message("Not found");
-            Error b = new Error().code("1001").message("Not found");
-            assertThat(a.hashCode()).isEqualTo(b.hashCode());
-        }
-
-        @Test
-        @DisplayName("different instances have different hashCode")
-        void hashCode_differentInstances() {
-            Error a = new Error().code("1001").message("Not found");
-            Error b = new Error().code("1002").message("Access denied");
-            assertThat(a.hashCode()).isNotEqualTo(b.hashCode());
-        }
-
-        @Test
-        @DisplayName("null fields produce consistent hashCode")
-        void hashCode_nullFields_consistent() {
-            Error a = new Error();
-            Error b = new Error();
-            assertThat(a.hashCode()).isEqualTo(b.hashCode());
-        }
-    }
-
-    // =========================================================================
-    // toString() — also covers toIndentedString()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("toString()")
-    class ToStringTests {
-
-        @Test
-        @DisplayName("contains class name")
-        void toString_containsClassName() {
-            assertThat(new Error().toString()).contains("Error");
-        }
-
-        @Test
-        @DisplayName("contains code value when set")
-        void toString_containsCode() {
-            Error e = new Error().code("1001");
-            assertThat(e.toString()).contains("1001");
-        }
-
-        @Test
-        @DisplayName("contains message value when set")
-        void toString_containsMessage() {
-            Error e = new Error().message("Case not found");
-            assertThat(e.toString()).contains("Case not found");
-        }
-
-        @Test
-        @DisplayName("shows null for unset fields - exercises toIndentedString(null)")
-        void toString_showsNullForUnsetFields() {
-            assertThat(new Error().toString()).contains("null");
-        }
-
-        @Test
-        @DisplayName("contains both field names")
-        void toString_containsBothFieldNames() {
-            String result = new Error().toString();
-            assertThat(result).contains("code");
-            assertThat(result).contains("message");
-        }
-
-        @Test
-        @DisplayName("multiline value is indented in toString - exercises toIndentedString newline replacement")
-        void toString_multilineValue_isIndented() {
-            // toIndentedString replaces \n with \n    — test with a message containing newline
-            Error e = new Error().code("1001").message("line1\nline2");
-            String result = e.toString();
-            assertThat(result).contains("line1");
-            assertThat(result).contains("line2");
-        }
-
-        @Test
-        @DisplayName("both code and message appear in toString")
-        void toString_containsBothValues() {
-            Error e = new Error().code("1002").message("SEALED_ACCESS_PERM");
-            String result = e.toString();
-            assertThat(result).contains("1002");
-            assertThat(result).contains("SEALED_ACCESS_PERM");
-        }
-    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }
+
+
+==========================
+
+package org.nnnn.ddd.model;
+
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
+/**
+ * Category
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-10T13:32:19.578-05:00")
+
+
+public class Category   {
+  @JsonProperty("id")
+  private Integer id = null;
+
+  @JsonProperty("categoryDesc")
+  private String categoryDesc = null;
+
+  @JsonProperty("inactiveFlg")
+  private Integer inactiveFlg = null;
+
+  public Category(Integer id, String categoryDesc, Integer inactiveFlg) {
+    this.id = id;
+    this.categoryDesc = categoryDesc;
+    this.inactiveFlg = inactiveFlg;
+  }
+
+  public Category() {}
+
+  public Category id(Integer id) {
+    this.id = id;
+    return this;
+  }
+
+  /**
+   * Get id
+   * @return id
+   **/
+  @Schema(example = "1", description = "")
+  
+    public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public Category categoryDesc(String categoryDesc) {
+    this.categoryDesc = categoryDesc;
+    return this;
+  }
+
+  /**
+   * Get categoryDesc
+   * @return categoryDesc
+   **/
+  @Schema(example = "Shootings", description = "")
+  
+    public String getCategoryDesc() {
+    return categoryDesc;
+  }
+
+  public void setCategoryDesc(String categoryDesc) {
+    this.categoryDesc = categoryDesc;
+  }
+
+  public Category inactiveFlg(Integer inactiveFlg) {
+    this.inactiveFlg = inactiveFlg;
+    return this;
+  }
+
+  /**
+   * Get inactiveFlg
+   * @return inactiveFlg
+   **/
+  @Schema(description = "")
+  
+    public Integer getInactiveFlg() {
+    return inactiveFlg;
+  }
+
+  public void setInactiveFlg(Integer inactiveFlg) {
+    this.inactiveFlg = inactiveFlg;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Category category = (Category) o;
+    return Objects.equals(this.id, category.id) &&
+        Objects.equals(this.categoryDesc, category.categoryDesc) &&
+        Objects.equals(this.inactiveFlg, category.inactiveFlg);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, categoryDesc, inactiveFlg);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class Category {\n");
+    
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    categoryDesc: ").append(toIndentedString(categoryDesc)).append("\n");
+    sb.append("    inactiveFlg: ").append(toIndentedString(inactiveFlg)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
+}
+
+
+============================
+package org.nnnn.ddd.model;
+
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
+/**
+ * Status
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-23T11:53:54.160-05:00")
+
+
+public class Status   {
+  @JsonProperty("id")
+  private Integer id = null;
+
+  @JsonProperty("statusDesc")
+  private String statusDesc = null;
+
+  @JsonProperty("inactiveFlg")
+  private Integer inactiveFlg = null;
+
+  public Status(Integer id, String statusDesc, Integer inactiveFlg) {
+    this.id = id;
+    this.statusDesc = statusDesc;
+    this.inactiveFlg = inactiveFlg;
+  }
+
+  public Status id(Integer id) {
+    this.id = id;
+    return this;
+  }
+
+  public Status() {}
+
+  /**
+   * Get id
+   * @return id
+   **/
+  @Schema(example = "1", description = "")
+  
+    public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public Status statusDesc(String statusDesc) {
+    this.statusDesc = statusDesc;
+    return this;
+  }
+
+  /**
+   * Get statusDesc
+   * @return statusDesc
+   **/
+  @Schema(example = "Completed", description = "")
+  
+    public String getStatusDesc() {
+    return statusDesc;
+  }
+
+  public void setStatusDesc(String statusDesc) {
+    this.statusDesc = statusDesc;
+  }
+
+  public Status inactiveFlg(Integer inactiveFlg) {
+    this.inactiveFlg = inactiveFlg;
+    return this;
+  }
+
+  /**
+   * Get inactiveFlg
+   * @return inactiveFlg
+   **/
+  @Schema(description = "")
+  
+    public Integer getInactiveFlg() {
+    return inactiveFlg;
+  }
+
+  public void setInactiveFlg(Integer inactiveFlg) {
+    this.inactiveFlg = inactiveFlg;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Status status = (Status) o;
+    return Objects.equals(this.id, status.id) &&
+        Objects.equals(this.statusDesc, status.statusDesc) &&
+        Objects.equals(this.inactiveFlg, status.inactiveFlg);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, statusDesc, inactiveFlg);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class Status {\n");
+    
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    statusDesc: ").append(toIndentedString(statusDesc)).append("\n");
+    sb.append("    inactiveFlg: ").append(toIndentedString(inactiveFlg)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
+}
+
+=======================
+
+package org.nnnn.ddd.model;
+
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
+/**
+ * Tag
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-10T13:32:19.578-05:00")
+
+
+public class Tag   {
+  @JsonProperty("id")
+  private Integer id = null;
+
+  @JsonProperty("tagDesc")
+  private String tagDesc = null;
+
+  @JsonProperty("inactiveFlg")
+  private Integer inactiveFlg = null;
+
+  public Tag(Integer id, String tagDesc, Integer inactiveFlg) {
+    this.id = id;
+    this.tagDesc = tagDesc;
+    this.inactiveFlg = inactiveFlg;
+  }
+
+  public Tag id(Integer id) {
+    this.id = id;
+    return this;
+  }
+
+  public Tag() {}
+  
+  /**
+   * Get id
+   * @return id
+   **/
+  @Schema(example = "10", description = "")
+  
+    public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public Tag tagDesc(String tagDesc) {
+    this.tagDesc = tagDesc;
+    return this;
+  }
+
+  /**
+   * Get tagDesc
+   * @return tagDesc
+   **/
+  @Schema(example = "Gun", description = "")
+  
+    public String getTagDesc() {
+    return tagDesc;
+  }
+
+  public void setTagDesc(String tagDesc) {
+    this.tagDesc = tagDesc;
+  }
+
+  public Tag inactiveFlg(Integer inactiveFlg) {
+    this.inactiveFlg = inactiveFlg;
+    return this;
+  }
+
+  /**
+   * Get inactiveFlg
+   * @return inactiveFlg
+   **/
+  @Schema(description = "")
+  
+    public Integer getInactiveFlg() {
+    return inactiveFlg;
+  }
+
+  public void setInactiveFlg(Integer inactiveFlg) {
+    this.inactiveFlg = inactiveFlg;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Tag tag = (Tag) o;
+    return Objects.equals(this.id, tag.id) &&
+        Objects.equals(this.tagDesc, tag.tagDesc) &&
+        Objects.equals(this.inactiveFlg, tag.inactiveFlg);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, tagDesc, inactiveFlg);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class Tag {\n");
+    
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    tagDesc: ").append(toIndentedString(tagDesc)).append("\n");
+    sb.append("    inactiveFlg: ").append(toIndentedString(inactiveFlg)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
+}
+
