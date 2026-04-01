@@ -1,116 +1,122 @@
-package org.nnnn.ddd.entity;
+package org.nnnn.ddd.exceptions;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
-import java.sql.Timestamp;
+public class ExceptionClassesTest {
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@DisplayName("CaseTag Entity Tests")
-class CaseTagTest {
-
-    private CaseTag caseTag;
-
-    @BeforeEach
-    void setUp() {
-        caseTag = new CaseTag();
+    @Test
+    void invalidArrestException_messageConstructor() {
+        InvalidArrestException ex = new InvalidArrestException("Invalid arrest");
+        assertEquals("Invalid arrest", ex.getMessage());
     }
 
     @Test
-    @DisplayName("default constructor creates instance")
-    void constructor_createsInstance() {
-        assertThat(caseTag).isNotNull();
+    void invalidArrestException_messageCauseConstructor() {
+        Throwable cause = new RuntimeException("root cause");
+        InvalidArrestException ex = new InvalidArrestException("Invalid arrest", cause);
+        assertEquals("Invalid arrest", ex.getMessage());
+        assertEquals(cause, ex.getCause());
     }
 
     @Test
-    @DisplayName("id getter and setter")
-    void id_getterSetter() {
-        caseTag.setId(22);
-        assertThat(caseTag.getId()).isEqualTo(22);
+    void sealedAccessException_messageConstructor() {
+        SealedAccessException ex = new SealedAccessException("Sealed");
+        assertEquals("Sealed", ex.getMessage());
     }
 
     @Test
-    @DisplayName("rowInsertTs getter and setter")
-    void rowInsertTs_getterSetter() {
-        Timestamp ts = new Timestamp(System.currentTimeMillis());
-        caseTag.setRowInsertTs(ts);
-        assertThat(caseTag.getRowInsertTs()).isEqualTo(ts);
+    void sealedAccessException_messageCauseConstructor() {
+        Throwable cause = new RuntimeException("root cause");
+        SealedAccessException ex = new SealedAccessException("Sealed", cause);
+        assertEquals("Sealed", ex.getMessage());
+        assertEquals(cause, ex.getCause());
     }
 
     @Test
-    @DisplayName("rowUpdtTs getter and setter")
-    void rowUpdtTs_getterSetter() {
-        Timestamp ts = new Timestamp(System.currentTimeMillis());
-        caseTag.setRowUpdtTs(ts);
-        assertThat(caseTag.getRowUpdtTs()).isEqualTo(ts);
+    void fileUploadException_messageConstructor() {
+        FileUploadException ex = new FileUploadException("Upload failed");
+        assertEquals("Upload failed", ex.getMessage());
     }
 
     @Test
-    @DisplayName("tag relationship getter and setter")
-    void tag_getterSetter() {
-        TagList tagList = new TagList();
-        tagList.setId(5);
-        tagList.setTagDesc("Priority");
-        caseTag.setTag(tagList);
-        assertThat(caseTag.getTag()).isEqualTo(tagList);
-        assertThat(caseTag.getTag().getTagDesc()).isEqualTo("Priority");
+    void fileUploadException_messageCauseConstructor() {
+        Throwable cause = new RuntimeException("root cause");
+        FileUploadException ex = new FileUploadException("Upload failed", cause);
+        assertEquals("Upload failed", ex.getMessage());
+        assertEquals(cause, ex.getCause());
     }
 
     @Test
-    @DisplayName("tag is null by default")
-    void tag_nullByDefault() {
-        assertThat(caseTag.getTag()).isNull();
+    void caseNotFoundException_messageConstructor() {
+        CaseNotFoundException ex = new CaseNotFoundException("Not found");
+        assertEquals("Not found", ex.getMessage());
     }
 
     @Test
-    @DisplayName("dluCase relationship getter and setter")
-    void dluCase_getterSetter() {
-        DluCase dluCase = new DluCase();
-        dluCase.setId(15);
-        dluCase.setArrId("ARR-123");
-        caseTag.setDluCase(dluCase);
+    void caseNotFoundException_messageCauseConstructor() {
+        Throwable cause = new RuntimeException("root cause");
+        CaseNotFoundException ex = new CaseNotFoundException("Not found", cause);
+        assertEquals("Not found", ex.getMessage());
+        assertEquals(cause, ex.getCause());
+    }
+}
 
-        // verify getDluCase() itself is covered, not just getDluCase().getId()
-        DluCase retrieved = caseTag.getDluCase();
-        assertThat(retrieved).isNotNull();
-        assertThat(retrieved.getId()).isEqualTo(15);
-        assertThat(retrieved.getArrId()).isEqualTo("ARR-123");
+=======================
+
+package org.nnnn.ddd.exceptions;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.nnnn.ddd.model.Error;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+public class GlobalExceptionHandlerTest {
+
+    private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
+
+    @Test
+    void handleSealedAccessException_returnsForbidden() {
+        SealedAccessException ex = new SealedAccessException("Sealed");
+        ResponseEntity<Error> response = handler.handleSealedAccessException(ex);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getMessage());
+        assertNotNull(response.getBody().getCode());
     }
 
     @Test
-    @DisplayName("dluCase is null by default")
-    void dluCase_nullByDefault() {
-        assertThat(caseTag.getDluCase()).isNull();
+    void handleCaseNotFoundException_returns500() {
+        CaseNotFoundException ex = new CaseNotFoundException("Not found");
+        ResponseEntity<Error> response = handler.handleCaseNotFoundException(ex);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getMessage());
+        assertNotNull(response.getBody().getCode());
     }
 
     @Test
-    @DisplayName("timestamp fields are null by default")
-    void timestampFields_nullByDefault() {
-        assertThat(caseTag.getRowInsertTs()).isNull();
-        assertThat(caseTag.getRowUpdtTs()).isNull();
+    void handleInvalidArrestException_returns500() {
+        InvalidArrestException ex = new InvalidArrestException("Invalid arrest");
+        ResponseEntity<Error> response = handler.handleInvalidArrestException(ex);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getMessage());
+        assertNotNull(response.getBody().getCode());
     }
 
     @Test
-    @DisplayName("rowInsertTs stores distinct values correctly")
-    void rowInsertTs_storesDistinctValue() {
-        Timestamp ts1 = new Timestamp(1_000_000L);
-        Timestamp ts2 = new Timestamp(2_000_000L);
-        caseTag.setRowInsertTs(ts1);
-        assertThat(caseTag.getRowInsertTs()).isEqualTo(ts1);
-        caseTag.setRowInsertTs(ts2);
-        assertThat(caseTag.getRowInsertTs()).isEqualTo(ts2);
-    }
-
-    @Test
-    @DisplayName("rowUpdtTs stores distinct values correctly")
-    void rowUpdtTs_storesDistinctValue() {
-        Timestamp ts1 = new Timestamp(1_000_000L);
-        Timestamp ts2 = new Timestamp(2_000_000L);
-        caseTag.setRowUpdtTs(ts1);
-        assertThat(caseTag.getRowUpdtTs()).isEqualTo(ts1);
-        caseTag.setRowUpdtTs(ts2);
-        assertThat(caseTag.getRowUpdtTs()).isEqualTo(ts2);
+    void handleFileUploadException_returns500() {
+        FileUploadException ex = new FileUploadException("Upload failed");
+        ResponseEntity<Error> response = handler.handleFileUploadException(ex);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getMessage());
+        assertNotNull(response.getBody().getCode());
     }
 }
