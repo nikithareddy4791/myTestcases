@@ -1,28 +1,36 @@
 package org.nnnn.ddd.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.nnnn.ddd.AppConstants;
 import org.nnnn.ddd.model.User;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.query.LdapQuery;
 
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * Covers the AttributesMapper lambdas (lambda$findUser$0 and
+ * lambda$findMembersOfGroup$0) by capturing the mapper Mockito
+ * would otherwise short-circuit, then invoking it directly with
+ * a stubbed Attributes object.
+ */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("ADSearchServiceProd Tests")
-class ADSearchServiceProdTest {
+@DisplayName("ADSearchServiceProd – AttributesMapper lambda coverage")
+class ADSearchServiceProdAttributesMappingTest {
 
     @Mock
     private LdapTemplate ldapTemplate;
@@ -30,300 +38,299 @@ class ADSearchServiceProdTest {
     @InjectMocks
     private ADSearchServiceProd service;
 
-    // =========================================================================
+    // -------------------------------------------------------------------------
     // Helpers
-    // =========================================================================
+    // -------------------------------------------------------------------------
 
-    private User buildUser(String username, String first, String last) {
-        User u = new User();
-        u.setUsername(username);
-        u.setFirstName(first);
-        u.setLastName(last);
-        u.setEmail(username + "@nnnn.finest");
-        u.setMobile("555-1234");
-        u.setRank("Detective");
-        u.setTitle("Analyst");
-        u.setTax("TAX001");
-        u.setCmdCode("CMD01");
-        return u;
+    /** Builds a mock Attribute whose .get() returns the given value. */
+    private Attribute attr(String value) throws NamingException {
+        Attribute a = mock(Attribute.class);
+        when(a.get()).thenReturn(value);
+        return a;
+    }
+
+    /**
+     * Builds a fully-populated Attributes mock.
+     * Pass null for any optional attribute to simulate it being absent from LDAP.
+     */
+    private Attributes buildAttributes(
+            String sAMAccountName,
+            String givenName,
+            String sn,
+            String telephoneNumber,   // nullable
+            String mail,              // nullable
+            String nnnnRank,          // nullable
+            String title,             // nullable
+            String nnnnTaxId,         // nullable
+            String nnnnCmdCode        // nullable
+    ) throws NamingException {
+
+        Attributes attrs = mock(Attributes.class);
+
+        when(attrs.get("sAMAccountName")).thenReturn(attr(sAMAccountName));
+        when(attrs.get("givenName")).thenReturn(attr(givenName));
+        when(attrs.get("sn")).thenReturn(attr(sn));
+
+        when(attrs.get("telephoneNumber")).thenReturn(telephoneNumber != null ? attr(telephoneNumber) : null);
+        when(attrs.get("mail")).thenReturn(mail != null ? attr(mail) : null);
+        when(attrs.get("NNNNrank")).thenReturn(nnnnRank != null ? attr(nnnnRank) : null);
+        when(attrs.get("title")).thenReturn(title != null ? attr(title) : null);
+        when(attrs.get("NNNNtaxid")).thenReturn(nnnnTaxId != null ? attr(nnnnTaxId) : null);
+        when(attrs.get("NNNNcmdcode")).thenReturn(nnnnCmdCode != null ? attr(nnnnCmdCode) : null);
+
+        return attrs;
+    }
+
+    /**
+     * Captures the AttributesMapper passed to ldapTemplate.search() by findUser(),
+     * then invokes it with the supplied Attributes so the lambda body executes.
+     */
+    @SuppressWarnings("unchecked")
+    private User invokeFindUserMapper(Attributes attrs) throws NamingException {
+        ArgumentCaptor<AttributesMapper<User>> captor = ArgumentCaptor.forClass(AttributesMapper.class);
+        when(ldapTemplate.search(any(LdapQuery.class), captor.capture())).thenReturn(List.of());
+
+        service.findUser("jdoe");
+
+        return captor.getValue().mapFromAttributes(attrs);
+    }
+
+    /**
+     * Captures the AttributesMapper passed to ldapTemplate.search() by
+     * findMembersOfGroup(), then invokes it with the supplied Attributes.
+     */
+    @SuppressWarnings("unchecked")
+    private User invokeFindMembersMapper(Attributes attrs) throws NamingException {
+        ArgumentCaptor<AttributesMapper<User>> captor = ArgumentCaptor.forClass(AttributesMapper.class);
+        when(ldapTemplate.search(any(LdapQuery.class), captor.capture())).thenReturn(List.of());
+
+        service.findMembersOfGroup(
+                "CN=SG-DDD-SUPERVISOR,OU=DDD,OU=Application Control,OU=NNNN Groups,DC=nnnn,DC=finest"
+        );
+
+        return captor.getValue().mapFromAttributes(attrs);
     }
 
     // =========================================================================
-    // findUser()
+    // lambda$findUser$0 – AttributesMapper inside findUser()
     // =========================================================================
 
     @Nested
-    @DisplayName("findUser()")
-    class FindUserTests {
+    @DisplayName("lambda$findUser$0 (AttributesMapper inside findUser)")
+    class FindUserMapperTests {
 
         @Test
-        @DisplayName("returns user when LDAP finds a match")
-        void findUser_matchFound_returnsUser() {
-            User expected = buildUser("jdoe", "Jane", "Doe");
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of(expected));
+        @DisplayName("maps all present attributes to User fields")
+        void findUserMapper_allAttributesPresent_mapsCorrectly() throws NamingException {
+            Attributes attrs = buildAttributes(
+                    "jdoe", "Jane", "Doe",
+                    "555-9876", "jdoe@nnnn.finest",
+                    "Detective", "Analyst", "TAX001", "CMD01"
+            );
 
-            User result = service.findUser("jdoe");
+            User result = invokeFindUserMapper(attrs);
 
-            assertThat(result).isNotNull();
             assertThat(result.getUsername()).isEqualTo("jdoe");
             assertThat(result.getFirstName()).isEqualTo("Jane");
             assertThat(result.getLastName()).isEqualTo("Doe");
+            assertThat(result.getMobile()).isEqualTo("555-9876");
+            assertThat(result.getEmail()).isEqualTo("jdoe@nnnn.finest");
+            assertThat(result.getRank()).isEqualTo("Detective");
+            assertThat(result.getTitle()).isEqualTo("Analyst");
+            assertThat(result.getTax()).isEqualTo("TAX001");
+            assertThat(result.getCmdCode()).isEqualTo("CMD01");
         }
 
         @Test
-        @DisplayName("returns null when LDAP finds no match")
-        void findUser_noMatch_returnsNull() {
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of());
+        @DisplayName("maps null telephoneNumber to empty string")
+        void findUserMapper_nullTelephoneNumber_mapsToEmptyString() throws NamingException {
+            Attributes attrs = buildAttributes(
+                    "jdoe", "Jane", "Doe",
+                    null, "jdoe@nnnn.finest", "Detective", "Analyst", "TAX001", "CMD01"
+            );
 
-            User result = service.findUser("unknownUser");
+            User result = invokeFindUserMapper(attrs);
 
-            assertThat(result).isNull();
+            assertThat(result.getMobile()).isEmpty();
         }
 
         @Test
-        @DisplayName("returns first user when LDAP finds multiple matches")
-        void findUser_multipleMatches_returnsFirst() {
-            User first  = buildUser("jdoe",  "Jane",  "Doe");
-            User second = buildUser("jdoe2", "Janet", "Doe");
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of(first, second));
+        @DisplayName("maps null mail to empty string")
+        void findUserMapper_nullMail_mapsToEmptyString() throws NamingException {
+            Attributes attrs = buildAttributes(
+                    "jdoe", "Jane", "Doe",
+                    "555-9876", null, "Detective", "Analyst", "TAX001", "CMD01"
+            );
 
-            User result = service.findUser("jdoe");
+            User result = invokeFindUserMapper(attrs);
+
+            assertThat(result.getEmail()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("maps null NNNNrank to empty string")
+        void findUserMapper_nullRank_mapsToEmptyString() throws NamingException {
+            Attributes attrs = buildAttributes(
+                    "jdoe", "Jane", "Doe",
+                    "555-9876", "jdoe@nnnn.finest", null, "Analyst", "TAX001", "CMD01"
+            );
+
+            User result = invokeFindUserMapper(attrs);
+
+            assertThat(result.getRank()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("maps null title to empty string")
+        void findUserMapper_nullTitle_mapsToEmptyString() throws NamingException {
+            Attributes attrs = buildAttributes(
+                    "jdoe", "Jane", "Doe",
+                    "555-9876", "jdoe@nnnn.finest", "Detective", null, "TAX001", "CMD01"
+            );
+
+            User result = invokeFindUserMapper(attrs);
+
+            assertThat(result.getTitle()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("maps null NNNNtaxid to empty string")
+        void findUserMapper_nullTaxId_mapsToEmptyString() throws NamingException {
+            Attributes attrs = buildAttributes(
+                    "jdoe", "Jane", "Doe",
+                    "555-9876", "jdoe@nnnn.finest", "Detective", "Analyst", null, "CMD01"
+            );
+
+            User result = invokeFindUserMapper(attrs);
+
+            assertThat(result.getTax()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("maps null NNNNcmdcode to empty string")
+        void findUserMapper_nullCmdCode_mapsToEmptyString() throws NamingException {
+            Attributes attrs = buildAttributes(
+                    "jdoe", "Jane", "Doe",
+                    "555-9876", "jdoe@nnnn.finest", "Detective", "Analyst", "TAX001", null
+            );
+
+            User result = invokeFindUserMapper(attrs);
+
+            assertThat(result.getCmdCode()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("maps all optional attributes null to empty strings")
+        void findUserMapper_allOptionalAttributesNull_allEmptyStrings() throws NamingException {
+            Attributes attrs = buildAttributes(
+                    "jdoe", "Jane", "Doe",
+                    null, null, null, null, null, null
+            );
+
+            User result = invokeFindUserMapper(attrs);
 
             assertThat(result.getUsername()).isEqualTo("jdoe");
-        }
-
-        @Test
-        @DisplayName("calls LdapTemplate exactly once")
-        void findUser_callsLdapTemplateOnce() {
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of());
-
-            service.findUser("anyUser");
-
-            verify(ldapTemplate, times(1)).search(any(LdapQuery.class), any(AttributesMapper.class));
+            assertThat(result.getMobile()).isEmpty();
+            assertThat(result.getEmail()).isEmpty();
+            assertThat(result.getRank()).isEmpty();
+            assertThat(result.getTitle()).isEmpty();
+            assertThat(result.getTax()).isEmpty();
+            assertThat(result.getCmdCode()).isEmpty();
         }
     }
 
     // =========================================================================
-    // findAllUsers()
+    // lambda$findMembersOfGroup$0 – AttributesMapper inside findMembersOfGroup()
     // =========================================================================
 
     @Nested
-    @DisplayName("findAllUsers()")
-    class FindAllUsersTests {
+    @DisplayName("lambda$findMembersOfGroup$0 (AttributesMapper inside findMembersOfGroup)")
+    class FindMembersOfGroupMapperTests {
 
         @Test
-        @DisplayName("aggregates users from all 8 security groups")
-        void findAllUsers_aggregatesAllGroups() {
-            // Return 1 distinct user per group call to verify all 8 are queried
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of(buildUser("user1", "A", "B")))
-                    .thenReturn(List.of(buildUser("user2", "C", "D")))
-                    .thenReturn(List.of(buildUser("user3", "E", "F")))
-                    .thenReturn(List.of(buildUser("user4", "G", "H")))
-                    .thenReturn(List.of(buildUser("user5", "I", "J")))
-                    .thenReturn(List.of(buildUser("user6", "K", "L")))
-                    .thenReturn(List.of(buildUser("user7", "M", "N")))
-                    .thenReturn(List.of(buildUser("user8", "O", "P")));
-
-            List<User> result = service.findAllUsers();
-
-            assertThat(result).hasSize(8);
-            verify(ldapTemplate, times(8)).search(any(LdapQuery.class), any(AttributesMapper.class));
-        }
-
-        @Test
-        @DisplayName("returns empty list when all groups are empty")
-        void findAllUsers_allGroupsEmpty_returnsEmptyList() {
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of());
-
-            List<User> result = service.findAllUsers();
-
-            assertThat(result).isEmpty();
-        }
-
-        @Test
-        @DisplayName("includes users from groups that partially return results")
-        void findAllUsers_someGroupsEmpty_includesNonEmptyGroups() {
-            User supervisor = buildUser("sup1", "Super", "Visor");
-            // Only the first group (supervisor) has members; all others are empty
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of(supervisor))
-                    .thenReturn(List.of())
-                    .thenReturn(List.of())
-                    .thenReturn(List.of())
-                    .thenReturn(List.of())
-                    .thenReturn(List.of())
-                    .thenReturn(List.of())
-                    .thenReturn(List.of());
-
-            List<User> result = service.findAllUsers();
-
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).getUsername()).isEqualTo("sup1");
-        }
-
-        @Test
-        @DisplayName("returns combined total from multiple groups")
-        void findAllUsers_multipleGroupsWithUsers_returnsCombinedTotal() {
-            List<User> group1 = List.of(
-                    buildUser("bk1", "Brooklyn", "One"),
-                    buildUser("bk2", "Brooklyn", "Two")
-            );
-            List<User> group2 = List.of(
-                    buildUser("bx1", "Bronx", "One")
-            );
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of())   // supervisor
-                    .thenReturn(group1)      // BK
-                    .thenReturn(group2)      // BX
-                    .thenReturn(List.of())   // MN
-                    .thenReturn(List.of())   // QN
-                    .thenReturn(List.of())   // SI
-                    .thenReturn(List.of())   // SNP
-                    .thenReturn(List.of());  // RMD
-
-            List<User> result = service.findAllUsers();
-
-            assertThat(result).hasSize(3);
-        }
-    }
-
-    // =========================================================================
-    // findAllUsersWithSealedAccess()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("findAllUsersWithSealedAccess()")
-    class FindAllUsersWithSealedAccessTests {
-
-        @Test
-        @DisplayName("queries all 8 groups for sealed access")
-        void findAllUsersWithSealedAccess_queriesAllGroups() {
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of());
-
-            service.findAllUsersWithSealedAccess();
-
-            verify(ldapTemplate, times(8)).search(any(LdapQuery.class), any(AttributesMapper.class));
-        }
-
-        @Test
-        @DisplayName("returns only users with sealed event access")
-        void findAllUsersWithSealedAccess_returnsMatchingUsers() {
-            User sealedUser = buildUser("sealed1", "Sealed", "User");
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of(sealedUser))
-                    .thenReturn(List.of())
-                    .thenReturn(List.of())
-                    .thenReturn(List.of())
-                    .thenReturn(List.of())
-                    .thenReturn(List.of())
-                    .thenReturn(List.of())
-                    .thenReturn(List.of());
-
-            List<User> result = service.findAllUsersWithSealedAccess();
-
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).getUsername()).isEqualTo("sealed1");
-        }
-
-        @Test
-        @DisplayName("returns empty list when no users have sealed access")
-        void findAllUsersWithSealedAccess_noSealedUsers_returnsEmpty() {
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of());
-
-            List<User> result = service.findAllUsersWithSealedAccess();
-
-            assertThat(result).isEmpty();
-        }
-    }
-
-    // =========================================================================
-    // findMembersOfGroup()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("findMembersOfGroup()")
-    class FindMembersOfGroupTests {
-
-        @Test
-        @DisplayName("returns empty list when called with no group DNs")
-        void findMembersOfGroup_noGroupDns_returnsEmptyWithoutCallingLdap() {
-            List<User> result = service.findMembersOfGroup();
-
-            assertThat(result).isEmpty();
-            verifyNoInteractions(ldapTemplate);
-        }
-
-        @Test
-        @DisplayName("queries LDAP when a single group DN is provided")
-        void findMembersOfGroup_singleDn_queriesLdap() {
-            User member = buildUser("mbr1", "Member", "One");
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of(member));
-
-            List<User> result = service.findMembersOfGroup(
-                    "CN=SG-DDD-SUPERVISOR,OU=DDD,OU=Application Control,OU=NNNN Groups,DC=nnnn,DC=finest"
+        @DisplayName("maps all present attributes to User fields")
+        void findMembersMapper_allAttributesPresent_mapsCorrectly() throws NamingException {
+            Attributes attrs = buildAttributes(
+                    "mbr1", "Member", "One",
+                    "555-1111", "mbr1@nnnn.finest", "Officer", "Supervisor", "TAX002", "CMD02"
             );
 
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).getUsername()).isEqualTo("mbr1");
+            User result = invokeFindMembersMapper(attrs);
+
+            assertThat(result.getUsername()).isEqualTo("mbr1");
+            assertThat(result.getFirstName()).isEqualTo("Member");
+            assertThat(result.getLastName()).isEqualTo("One");
+            assertThat(result.getMobile()).isEqualTo("555-1111");
+            assertThat(result.getEmail()).isEqualTo("mbr1@nnnn.finest");
+            assertThat(result.getRank()).isEqualTo("Officer");
+            assertThat(result.getTitle()).isEqualTo("Supervisor");
+            assertThat(result.getTax()).isEqualTo("TAX002");
+            assertThat(result.getCmdCode()).isEqualTo("CMD02");
         }
 
         @Test
-        @DisplayName("queries LDAP with intersection (AND) when multiple group DNs are provided")
-        void findMembersOfGroup_multipleDns_queriesLdapOnce() {
-            // Multiple DNs = a single AND query, not one query per DN
-            User member = buildUser("dual1", "Dual", "Member");
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of(member));
+        @DisplayName("maps null givenName to empty string")
+        void findMembersMapper_nullGivenName_mapsToEmptyString() throws NamingException {
+            Attributes attrs = mock(Attributes.class);
+            when(attrs.get("sAMAccountName")).thenReturn(attr("mbr1"));
+            when(attrs.get("givenName")).thenReturn(null);
+            when(attrs.get("sn")).thenReturn(attr("One"));
+            when(attrs.get("telephoneNumber")).thenReturn(null);
+            when(attrs.get("mail")).thenReturn(null);
+            when(attrs.get("NNNNrank")).thenReturn(null);
+            when(attrs.get("title")).thenReturn(null);
+            when(attrs.get("NNNNtaxid")).thenReturn(null);
+            when(attrs.get("NNNNcmdcode")).thenReturn(null);
 
-            List<User> result = service.findMembersOfGroup(
-                    "CN=SG-DDD-SUPERVISOR,OU=DDD,OU=Application Control,OU=NNNN Groups,DC=nnnn,DC=finest",
-                    "CN=SG-SEALED-EVENT,OU=DDD,OU=Application Control,OU=NNNN Groups,DC=nnnn,DC=finest"
-            );
+            User result = invokeFindMembersMapper(attrs);
 
-            assertThat(result).hasSize(1);
-            // One LDAP call — the multiple DNs are combined into a single AND-query
-            verify(ldapTemplate, times(1)).search(any(LdapQuery.class), any(AttributesMapper.class));
+            assertThat(result.getFirstName()).isEmpty();
         }
 
         @Test
-        @DisplayName("returns empty list when LDAP finds no members")
-        void findMembersOfGroup_noMembers_returnsEmpty() {
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(List.of());
+        @DisplayName("maps null sn to empty string")
+        void findMembersMapper_nullSn_mapsToEmptyString() throws NamingException {
+            Attributes attrs = mock(Attributes.class);
+            when(attrs.get("sAMAccountName")).thenReturn(attr("mbr1"));
+            when(attrs.get("givenName")).thenReturn(attr("Member"));
+            when(attrs.get("sn")).thenReturn(null);
+            when(attrs.get("telephoneNumber")).thenReturn(null);
+            when(attrs.get("mail")).thenReturn(null);
+            when(attrs.get("NNNNrank")).thenReturn(null);
+            when(attrs.get("title")).thenReturn(null);
+            when(attrs.get("NNNNtaxid")).thenReturn(null);
+            when(attrs.get("NNNNcmdcode")).thenReturn(null);
 
-            List<User> result = service.findMembersOfGroup(
-                    "CN=SG-DDD-ANALYST-BK,OU=DDD,OU=Application Control,OU=NNNN Groups,DC=nnnn,DC=finest"
-            );
+            User result = invokeFindMembersMapper(attrs);
 
-            assertThat(result).isEmpty();
+            assertThat(result.getLastName()).isEmpty();
         }
 
         @Test
-        @DisplayName("returns all members when LDAP returns multiple users")
-        void findMembersOfGroup_multipleMembers_returnsAll() {
-            List<User> members = List.of(
-                    buildUser("a1", "Alice", "Smith"),
-                    buildUser("b2", "Bob",   "Jones"),
-                    buildUser("c3", "Carol", "Lee")
-            );
-            when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class)))
-                    .thenReturn(members);
+        @DisplayName("maps all optional attributes null to empty strings")
+        void findMembersMapper_allOptionalAttributesNull_allEmptyStrings() throws NamingException {
+            Attributes attrs = mock(Attributes.class);
+            when(attrs.get("sAMAccountName")).thenReturn(attr("mbr1"));
+            when(attrs.get("givenName")).thenReturn(null);
+            when(attrs.get("sn")).thenReturn(null);
+            when(attrs.get("telephoneNumber")).thenReturn(null);
+            when(attrs.get("mail")).thenReturn(null);
+            when(attrs.get("NNNNrank")).thenReturn(null);
+            when(attrs.get("title")).thenReturn(null);
+            when(attrs.get("NNNNtaxid")).thenReturn(null);
+            when(attrs.get("NNNNcmdcode")).thenReturn(null);
 
-            List<User> result = service.findMembersOfGroup(
-                    "CN=SG-DDD-ANALYST-BK,OU=DDD,OU=Application Control,OU=NNNN Groups,DC=nnnn,DC=finest"
-            );
+            User result = invokeFindMembersMapper(attrs);
 
-            assertThat(result).hasSize(3);
-            assertThat(result).extracting(User::getUsername).containsExactly("a1", "b2", "c3");
+            assertThat(result.getUsername()).isEqualTo("mbr1");
+            assertThat(result.getFirstName()).isEmpty();
+            assertThat(result.getLastName()).isEmpty();
+            assertThat(result.getMobile()).isEmpty();
+            assertThat(result.getEmail()).isEmpty();
+            assertThat(result.getRank()).isEmpty();
+            assertThat(result.getTitle()).isEmpty();
+            assertThat(result.getTax()).isEmpty();
+            assertThat(result.getCmdCode()).isEmpty();
         }
     }
 }
