@@ -1,193 +1,99 @@
-package org.nnnn.ddd.converter;
+package org.nnnn.ddd.repository.specs;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.modelmapper.spi.MappingContext;
-import org.threeten.bp.LocalDate;
-import org.threeten.bp.Month;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
-import java.util.Date;
+import org.nnnn.ddd.entity.DluCase;
+import org.nnnn.ddd.entity.DluOfficeList;
+import org.nnnn.ddd.entity.StatusList;
+import org.nnnn.ddd.entity.TagList;
+import org.nnnn.ddd.entity.CaseTag;
+import org.nnnn.ddd.entity.CategoryList;
+import org.springframework.data.jpa.domain.Specification;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 
-@DisplayName("LocalDateToDateConverter Tests")
-class LocalDateToDateConverterTest {
+public class CaseSpecifications {
 
-    private final LocalDateToDateConverter converter = new LocalDateToDateConverter();
-
-    @SuppressWarnings("unchecked")
-    private MappingContext<LocalDate, Date> mockContext(LocalDate source) {
-        MappingContext<LocalDate, Date> ctx = mock(MappingContext.class);
-        when(ctx.getSource()).thenReturn(source);
-        return ctx;
+    public static Specification<DluCase> fetchDependencies() {
+        return (root, query, criteriaBuilder) -> {
+            // Check the query type to avoid issues with count queries for pagination
+            if (Long.class != query.getResultType()) {
+                root.fetch("tags", JoinType.LEFT);
+                root.fetch("category", JoinType.LEFT);
+                root.fetch("ddd", JoinType.LEFT);
+                root.fetch("status", JoinType.LEFT);
+                root.fetch("ada", JoinType.LEFT);
+            }
+            // Return null or a simple predicate if no additional criteria are needed
+            return criteriaBuilder.isNotNull(root.get("id"));
+        };
     }
 
-    @Test
-    @DisplayName("null source returns null")
-    void convert_nullSource_returnsNull() {
-        assertThat(converter.convert(mockContext(null))).isNull();
+    public static Specification<DluCase> hasProactiveFlg(Short proactiveFlg) {
+        return (root, query, cb) -> cb.equal(root.get("proactiveFlg"), proactiveFlg);
     }
 
-    @Test
-    @DisplayName("converts a valid LocalDate to a Date at midnight in the system timezone")
-    void convert_validLocalDate_returnsDateAtMidnight() {
-        LocalDate source = LocalDate.of(2024, Month.JUNE, 15);
-
-        Date result = converter.convert(mockContext(source));
-
-        assertThat(result).isNotNull();
-        java.time.LocalDate roundTripped = result.toInstant()
-                .atZone(java.time.ZoneId.systemDefault())
-                .toLocalDate();
-        assertThat(roundTripped.getYear()).isEqualTo(2024);
-        assertThat(roundTripped.getMonthValue()).isEqualTo(6);
-        assertThat(roundTripped.getDayOfMonth()).isEqualTo(15);
+    public static Specification<DluCase> hasAssignedNm(String assigned) {
+        return (root, query, cb) -> cb.equal(root.get("assignedNm"), assigned);
     }
 
-    @Test
-    @DisplayName("converts the epoch date (1970-01-01) correctly")
-    void convert_epochDate_returnsCorrectDate() {
-        LocalDate epoch = LocalDate.of(1970, Month.JANUARY, 1);
-
-        Date result = converter.convert(mockContext(epoch));
-
-        assertThat(result).isNotNull();
-        java.time.LocalDate roundTripped = result.toInstant()
-                .atZone(java.time.ZoneId.systemDefault())
-                .toLocalDate();
-        assertThat(roundTripped.getYear()).isEqualTo(1970);
-        assertThat(roundTripped.getMonthValue()).isEqualTo(1);
-        assertThat(roundTripped.getDayOfMonth()).isEqualTo(1);
+    public static Specification<DluCase> hasArrId(String arrId) {
+        return (root, query, cb) -> cb.equal(root.get("arrId"), arrId);
     }
 
-    @Test
-    @DisplayName("converts a future date correctly")
-    void convert_futureDate_returnsCorrectDate() {
-        LocalDate future = LocalDate.of(2099, Month.DECEMBER, 31);
-
-        Date result = converter.convert(mockContext(future));
-
-        assertThat(result).isNotNull();
-        java.time.LocalDate roundTripped = result.toInstant()
-                .atZone(java.time.ZoneId.systemDefault())
-                .toLocalDate();
-        assertThat(roundTripped.getYear()).isEqualTo(2099);
-        assertThat(roundTripped.getMonthValue()).isEqualTo(12);
-        assertThat(roundTripped.getDayOfMonth()).isEqualTo(31);
+    public static Specification<DluCase> hasCategories(List<Integer> categoryIds) {
+        return (root, query, cb) -> {
+            Join<DluCase, CategoryList> categoryJoin = root.join("category", JoinType.INNER);
+            return categoryJoin.get("id").in(categoryIds);
+        };
     }
 
-    @Test
-    @DisplayName("time component of result is midnight (start of day)")
-    void convert_validLocalDate_timeIsStartOfDay() {
-        LocalDate source = LocalDate.of(2024, Month.MARCH, 20);
-
-        Date result = converter.convert(mockContext(source));
-
-        java.time.LocalDateTime ldt = result.toInstant()
-                .atZone(java.time.ZoneId.systemDefault())
-                .toLocalDateTime();
-        assertThat(ldt.getHour()).isZero();
-        assertThat(ldt.getMinute()).isZero();
-        assertThat(ldt.getSecond()).isZero();
-    }
-}
-
-==================
-package org.nnnn.ddd.converter;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.modelmapper.spi.MappingContext;
-import org.threeten.bp.LocalDate;
-import org.threeten.bp.Month;
-
-import java.util.Date;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-@DisplayName("DateToLocalDateConverter Tests")
-class DateToLocalDateConverterTest {
-
-    private final DateToLocalDateConverter converter = new DateToLocalDateConverter();
-
-    @SuppressWarnings("unchecked")
-    private MappingContext<Date, LocalDate> mockContext(Date source) {
-        MappingContext<Date, LocalDate> ctx = mock(MappingContext.class);
-        when(ctx.getSource()).thenReturn(source);
-        return ctx;
+    public static Specification<DluCase> hasDluOfficesIn(List<Integer> officeIds) {
+        return (root, query, cb) -> {
+            Join<DluCase, DluOfficeList> dddJoin = root.join("ddd", JoinType.INNER);
+            return dddJoin.get("id").in(officeIds);
+        };
     }
 
-    private Date dateOf(int year, int month, int day) {
-        return Date.from(
-                java.time.LocalDate.of(year, month, day)
-                        .atStartOfDay(java.time.ZoneId.systemDefault())
-                        .toInstant()
-        );
+    public static Specification<DluCase> hasTagsIn(List<Integer> tagIds) {
+        return (root, query, cb) -> {
+            Join<DluCase, CaseTag> caseTagJoin = root.join("tags", JoinType.INNER);
+            Join<CaseTag, TagList> tagJoin = caseTagJoin.join("tag", JoinType.INNER);
+            return tagJoin.get("id").in(tagIds);
+        };
     }
 
-    @Test
-    @DisplayName("null source returns null")
-    void convert_nullSource_returnsNull() {
-        assertThat(converter.convert(mockContext(null))).isNull();
+    public static Specification<DluCase> hasStatusesIn(List<Integer> statusIds) {
+        return (root, query, cb) -> {
+            Join<DluCase, StatusList> statusJoin = root.join("status", JoinType.INNER);
+            return statusJoin.get("id").in(statusIds);
+        };
     }
 
-    @Test
-    @DisplayName("converts a valid Date to the correct LocalDate in the system timezone")
-    void convert_validDate_returnsCorrectLocalDate() {
-        Date input = dateOf(2024, 6, 15);
-
-        LocalDate result = converter.convert(mockContext(input));
-
-        assertThat(result).isNotNull();
-        assertThat(result.getYear()).isEqualTo(2024);
-        assertThat(result.getMonthValue()).isEqualTo(6);
-        assertThat(result.getDayOfMonth()).isEqualTo(15);
+    public static Specification<DluCase> dueBetween(LocalDate start, LocalDate end) {
+        return (root, query, cb) -> {
+            if (start == null && end == null)
+                return null;
+            if (start != null && end == null)
+                return cb.greaterThanOrEqualTo(root.get("dueDt"), start);
+            if (start == null && end != null)
+                return cb.lessThanOrEqualTo(root.get("dueDt"), end);
+            return cb.between(root.get("dueDt"), start, end);
+        };
     }
 
-    @Test
-    @DisplayName("converts the epoch Date (1970-01-01) correctly")
-    void convert_epochDate_returnsEpochLocalDate() {
-        Date input = dateOf(1970, 1, 1);
-
-        LocalDate result = converter.convert(mockContext(input));
-
-        assertThat(result.getYear()).isEqualTo(1970);
-        assertThat(result.getMonthValue()).isEqualTo(1);
-        assertThat(result.getDayOfMonth()).isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("converts a future Date correctly")
-    void convert_futureDate_returnsCorrectLocalDate() {
-        Date input = dateOf(2099, 12, 31);
-
-        LocalDate result = converter.convert(mockContext(input));
-
-        assertThat(result.getYear()).isEqualTo(2099);
-        assertThat(result.getMonthValue()).isEqualTo(12);
-        assertThat(result.getDayOfMonth()).isEqualTo(31);
-    }
-
-    @Test
-    @DisplayName("round-trip: LocalDate -> Date -> LocalDate produces the same date")
-    void convert_roundTrip_producesSameLocalDate() {
-        LocalDateToDateConverter toDate = new LocalDateToDateConverter();
-        LocalDate original = LocalDate.of(2024, Month.SEPTEMBER, 5);
-
-        // Build a MappingContext for each leg of the round-trip
-        @SuppressWarnings("unchecked")
-        MappingContext<LocalDate, Date> toDateCtx = mock(MappingContext.class);
-        when(toDateCtx.getSource()).thenReturn(original);
-        Date intermediate = toDate.convert(toDateCtx);
-
-        LocalDate roundTripped = converter.convert(mockContext(intermediate));
-
-        assertThat(roundTripped.getYear()).isEqualTo(original.getYear());
-        assertThat(roundTripped.getMonthValue()).isEqualTo(original.getMonthValue());
-        assertThat(roundTripped.getDayOfMonth()).isEqualTo(original.getDayOfMonth());
+    public static Specification<DluCase> requestBetween(LocalDate start, LocalDate end) {
+        return (root, query, cb) -> {
+            if (start == null && end == null)
+                return null;
+            if (start != null && end == null)
+                return cb.greaterThanOrEqualTo(root.get("requestDt"), start);
+            if (start == null && end != null)
+                return cb.lessThanOrEqualTo(root.get("requestDt"), end);
+            return cb.between(root.get("requestDt"), start, end);
+        };
     }
 }
