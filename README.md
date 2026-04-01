@@ -1,4 +1,4 @@
-package org.nnnn.ddd.entity;
+package org.nypd.dlu.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -68,8 +68,8 @@ class AdaListTest {
     @Test
     @DisplayName("emailAddrDesc getter and setter")
     void emailAddrDesc_getterSetter() {
-        ada.setEmailAddrDesc("ada@nnnn.finest");
-        assertThat(ada.getEmailAddrDesc()).isEqualTo("ada@nnnn.finest");
+        ada.setEmailAddrDesc("ada@nypd.finest");
+        assertThat(ada.getEmailAddrDesc()).isEqualTo("ada@nypd.finest");
     }
 
     @Test
@@ -149,7 +149,7 @@ class AdaListTest {
 
 ===============
 
-package org.nnnn.ddd.entity;
+package org.nypd.dlu.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -239,7 +239,7 @@ class DluCodeRefTest {
 ===================
 
 
-package org.nnnn.ddd.entity;
+package org.nypd.dlu.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -510,7 +510,7 @@ class DluCaseTest {
 
 ==================
 
-package org.nnnn.ddd.entity;
+package org.nypd.dlu.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -553,8 +553,8 @@ class DluOfficeListTest {
     @Test
     @DisplayName("adSgNm getter and setter")
     void adSgNm_getterSetter() {
-        office.setAdSgNm("SG-DDD-ANALYST-BK");
-        assertThat(office.getAdSgNm()).isEqualTo("SG-DDD-ANALYST-BK");
+        office.setAdSgNm("SG-DLU-ANALYST-BK");
+        assertThat(office.getAdSgNm()).isEqualTo("SG-DLU-ANALYST-BK");
     }
 
     @Test
@@ -597,7 +597,7 @@ class DluOfficeListTest {
 
 ==============
 
-package org.nnnn.ddd.entity;
+package org.nypd.dlu.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -704,7 +704,7 @@ class CaseNoteTest {
 =======================
 
 
-package org.nnnn.ddd.entity;
+package org.nypd.dlu.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -790,7 +790,7 @@ class CategoryListTest {
 =========================
 
 
-package org.nnnn.ddd.entity;
+package org.nypd.dlu.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -876,7 +876,7 @@ class StatusListTest {
 
 ===========================
 
-package org.nnnn.ddd.entity;
+package org.nypd.dlu.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -977,7 +977,7 @@ class DluAuditTest {
 
 =========================
 
-package org.nnnn.ddd.entity;
+package org.nypd.dlu.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -1064,7 +1064,7 @@ class ItemListTest {
 ===========================
 
 
-package org.nnnn.ddd.entity;
+package org.nypd.dlu.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -1150,7 +1150,7 @@ class TagListTest {
 
 -===========================================
 
-package org.nnnn.ddd.entity;
+package org.nypd.dlu.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -1260,7 +1260,7 @@ class CaseUploadTest {
 
 ===============================
 
-package org.nnnn.ddd.entity;
+package org.nypd.dlu.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -1387,7 +1387,7 @@ class CaseItemTest {
 
 ===============================
 
-package org.nnnn.ddd.entity;
+package org.nypd.dlu.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
