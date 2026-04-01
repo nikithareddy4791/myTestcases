@@ -2,6 +2,7 @@ package org.nnnn.ddd.converter;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.modelmapper.AbstractConverter;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.Month;
 
@@ -12,7 +13,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("LocalDateToDateConverter Tests")
 class LocalDateToDateConverterTest {
 
-    private final LocalDateToDateConverter converter = new LocalDateToDateConverter();
+    // Cast to AbstractConverter<LocalDate, Date> so the compiler resolves
+    // convert(LocalDate) unambiguously — AbstractConverter exposes both
+    // the protected convert(S) and the public convert(MappingContext<S,D>).
+    private final AbstractConverter<LocalDate, Date> converter = new LocalDateToDateConverter();
 
     @Test
     @DisplayName("null source returns null")
@@ -85,104 +89,14 @@ class LocalDateToDateConverterTest {
 }
 
 
-==================================
 
-
-package org.nnnn.ddd.converter;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.modelmapper.spi.MappingContext;
-import org.threeten.bp.OffsetDateTime;
-import org.threeten.bp.ZoneOffset;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-@DisplayName("TimestampToOffsetDateTimeConverter Tests")
-class TimestampToOffsetDateTimeConverterTest {
-
-    private final TimestampToOffsetDateTimeConverter converter =
-            new TimestampToOffsetDateTimeConverter();
-
-    @SuppressWarnings("unchecked")
-    private MappingContext<Timestamp, OffsetDateTime> mockContext(Timestamp ts) {
-        MappingContext<Timestamp, OffsetDateTime> ctx = mock(MappingContext.class);
-        when(ctx.getSource()).thenReturn(ts);
-        return ctx;
-    }
-
-    @Test
-    @DisplayName("null source returns null")
-    void convert_nullSource_returnsNull() {
-        MappingContext<Timestamp, OffsetDateTime> ctx = mockContext(null);
-
-        assertThat(converter.convert(ctx)).isNull();
-    }
-
-    @Test
-    @DisplayName("converts a valid Timestamp to the correct UTC OffsetDateTime")
-    void convert_validTimestamp_returnsCorrectOffsetDateTime() {
-        Timestamp ts = Timestamp.valueOf(LocalDateTime.of(2024, 6, 15, 10, 30, 0));
-        long expectedMillis = ts.getTime();
-        MappingContext<Timestamp, OffsetDateTime> ctx = mockContext(ts);
-
-        OffsetDateTime result = converter.convert(ctx);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getOffset()).isEqualTo(ZoneOffset.UTC);
-        assertThat(result.toInstant().toEpochMilli()).isEqualTo(expectedMillis);
-    }
-
-    @Test
-    @DisplayName("result offset is always UTC regardless of input value")
-    void convert_anyTimestamp_offsetIsUtc() {
-        MappingContext<Timestamp, OffsetDateTime> ctx = mockContext(new Timestamp(0L));
-
-        OffsetDateTime result = converter.convert(ctx);
-
-        assertThat(result.getOffset()).isEqualTo(ZoneOffset.UTC);
-    }
-
-    @Test
-    @DisplayName("converts epoch Timestamp (0 ms) to 1970-01-01T00:00:00Z")
-    void convert_epochTimestamp_returnsEpochOffsetDateTime() {
-        MappingContext<Timestamp, OffsetDateTime> ctx = mockContext(new Timestamp(0L));
-
-        OffsetDateTime result = converter.convert(ctx);
-
-        assertThat(result.getYear()).isEqualTo(1970);
-        assertThat(result.getMonthValue()).isEqualTo(1);
-        assertThat(result.getDayOfMonth()).isEqualTo(1);
-        assertThat(result.getHour()).isZero();
-        assertThat(result.getMinute()).isZero();
-        assertThat(result.getSecond()).isZero();
-        assertThat(result.getOffset()).isEqualTo(ZoneOffset.UTC);
-    }
-
-    @Test
-    @DisplayName("preserves millisecond precision")
-    void convert_timestampWithMillis_preservesMilliseconds() {
-        long millis = 1_718_445_600_123L;
-        MappingContext<Timestamp, OffsetDateTime> ctx = mockContext(new Timestamp(millis));
-
-        OffsetDateTime result = converter.convert(ctx);
-
-        assertThat(result.toInstant().toEpochMilli()).isEqualTo(millis);
-    }
-}
-
-
-===============================
+===========================================================
 
 package org.nnnn.ddd.converter;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.modelmapper.AbstractConverter;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.Month;
 
@@ -193,7 +107,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("DateToLocalDateConverter Tests")
 class DateToLocalDateConverterTest {
 
-    private final DateToLocalDateConverter converter = new DateToLocalDateConverter();
+    // Cast to AbstractConverter<Date, LocalDate> so the compiler resolves
+    // convert(Date) unambiguously — AbstractConverter exposes both
+    // the protected convert(S) and the public convert(MappingContext<S,D>).
+    private final AbstractConverter<Date, LocalDate> converter = new DateToLocalDateConverter();
 
     private Date dateOf(int year, int month, int day) {
         return Date.from(
@@ -249,7 +166,7 @@ class DateToLocalDateConverterTest {
     @Test
     @DisplayName("round-trip: LocalDate -> Date -> LocalDate produces the same date")
     void convert_roundTrip_producesSameLocalDate() {
-        LocalDateToDateConverter toDate = new LocalDateToDateConverter();
+        AbstractConverter<LocalDate, Date> toDate = new LocalDateToDateConverter();
         LocalDate original = LocalDate.of(2024, Month.SEPTEMBER, 5);
 
         Date intermediate = toDate.convert(original);
@@ -260,5 +177,3 @@ class DateToLocalDateConverterTest {
         assertThat(roundTripped.getDayOfMonth()).isEqualTo(original.getDayOfMonth());
     }
 }
-
-
