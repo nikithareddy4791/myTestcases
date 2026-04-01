@@ -1,608 +1,116 @@
-package org.nnnn.ddd.Entity;
+package org.nnnn.ddd.entity;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.nnnn.ddd.entity.AdaList;
-import org.nnnn.ddd.entity.CaseItem;
-import org.nnnn.ddd.entity.CaseNote;
-import org.nnnn.ddd.entity.CaseTag;
-import org.nnnn.ddd.entity.CaseUpload;
-import org.nnnn.ddd.entity.CategoryList;
-import org.nnnn.ddd.entity.DluCase;
-import org.nnnn.ddd.entity.DluCodeRef;
-import org.nnnn.ddd.entity.DluOfficeList;
-import org.nnnn.ddd.entity.ItemList;
-import org.nnnn.ddd.entity.StatusList;
-import org.nnnn.ddd.entity.TagList;
 
 import java.sql.Timestamp;
-import java.util.Date;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Unit tests for all entity classes.
- * Tests getter/setter, constructor, collections, and field defaults.
- */
-@DisplayName("Entity Tests")
-public class Entitytests {
+@DisplayName("CaseTag Entity Tests")
+class CaseTagTest {
 
-    // =========================================================================
-    // AdaList
-    // =========================================================================
+    private CaseTag caseTag;
 
-    @Nested
-    @DisplayName("AdaList Entity")
-    class AdaListTests {
-
-        @Test
-        @DisplayName("default constructor creates instance")
-        void defaultConstructor_createsInstance() {
-            AdaList ada = new AdaList();
-            assertThat(ada).isNotNull();
-        }
-
-        @Test
-        @DisplayName("getters and setters work correctly")
-        void gettersAndSetters_workCorrectly() {
-            Timestamp ts = new Timestamp(System.currentTimeMillis());
-            AdaList ada = new AdaList();
-            ada.setId(1);
-            ada.setFrstNm("John");
-            ada.setLastNm("Doe");
-            ada.setEmailAddrDesc("jdoe@nnnn.org");
-            ada.setBoroughNm("Manhattan");
-            ada.setBusPhoneNum("555-1234");
-            ada.setCellPhoneNum("555-5678");
-            ada.setFaxNum("555-9999");
-            ada.setJobTitleDesc("ADA");
-            ada.setNoteDesc("Note here");
-            ada.setArchiveFlg((short) 0);
-            ada.setInactiveFlg((short) 0);
-            ada.setRowInsertTs(ts);
-            ada.setRowUpdtTs(ts);
-
-            assertThat(ada.getId()).isEqualTo(1);
-            assertThat(ada.getFrstNm()).isEqualTo("John");
-            assertThat(ada.getLastNm()).isEqualTo("Doe");
-            assertThat(ada.getEmailAddrDesc()).isEqualTo("jdoe@nnnn.org");
-            assertThat(ada.getBoroughNm()).isEqualTo("Manhattan");
-            assertThat(ada.getBusPhoneNum()).isEqualTo("555-1234");
-            assertThat(ada.getCellPhoneNum()).isEqualTo("555-5678");
-            assertThat(ada.getFaxNum()).isEqualTo("555-9999");
-            assertThat(ada.getJobTitleDesc()).isEqualTo("ADA");
-            assertThat(ada.getNoteDesc()).isEqualTo("Note here");
-            assertThat(ada.getArchiveFlg()).isEqualTo((short) 0);
-            assertThat(ada.getInactiveFlg()).isEqualTo((short) 0);
-            assertThat(ada.getRowInsertTs()).isEqualTo(ts);
-            assertThat(ada.getRowUpdtTs()).isEqualTo(ts);
-        }
-
-        @Test
-        @DisplayName("fields are null by default")
-        void fields_areNullByDefault() {
-            AdaList ada = new AdaList();
-            assertThat(ada.getFrstNm()).isNull();
-            assertThat(ada.getLastNm()).isNull();
-            assertThat(ada.getEmailAddrDesc()).isNull();
-        }
+    @BeforeEach
+    void setUp() {
+        caseTag = new CaseTag();
     }
 
-    // =========================================================================
-    // dddCase
-    // =========================================================================
-
-    @Nested
-    @DisplayName("dddCase Entity")
-    class dddCaseTests {
-
-        @Test
-        @DisplayName("default constructor creates instance with empty collections")
-        void defaultConstructor_createsInstanceWithEmptyCollections() {
-            DluCase c = new DluCase();
-            assertThat(c).isNotNull();
-            assertThat(c.getItems()).isNotNull().isEmpty();
-            assertThat(c.getNotes()).isNotNull().isEmpty();
-            assertThat(c.getTags()).isNotNull().isEmpty();
-            assertThat(c.getUploads()).isNotNull().isEmpty();
-        }
-
-        @Test
-        @DisplayName("getters and setters work correctly")
-        void gettersAndSetters_workCorrectly() {
-            Date now = new Date();
-            Timestamp ts = new Timestamp(System.currentTimeMillis());
-            DluCase c = new DluCase();
-
-            c.setId(100);
-            c.setArrId("ARR001");
-            c.setAssignedNm("jdoe");
-            c.setDueDt(now);
-            c.setRequestDt(now);
-            c.setCompleteDt(now);
-            c.setDvFlg((short) 1);
-            c.setFelonyFlg((short) 1);
-            c.setIndexFlg((short) 0);
-            c.setProactiveFlg((short) 0);
-            c.setParentId(50);
-            c.setVersion(1L);
-            c.setRowInsertTs(ts);
-            c.setRowUpdtTs(ts);
-
-            assertThat(c.getId()).isEqualTo(100);
-            assertThat(c.getArrId()).isEqualTo("ARR001");
-            assertThat(c.getAssignedNm()).isEqualTo("jdoe");
-            assertThat(c.getDueDt()).isEqualTo(now);
-            assertThat(c.getRequestDt()).isEqualTo(now);
-            assertThat(c.getCompleteDt()).isEqualTo(now);
-            assertThat(c.getDvFlg()).isEqualTo((short) 1);
-            assertThat(c.getFelonyFlg()).isEqualTo((short) 1);
-            assertThat(c.getIndexFlg()).isEqualTo((short) 0);
-            assertThat(c.getProactiveFlg()).isEqualTo((short) 0);
-            assertThat(c.getParentId()).isEqualTo(50);
-            assertThat(c.getVersion()).isEqualTo(1L);
-            assertThat(c.getRowInsertTs()).isEqualTo(ts);
-            assertThat(c.getRowUpdtTs()).isEqualTo(ts);
-        }
-
-        @Test
-        @DisplayName("setCategory and setAda and setStatus and setddd work")
-        void relationships_setAndGetCorrectly() {
-            DluCase c = new DluCase();
-            CategoryList cat = new CategoryList();
-            cat.setId(1);
-            AdaList ada = new AdaList();
-            ada.setId(2);
-            StatusList status = new StatusList();
-            status.setId(3);
-            DluOfficeList office = new DluOfficeList();
-            office.setId(4);
-
-            c.setCategory(cat);
-            c.setAda(ada);
-            c.setStatus(status);
-            c.setDlu(office);
-
-            assertThat(c.getCategory().getId()).isEqualTo(1);
-            assertThat(c.getAda().getId()).isEqualTo(2);
-            assertThat(c.getStatus().getId()).isEqualTo(3);
-            assertThat(c.getDlu().getId()).isEqualTo(4);
-        }
-
-        @Test
-        @DisplayName("can add items to collections")
-        void collections_canAddElements() {
-            DluCase c = new DluCase();
-            CaseItem item = new CaseItem();
-            CaseNote note = new CaseNote();
-            CaseTag tag = new CaseTag();
-            CaseUpload upload = new CaseUpload();
-
-            c.getItems().add(item);
-            c.getNotes().add(note);
-            c.getTags().add(tag);
-            c.getUploads().add(upload);
-
-            assertThat(c.getItems()).hasSize(1);
-            assertThat(c.getNotes()).hasSize(1);
-            assertThat(c.getTags()).hasSize(1);
-            assertThat(c.getUploads()).hasSize(1);
-        }
+    @Test
+    @DisplayName("default constructor creates instance")
+    void constructor_createsInstance() {
+        assertThat(caseTag).isNotNull();
     }
 
-    // =========================================================================
-    // DluCodeRef
-    // =========================================================================
-
-    @Nested
-    @DisplayName("DluCodeRef Entity")
-    class dddCodeRefTests {
-
-        @Test
-        @DisplayName("default constructor creates instance")
-        void defaultConstructor_createsInstance() {
-            DluCodeRef ref = new DluCodeRef();
-            assertThat(ref).isNotNull();
-        }
-
-        @Test
-        @DisplayName("getters and setters work correctly")
-        void gettersAndSetters_workCorrectly() {
-            Timestamp ts = new Timestamp(System.currentTimeMillis());
-            DluCodeRef ref = new DluCodeRef();
-
-            ref.setId(1);
-            ref.setCodeType("CHARGE_TYPE");
-            ref.setCodeVal("F");
-            ref.setCodeDesc("Felony");
-            ref.setRowInsertTs(ts);
-            ref.setRowUpdtTs(ts);
-
-            assertThat(ref.getId()).isEqualTo(1);
-            assertThat(ref.getCodeType()).isEqualTo("CHARGE_TYPE");
-            assertThat(ref.getCodeVal()).isEqualTo("F");
-            assertThat(ref.getCodeDesc()).isEqualTo("Felony");
-            assertThat(ref.getRowInsertTs()).isEqualTo(ts);
-            assertThat(ref.getRowUpdtTs()).isEqualTo(ts);
-        }
+    @Test
+    @DisplayName("id getter and setter")
+    void id_getterSetter() {
+        caseTag.setId(22);
+        assertThat(caseTag.getId()).isEqualTo(22);
     }
 
-    // =========================================================================
-    // dddOfficeList
-    // =========================================================================
-
-    @Nested
-    @DisplayName("dddOfficeList Entity")
-    class dddOfficeListTests {
-
-        @Test
-        @DisplayName("default constructor creates instance")
-        void defaultConstructor_createsInstance() {
-            DluOfficeList office = new DluOfficeList();
-            assertThat(office).isNotNull();
-        }
-
-        @Test
-        @DisplayName("getters and setters work correctly")
-        void gettersAndSetters_workCorrectly() {
-            Timestamp ts = new Timestamp(System.currentTimeMillis());
-            DluOfficeList office = new DluOfficeList();
-
-            office.setId(1);
-            office.setDluOfficeDesc("Manhattan");
-            office.setAdSgNm("ROLE_SG-ddd-ANALYST-MANHATTAN");
-            office.setInactiveFlg((short) 0);
-            office.setRowInsertTs(ts);
-            office.setRowUpdtTs(ts);
-
-            assertThat(office.getId()).isEqualTo(1);
-            assertThat(office.getDluOfficeDesc()).isEqualTo("Manhattan");
-            assertThat(office.getAdSgNm()).isEqualTo("ROLE_SG-ddd-ANALYST-MANHATTAN");
-            assertThat(office.getInactiveFlg()).isEqualTo((short) 0);
-            assertThat(office.getRowInsertTs()).isEqualTo(ts);
-            assertThat(office.getRowUpdtTs()).isEqualTo(ts);
-        }
+    @Test
+    @DisplayName("rowInsertTs getter and setter")
+    void rowInsertTs_getterSetter() {
+        Timestamp ts = new Timestamp(System.currentTimeMillis());
+        caseTag.setRowInsertTs(ts);
+        assertThat(caseTag.getRowInsertTs()).isEqualTo(ts);
     }
 
-    // =========================================================================
-    // CaseNote
-    // =========================================================================
-
-    @Nested
-    @DisplayName("CaseNote Entity")
-    class CaseNoteTests {
-
-        @Test
-        @DisplayName("default constructor creates instance")
-        void defaultConstructor_createsInstance() {
-            CaseNote note = new CaseNote();
-            assertThat(note).isNotNull();
-        }
-
-        @Test
-        @DisplayName("getters and setters work correctly")
-        void gettersAndSetters_workCorrectly() {
-            Timestamp ts = new Timestamp(System.currentTimeMillis());
-            CaseNote note = new CaseNote();
-            DluCase c = new DluCase();
-            CaseUpload upload = new CaseUpload();
-
-            note.setId(1);
-            note.setNoteDesc("Test note");
-            note.setUserNm("jdoe");
-            note.setDluCase(c);
-            note.setUpload(upload);
-            note.setRowInsertTs(ts);
-            note.setRowUpdtTs(ts);
-
-            assertThat(note.getId()).isEqualTo(1);
-            assertThat(note.getNoteDesc()).isEqualTo("Test note");
-            assertThat(note.getUserNm()).isEqualTo("jdoe");
-            assertThat(note.getDluCase()).isEqualTo(c);
-            assertThat(note.getUpload()).isEqualTo(upload);
-            assertThat(note.getRowInsertTs()).isEqualTo(ts);
-            assertThat(note.getRowUpdtTs()).isEqualTo(ts);
-        }
-
-        @Test
-        @DisplayName("upload is null by default")
-        void upload_isNullByDefault() {
-            CaseNote note = new CaseNote();
-            assertThat(note.getUpload()).isNull();
-        }
+    @Test
+    @DisplayName("rowUpdtTs getter and setter")
+    void rowUpdtTs_getterSetter() {
+        Timestamp ts = new Timestamp(System.currentTimeMillis());
+        caseTag.setRowUpdtTs(ts);
+        assertThat(caseTag.getRowUpdtTs()).isEqualTo(ts);
     }
 
-    // =========================================================================
-    // CategoryList
-    // =========================================================================
-
-    @Nested
-    @DisplayName("CategoryList Entity")
-    class CategoryListTests {
-
-        @Test
-        @DisplayName("default constructor creates instance")
-        void defaultConstructor_createsInstance() {
-            CategoryList cat = new CategoryList();
-            assertThat(cat).isNotNull();
-        }
-
-        @Test
-        @DisplayName("getters and setters work correctly")
-        void gettersAndSetters_workCorrectly() {
-            Timestamp ts = new Timestamp(System.currentTimeMillis());
-            CategoryList cat = new CategoryList();
-
-            cat.setId(1);
-            cat.setCategoryDesc("Shootings");
-            cat.setInactiveFlg((short) 0);
-            cat.setRowInsertTs(ts);
-            cat.setRowUpdtTs(ts);
-
-            assertThat(cat.getId()).isEqualTo(1);
-            assertThat(cat.getCategoryDesc()).isEqualTo("Shootings");
-            assertThat(cat.getInactiveFlg()).isEqualTo((short) 0);
-            assertThat(cat.getRowInsertTs()).isEqualTo(ts);
-            assertThat(cat.getRowUpdtTs()).isEqualTo(ts);
-        }
+    @Test
+    @DisplayName("tag relationship getter and setter")
+    void tag_getterSetter() {
+        TagList tagList = new TagList();
+        tagList.setId(5);
+        tagList.setTagDesc("Priority");
+        caseTag.setTag(tagList);
+        assertThat(caseTag.getTag()).isEqualTo(tagList);
+        assertThat(caseTag.getTag().getTagDesc()).isEqualTo("Priority");
     }
 
-    // =========================================================================
-    // ItemList
-    // =========================================================================
-
-    @Nested
-    @DisplayName("ItemList Entity")
-    class ItemListTests {
-
-        @Test
-        @DisplayName("default constructor creates instance")
-        void defaultConstructor_createsInstance() {
-            ItemList item = new ItemList();
-            assertThat(item).isNotNull();
-        }
-
-        @Test
-        @DisplayName("getters and setters work correctly")
-        void gettersAndSetters_workCorrectly() {
-            Timestamp ts = new Timestamp(System.currentTimeMillis());
-            ItemList item = new ItemList();
-
-            item.setId(1);
-            item.setItemDesc("ECMS");
-            item.setInactiveFlg((short) 0);
-            item.setRowInsertTs(ts);
-            item.setRowUpdtTs(ts);
-
-            assertThat(item.getId()).isEqualTo(1);
-            assertThat(item.getItemDesc()).isEqualTo("ECMS");
-            assertThat(item.getInactiveFlg()).isEqualTo((short) 0);
-            assertThat(item.getRowInsertTs()).isEqualTo(ts);
-            assertThat(item.getRowUpdtTs()).isEqualTo(ts);
-        }
+    @Test
+    @DisplayName("tag is null by default")
+    void tag_nullByDefault() {
+        assertThat(caseTag.getTag()).isNull();
     }
 
-    // =========================================================================
-    // StatusList
-    // =========================================================================
+    @Test
+    @DisplayName("dluCase relationship getter and setter")
+    void dluCase_getterSetter() {
+        DluCase dluCase = new DluCase();
+        dluCase.setId(15);
+        dluCase.setArrId("ARR-123");
+        caseTag.setDluCase(dluCase);
 
-    @Nested
-    @DisplayName("StatusList Entity")
-    class StatusListTests {
-
-        @Test
-        @DisplayName("default constructor creates instance")
-        void defaultConstructor_createsInstance() {
-            StatusList status = new StatusList();
-            assertThat(status).isNotNull();
-        }
-
-        @Test
-        @DisplayName("getters and setters work correctly")
-        void gettersAndSetters_workCorrectly() {
-            Timestamp ts = new Timestamp(System.currentTimeMillis());
-            StatusList status = new StatusList();
-
-            status.setId(1);
-            status.setStatusDesc("Completed");
-            status.setInactiveFlg((short) 0);
-            status.setRowInsertTs(ts);
-            status.setRowUpdtTs(ts);
-
-            assertThat(status.getId()).isEqualTo(1);
-            assertThat(status.getStatusDesc()).isEqualTo("Completed");
-            assertThat(status.getInactiveFlg()).isEqualTo((short) 0);
-            assertThat(status.getRowInsertTs()).isEqualTo(ts);
-            assertThat(status.getRowUpdtTs()).isEqualTo(ts);
-        }
+        // verify getDluCase() itself is covered, not just getDluCase().getId()
+        DluCase retrieved = caseTag.getDluCase();
+        assertThat(retrieved).isNotNull();
+        assertThat(retrieved.getId()).isEqualTo(15);
+        assertThat(retrieved.getArrId()).isEqualTo("ARR-123");
     }
 
-    // =========================================================================
-    // TagList
-    // =========================================================================
-
-    @Nested
-    @DisplayName("TagList Entity")
-    class TagListTests {
-
-        @Test
-        @DisplayName("default constructor creates instance")
-        void defaultConstructor_createsInstance() {
-            TagList tag = new TagList();
-            assertThat(tag).isNotNull();
-        }
-
-        @Test
-        @DisplayName("getters and setters work correctly")
-        void gettersAndSetters_workCorrectly() {
-            Timestamp ts = new Timestamp(System.currentTimeMillis());
-            TagList tag = new TagList();
-
-            tag.setId(1);
-            tag.setTagDesc("Gun");
-            tag.setInactiveFlg((short) 0);
-            tag.setRowInsertTs(ts);
-            tag.setRowUpdtTs(ts);
-
-            assertThat(tag.getId()).isEqualTo(1);
-            assertThat(tag.getTagDesc()).isEqualTo("Gun");
-            assertThat(tag.getInactiveFlg()).isEqualTo((short) 0);
-            assertThat(tag.getRowInsertTs()).isEqualTo(ts);
-            assertThat(tag.getRowUpdtTs()).isEqualTo(ts);
-        }
+    @Test
+    @DisplayName("dluCase is null by default")
+    void dluCase_nullByDefault() {
+        assertThat(caseTag.getDluCase()).isNull();
     }
 
-    // =========================================================================
-    // CaseTag
-    // =========================================================================
-
-    @Nested
-    @DisplayName("CaseTag Entity")
-    class CaseTagTests {
-
-        @Test
-        @DisplayName("default constructor creates instance")
-        void defaultConstructor_createsInstance() {
-            CaseTag caseTag = new CaseTag();
-            assertThat(caseTag).isNotNull();
-        }
-
-        @Test
-        @DisplayName("getters and setters work correctly")
-        void gettersAndSetters_workCorrectly() {
-            Timestamp ts = new Timestamp(System.currentTimeMillis());
-            CaseTag caseTag = new CaseTag();
-            TagList tag = new TagList();
-            tag.setId(1);
-            DluCase c = new DluCase();
-            c.setId(100);
-
-            caseTag.setId(1);
-            caseTag.setTag(tag);
-            caseTag.setDluCase(c);
-            caseTag.setRowInsertTs(ts);
-            caseTag.setRowUpdtTs(ts);
-
-            assertThat(caseTag.getId()).isEqualTo(1);
-            assertThat(caseTag.getTag().getId()).isEqualTo(1);
-            assertThat(caseTag.getDluCase().getId()).isEqualTo(100);
-            assertThat(caseTag.getRowInsertTs()).isEqualTo(ts);
-            assertThat(caseTag.getRowUpdtTs()).isEqualTo(ts);
-        }
-
-        @Test
-        @DisplayName("tag is null by default")
-        void tag_isNullByDefault() {
-            CaseTag caseTag = new CaseTag();
-            assertThat(caseTag.getTag()).isNull();
-        }
+    @Test
+    @DisplayName("timestamp fields are null by default")
+    void timestampFields_nullByDefault() {
+        assertThat(caseTag.getRowInsertTs()).isNull();
+        assertThat(caseTag.getRowUpdtTs()).isNull();
     }
 
-    // =========================================================================
-    // CaseItem
-    // =========================================================================
-
-    @Nested
-    @DisplayName("CaseItem Entity")
-    class CaseItemTests {
-
-        @Test
-        @DisplayName("default constructor creates instance")
-        void defaultConstructor_createsInstance() {
-            CaseItem item = new CaseItem();
-            assertThat(item).isNotNull();
-        }
-
-        @Test
-        @DisplayName("getters and setters work correctly")
-        void gettersAndSetters_workCorrectly() {
-            Timestamp ts = new Timestamp(System.currentTimeMillis());
-            CaseItem item = new CaseItem();
-            ItemList itemList = new ItemList();
-            itemList.setId(1);
-            DluCase c = new DluCase();
-            c.setId(100);
-
-            item.setId(1);
-            item.setNoteDesc("Evidence collected");
-            item.setQuantity(3);
-            item.setStatusDesc("Active");
-            item.setItem(itemList);
-            item.setDluCase(c);
-            item.setRowInsertTs(ts);
-            item.setRowUpdtTs(ts);
-
-            assertThat(item.getId()).isEqualTo(1);
-            assertThat(item.getNoteDesc()).isEqualTo("Evidence collected");
-            assertThat(item.getQuantity()).isEqualTo(3);
-            assertThat(item.getStatusDesc()).isEqualTo("Active");
-            assertThat(item.getItem().getId()).isEqualTo(1);
-            assertThat(item.getDluCase().getId()).isEqualTo(100);
-            assertThat(item.getRowInsertTs()).isEqualTo(ts);
-            assertThat(item.getRowUpdtTs()).isEqualTo(ts);
-        }
-
-        @Test
-        @DisplayName("quantity is null by default")
-        void quantity_isNullByDefault() {
-            CaseItem item = new CaseItem();
-            assertThat(item.getQuantity()).isNull();
-        }
+    @Test
+    @DisplayName("rowInsertTs stores distinct values correctly")
+    void rowInsertTs_storesDistinctValue() {
+        Timestamp ts1 = new Timestamp(1_000_000L);
+        Timestamp ts2 = new Timestamp(2_000_000L);
+        caseTag.setRowInsertTs(ts1);
+        assertThat(caseTag.getRowInsertTs()).isEqualTo(ts1);
+        caseTag.setRowInsertTs(ts2);
+        assertThat(caseTag.getRowInsertTs()).isEqualTo(ts2);
     }
 
-    // =========================================================================
-    // CaseUpload
-    // =========================================================================
-
-    @Nested
-    @DisplayName("CaseUpload Entity")
-    class CaseUploadTests {
-
-        @Test
-        @DisplayName("default constructor creates instance")
-        void defaultConstructor_createsInstance() {
-            CaseUpload upload = new CaseUpload();
-            assertThat(upload).isNotNull();
-        }
-
-        @Test
-        @DisplayName("getters and setters work correctly")
-        void gettersAndSetters_workCorrectly() {
-            Timestamp ts = new Timestamp(System.currentTimeMillis());
-            CaseUpload upload = new CaseUpload();
-            DluCase c = new DluCase();
-            c.setId(100);
-
-            upload.setId(1);
-            upload.setFileNm("evidence.pdf");
-            upload.setUserNm("jdoe");
-            upload.setDeletedFlg((short) 0);
-            upload.setDluCase(c);
-            upload.setRowInsertTs(ts);
-            upload.setRowUpdtTs(ts);
-
-            assertThat(upload.getId()).isEqualTo(1);
-            assertThat(upload.getFileNm()).isEqualTo("evidence.pdf");
-            assertThat(upload.getUserNm()).isEqualTo("jdoe");
-            assertThat(upload.getDeletedFlg()).isEqualTo((short) 0);
-            assertThat(upload.getDluCase().getId()).isEqualTo(100);
-            assertThat(upload.getRowInsertTs()).isEqualTo(ts);
-            assertThat(upload.getRowUpdtTs()).isEqualTo(ts);
-        }
-
-        @Test
-        @DisplayName("deletedFlg defaults to 0")
-        void deletedFlg_defaultsToZero() {
-            CaseUpload upload = new CaseUpload();
-            assertThat(upload.getDeletedFlg()).isEqualTo((short) 0);
-        }
-
-        @Test
-        @DisplayName("mark as deleted sets deletedFlg to 1")
-        void markAsDeleted_setsFlagToOne() {
-            CaseUpload upload = new CaseUpload();
-            upload.setDeletedFlg((short) 1);
-            assertThat(upload.getDeletedFlg()).isEqualTo((short) 1);
-        }
+    @Test
+    @DisplayName("rowUpdtTs stores distinct values correctly")
+    void rowUpdtTs_storesDistinctValue() {
+        Timestamp ts1 = new Timestamp(1_000_000L);
+        Timestamp ts2 = new Timestamp(2_000_000L);
+        caseTag.setRowUpdtTs(ts1);
+        assertThat(caseTag.getRowUpdtTs()).isEqualTo(ts1);
+        caseTag.setRowUpdtTs(ts2);
+        assertThat(caseTag.getRowUpdtTs()).isEqualTo(ts2);
     }
 }
