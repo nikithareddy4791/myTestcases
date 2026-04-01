@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.nnnn.ddd.entity.*;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,12 +22,12 @@ import static org.mockito.Mockito.*;
 @DisplayName("CaseSpecifications Tests")
 class CaseSpecificationsTest {
 
-    @Mock private Root<DluCase>         root;
-    @Mock private CriteriaQuery<?>      query;
-    @Mock private CriteriaBuilder       cb;
-    @Mock private Predicate             predicate;
-    @Mock private Path<Object>          path;
-    @Mock private Fetch<DluCase, ?>     fetch;
+    @Mock private Root<DluCase>     root;
+    @Mock private CriteriaQuery<?>  query;
+    @Mock private CriteriaBuilder   cb;
+    @Mock private Predicate         predicate;
+    @Mock private Path<Object>      path;
+    @Mock private Fetch<?, ?>       fetch;
 
     // =========================================================================
     // fetchDependencies()
@@ -42,7 +41,8 @@ class CaseSpecificationsTest {
         @DisplayName("fetches all associations when result type is not Long (non-count query)")
         void fetchDependencies_nonCountQuery_fetchesAllAssociations() {
             when(query.getResultType()).thenReturn((Class) DluCase.class);
-            when(root.fetch(anyString(), any(JoinType.class))).thenReturn(fetch);
+            // doReturn avoids the generic type mismatch that when().thenReturn(fetch) causes
+            doReturn(fetch).when(root).fetch(anyString(), any(JoinType.class));
             when(root.get("id")).thenReturn(path);
             when(cb.isNotNull(path)).thenReturn(predicate);
 
@@ -75,7 +75,8 @@ class CaseSpecificationsTest {
         @DisplayName("always returns isNotNull predicate on id regardless of query type")
         void fetchDependencies_alwaysReturnsIsNotNullPredicateOnId() {
             when(query.getResultType()).thenReturn((Class) DluCase.class);
-            when(root.fetch(anyString(), any(JoinType.class))).thenReturn(fetch);
+            // doReturn avoids the generic type mismatch that when().thenReturn(fetch) causes
+            doReturn(fetch).when(root).fetch(anyString(), any(JoinType.class));
             when(root.get("id")).thenReturn(path);
             when(cb.isNotNull(path)).thenReturn(predicate);
 
@@ -172,7 +173,7 @@ class CaseSpecificationsTest {
         @DisplayName("inner joins category and applies in() predicate on id")
         void hasCategories_innerJoinAndInPredicate() {
             List<Integer> ids = List.of(1, 2, 3);
-            when(root.join("category", JoinType.INNER)).thenReturn((Join) categoryJoin);
+            doReturn(categoryJoin).when(root).join("category", JoinType.INNER);
             when(categoryJoin.get("id")).thenReturn(categoryIdPath);
             when(categoryIdPath.in(ids)).thenReturn((Predicate) inPredicate);
 
@@ -202,7 +203,7 @@ class CaseSpecificationsTest {
         @DisplayName("inner joins ddd and applies in() predicate on id")
         void hasDluOfficesIn_innerJoinAndInPredicate() {
             List<Integer> ids = List.of(10, 20);
-            when(root.join("ddd", JoinType.INNER)).thenReturn((Join) dddJoin);
+            doReturn(dddJoin).when(root).join("ddd", JoinType.INNER);
             when(dddJoin.get("id")).thenReturn(officeIdPath);
             when(officeIdPath.in(ids)).thenReturn((Predicate) inPredicate);
 
@@ -224,17 +225,17 @@ class CaseSpecificationsTest {
     @DisplayName("hasTagsIn()")
     class HasTagsInTests {
 
-        @Mock private Join<DluCase, CaseTag>      caseTagJoin;
-        @Mock private Join<CaseTag, TagList>      tagJoin;
-        @Mock private Path<Object>                tagIdPath;
-        @Mock private CriteriaBuilder.In<Object>  inPredicate;
+        @Mock private Join<DluCase, CaseTag>     caseTagJoin;
+        @Mock private Join<CaseTag, TagList>     tagJoin;
+        @Mock private Path<Object>               tagIdPath;
+        @Mock private CriteriaBuilder.In<Object> inPredicate;
 
         @Test
         @DisplayName("inner joins tags then tag and applies in() predicate on id")
         void hasTagsIn_doubleInnerJoinAndInPredicate() {
             List<Integer> ids = List.of(5, 6, 7);
-            when(root.join("tags", JoinType.INNER)).thenReturn((Join) caseTagJoin);
-            when(caseTagJoin.join("tag", JoinType.INNER)).thenReturn((Join) tagJoin);
+            doReturn(caseTagJoin).when(root).join("tags", JoinType.INNER);
+            doReturn(tagJoin).when(caseTagJoin).join("tag", JoinType.INNER);
             when(tagJoin.get("id")).thenReturn(tagIdPath);
             when(tagIdPath.in(ids)).thenReturn((Predicate) inPredicate);
 
@@ -257,15 +258,15 @@ class CaseSpecificationsTest {
     @DisplayName("hasStatusesIn()")
     class HasStatusesInTests {
 
-        @Mock private Join<DluCase, StatusList>   statusJoin;
-        @Mock private Path<Object>                statusIdPath;
-        @Mock private CriteriaBuilder.In<Object>  inPredicate;
+        @Mock private Join<DluCase, StatusList>  statusJoin;
+        @Mock private Path<Object>               statusIdPath;
+        @Mock private CriteriaBuilder.In<Object> inPredicate;
 
         @Test
         @DisplayName("inner joins status and applies in() predicate on id")
         void hasStatusesIn_innerJoinAndInPredicate() {
             List<Integer> ids = List.of(100, 200);
-            when(root.join("status", JoinType.INNER)).thenReturn((Join) statusJoin);
+            doReturn(statusJoin).when(root).join("status", JoinType.INNER);
             when(statusJoin.get("id")).thenReturn(statusIdPath);
             when(statusIdPath.in(ids)).thenReturn((Predicate) inPredicate);
 
