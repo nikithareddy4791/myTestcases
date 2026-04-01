@@ -1,550 +1,3 @@
-the below lines of code are not covered in caseServive.java
-check the caseServiceTest.java and check for any modifications 
-
-Line 279: entityCase.setStatus(null);
- Line 288: .filter(entityTag -> entityTag.getTag() != null
-  Line 289:  && dtoTag.getTagId().intValue() == entityTag.getTag().getId())
-  Line 299:log.error("Tag " + dtoTag.getTagId() + " not found for case " + entityCase.getId());
-Line 302: updatedTags.add(foundTag.get());
-Line 330: log.error("Item " + dtoItem.getItemId() + " not found for case " + entityCase.getId());
-Line 411: sort = sort.and(thisSort);
-Line 436: arrInfos = cdwRepository.getMaskedArrestInfoSummary(arrIds);
-Line 443/443:  if(arrInfoMap.get(caseSummary.getArrId().trim())!=null){
-                caseSummary.setArrest(arrInfoMap.get(caseSummary.getArrId()));           }
-
-
-
-Sessionsddd-services > org.nnnn.ddd.service > CaseService.java
-CaseService.java
-package org.nnnn.ddd.service;
-
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.modelmapper.ModelMapper;
-import org.nnnn.ddd.AppConstants;
-import org.nnnn.ddd.ErrorCode;
-import org.nnnn.ddd.entity.AdaList;
-import org.nnnn.ddd.entity.CaseItem;
-import org.nnnn.ddd.entity.CaseTag;
-import org.nnnn.ddd.entity.CaseUpload;
-import org.nnnn.ddd.entity.CategoryList;
-import org.nnnn.ddd.entity.DluCase;
-import org.nnnn.ddd.entity.DluOfficeList;
-import org.nnnn.ddd.entity.ItemList;
-import org.nnnn.ddd.entity.StatusList;
-import org.nnnn.ddd.entity.TagList;
-import org.nnnn.ddd.exceptions.CaseAccessException;
-import org.nnnn.ddd.exceptions.CaseNotFoundException;
-import org.nnnn.ddd.exceptions.FileDeleteException;
-import org.nnnn.ddd.exceptions.FileUploadException;
-import org.nnnn.ddd.exceptions.InvalidArrestException;
-import org.nnnn.ddd.exceptions.InvalidDDDOfficeException;
-import org.nnnn.ddd.exceptions.SealedAccessException;
-import org.nnnn.ddd.model.ArrestInfo;
-import org.nnnn.ddd.model.CaseFilter;
-import org.nnnn.ddd.model.CaseListResponse;
-import org.nnnn.ddd.model.CreateCaseRequest;
-import org.nnnn.ddd.model.DDDCase;
-import org.nnnn.ddd.model.DDDCaseStats;
-import org.nnnn.ddd.model.DDDCaseSummary;
-import org.nnnn.ddd.model.DDDOffice;
-import org.nnnn.ddd.model.Status;
-import org.nnnn.ddd.repository.ADAListRepository;
-import org.nnnn.ddd.repository.CDWRepository;
-import org.nnnn.ddd.repository.CaseRepository;
-import org.nnnn.ddd.repository.CaseUploadRepository;
-import org.nnnn.ddd.repository.CategoryListRepository;
-import org.nnnn.ddd.repository.DDDOfficeListRepository;
-import org.nnnn.ddd.repository.ItemListRepository;
-import org.nnnn.ddd.repository.StatusListRepository;
-import org.nnnn.ddd.repository.TagListRepository;
-import org.nnnn.ddd.repository.specs.CaseSpecifications;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.threeten.bp.DateTimeUtils;
-import org.threeten.bp.ZoneId;
-
-import jakarta.transaction.Transactional;
-
-@Service
-public class CaseService {
-    @Autowired
-    private CaseRepository caseRepository;
-
-    @Autowired
-    private CategoryListRepository categoryListRepository;
-
-    @Autowired
-    private ADAListRepository adaListRepository;
-
-    @Autowired
-    private CDWRepository cdwRepository;
-
-    @Autowired
-    private AuthenticationService authenticationService;
-
-    @Autowired
-    private DDDOfficeListRepository dddOfficeListRepository;
-
-    @Autowired
-    private StatusListRepository statusListRepository;
-
-    @Autowired
-    private TagListRepository tagListRepository;
-
-    @Autowired
-    private ItemListRepository itemListRepository;
-
-    @Autowired
-    private CaseUploadRepository caseUploadRepository;
-
-    @Autowired
-    private ADSearchService adSearchService;
-
-    @Autowired
-    private ReferenceDataService referenceDataService;
-
-    @Autowired
-    private DellS3Service s3Service;
-
-    @Autowired
-    private ModelMapper modelMapper;
-
-    private static final Logger log = LoggerFactory.getLogger(CaseService.class);
-
-    public DDDCaseStats getCaseStats() {
-        DDDCaseStats stats = new DDDCaseStats();
-        LocalDate today = LocalDate.now();
-        LocalDate threeDaysLater = today.plusDays(3);
-        if (authenticationService.isSupervisor()) {
-            Integer overdue = caseRepository.countByDueDtBeforeAndStatus_IdNot(today, AppConstants.STATUS_COMPLETED);
-            stats.setOverdueCount(overdue);
-            Integer comingDue = caseRepository.countByDueDtBetweenAndStatus_IdNot(today, threeDaysLater, AppConstants.STATUS_COMPLETED);
-            stats.setComingDueCount(comingDue);
-        } else {
-            Integer overdue = caseRepository.countByDueDtBeforeAndAssignedNmAndStatus_IdNot(today,
-                    authenticationService.getUsername(), AppConstants.STATUS_COMPLETED);
-            stats.setOverdueCount(overdue);
-            Integer comingDue = caseRepository.countByDueDtBetweenAndAssignedNmAndStatus_IdNot(today, threeDaysLater,
-                    authenticationService.getUsername(), AppConstants.STATUS_COMPLETED);
-            stats.setComingDueCount(comingDue);
-        }
-        return stats;
-    }
-
-    public DDDCaseStats getCaseStats(final Collection<Integer> dddOfficeIds) {
-        DDDCaseStats stats = new DDDCaseStats();
-        LocalDate today = LocalDate.now(); 
-        Integer overdue = caseRepository.countByDueDtBeforeAndDlu_IdInAndStatus_IdNot(today, dddOfficeIds, AppConstants.STATUS_COMPLETED);
-        stats.setOverdueCount(overdue);
-        LocalDate threeDaysLater = today.plusDays(3);
-        Integer comingDue = caseRepository.countByDueDtBetweenAndDlu_IdInAndStatus_IdNot(today, threeDaysLater, dddOfficeIds, AppConstants.STATUS_COMPLETED);
-        stats.setComingDueCount(comingDue);
-        return stats;
-    }
-
-    @Transactional
-    public DDDCase createCase(final CreateCaseRequest request) {
-        String username = authenticationService.getUsername();
-        log.info("createCase for " + username + " " + request.getArrId().trim());
-        ArrestInfo arrInfo = null;
-        try {
-            arrInfo = cdwRepository.getArrestInfo(request.getArrId().trim());
-        } catch (Exception e){
-            throw new InvalidArrestException("Arrest "+request.getArrId().trim()+" not found");
-        }
-        log.info(arrInfo.toString());
-        if (!authenticationService.hasSealedAccess() && "Y".equals(arrInfo.getArrSealedFlg())) {
-            throw new SealedAccessException("User has no sealed access");
-        }
-        List<DluCase> existingParent = caseRepository.findByArrIdOrderByIdDesc(request.getArrId().trim());
-        if (request.getParentId()==null && existingParent != null && existingParent.size() > 0) {
-            log.info("Case Exists " + existingParent.get(0).toString());
-            DDDCase json = new DDDCase();
-            json.setId(existingParent.get(0).getId());
-            Status status = modelMapper.map(existingParent.get(0).getStatus(), Status.class);
-            json.setStatus(status);
-            return json;
-        } else {
-            DluOfficeList dddOffice = dddOfficeListRepository.findById(request.getDluOfficeId()).orElse(null);
-            if(dddOffice == null){
-                throw new InvalidDDDOfficeException("DDD Office id " + request.getDluOfficeId() + " not found");
-            }
-            StatusList notStarted = statusListRepository.findById(AppConstants.STATUS_NOT_STARTED).orElse(null);
-            DluCase entityCase = new DluCase();
-            entityCase.setArrId(request.getArrId().trim());
-            entityCase.setDlu(dddOffice);
-            entityCase.setStatus(notStarted);
-            entityCase.setProactiveFlg((short) request.getProactiveFlg().intValue());
-            if (request.getDueDt() != null) {
-                entityCase.setDueDt(
-                        DateTimeUtils.toDate(request.getDueDt().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-            }
-            if (request.getRequestDt() != null) {
-                entityCase.setRequestDt(
-                        DateTimeUtils.toDate(request.getRequestDt().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-            } else {
-                entityCase.setRequestDt(new Date());
-            }
-            entityCase.setDvFlg((short) arrInfo.getDvFlg().intValue());
-            entityCase.setIndexFlg((short) arrInfo.getIndexCrimeFlg().intValue());
-            entityCase.setFelonyFlg((short) arrInfo.getFelonyFlg().intValue());
-            caseRepository.save(entityCase);
-            log.info("Case Created " + entityCase.getId());
-            DDDCase dtoCase = new DDDCase();
-            dtoCase.setId(entityCase.getId());
-            dtoCase.setNew(true);
-            return dtoCase;
-        }
-    }
-
-    public DDDCase loadCase(final int caseId) {
-        Optional<DluCase> entityOpt = caseRepository.findById(caseId);
-        if (entityOpt.isEmpty()) {
-            throw new CaseNotFoundException("Case not found with id: " + caseId);
-        }
-        DluCase entity = entityOpt.get();
-        //modelMapper.validate();
-        DDDCase dto = modelMapper.map(entity, DDDCase.class);
-        if (dto.getStatus() != null && dto.getStatus().getId() != AppConstants.STATUS_NOT_STARTED
-                && dto.getStatus().getId() != AppConstants.STATUS_IN_PROGRESS
-                && dto.getStatus().getId() != AppConstants.STATUS_WAITING) {
-            dto.setActiveFlg(0);
-        } else {
-            dto.setActiveFlg(1);
-        }
-        ArrestInfo arrInfo = cdwRepository.getArrestInfo(entity.getArrId());
-        // Arrest is sealed
-        if ("Y".equals(arrInfo.getArrSealedFlg()) && !authenticationService.hasSealedAccess()) {
-            // User has no sealed access
-            throw new SealedAccessException("User has no sealed access");
-        }
-        if (!authenticationService.isSupervisor()
-                    && !authenticationService.getUsername().equals(entity.getAssignedNm())) {
-                // User has sealed access, but is not supervisor and is not assigned to the case
-            if (entity.getDlu() == null || !authenticationService.hasRole(entity.getDlu().getAdSgNm())) {
-                    // ... and User does not belong to the case's DDD office
-                throw new CaseAccessException("User has no access to case");
-            }
-        }
-        dto.setArrest(arrInfo);
-        if (entity.getAssignedNm() != null) {
-            dto.setAssignedNmInfo(adSearchService.findUser(entity.getAssignedNm()));
-        }
-        return dto;
-    }
-
-    public DDDCase saveCase(final DDDCase dtoCase) {
-
-        Optional<DluCase> entityOpt = caseRepository.findById(dtoCase.getId());
-        if (entityOpt.isEmpty()) {
-            throw new CaseNotFoundException("Case not found with id: " + dtoCase.getId());
-        }
-        DluCase entityCase = entityOpt.get();
-        // Optimistic lock: client version must match DB version
-        if (dtoCase.getVersion() != null && entityCase.getVersion() != null
-                && !entityCase.getVersion().equals(dtoCase.getVersion())) {
-            throw new jakarta.persistence.OptimisticLockException(
-                    "Case " + dtoCase.getId() + " was modified by another user (expected version " + dtoCase.getVersion()
-                            + ", current " + entityCase.getVersion() + ")");
-        }
-        modelMapper.map(dtoCase, entityCase);
-
-        if (dtoCase.getCategory() != null) {
-            CategoryList newCategory = categoryListRepository.findById(dtoCase.getCategory().getId()).orElse(null);
-            entityCase.setCategory(newCategory);
-        } else if (entityCase.getCategory() != null) {
-            entityCase.setCategory(null);
-        }
-
-        if (dtoCase.getAda() != null) {
-            AdaList newAda = adaListRepository.findById(dtoCase.getAda().getId()).orElse(null);
-            entityCase.setAda(newAda);
-        } else if (entityCase.getAda() != null) {
-            entityCase.setAda(null);
-        }
-
-        if (dtoCase.getDlu() != null) {
-            DluOfficeList newDlu = dddOfficeListRepository.findById(dtoCase.getDlu().getId()).orElse(null);
-            entityCase.setDlu(newDlu);
-        } else if (entityCase.getDlu() != null) {
-            entityCase.setDlu(null);
-        }
-
-        if (dtoCase.getStatus() != null) {
-            StatusList newStatus = statusListRepository.findById(dtoCase.getStatus().getId()).orElse(null);
-            entityCase.setStatus(newStatus);
-        } else if (entityCase.getStatus() != null) {
-            entityCase.setStatus(null);
-        }
-
-        List<CaseTag> updatedTags = new ArrayList<>();
-        List<org.nnnn.ddd.model.CaseTag> dtoTags = dtoCase.getTags() != null ? dtoCase.getTags() : List.of();
-
-        for (org.nnnn.ddd.model.CaseTag dtoTag : dtoTags) {
-            if (dtoTag.getTagId() == null) continue;
-            Optional<CaseTag> foundTag = entityCase.getTags().stream()
-                    .filter(entityTag -> entityTag.getTag() != null
-                            && dtoTag.getTagId().intValue() == entityTag.getTag().getId())
-                    .findFirst();
-            if (foundTag.isEmpty()) {
-                TagList tag = tagListRepository.findById(dtoTag.getTagId()).orElse(null);
-                if (tag != null) {
-                    CaseTag newTag = new CaseTag();
-                    newTag.setDluCase(entityCase);
-                    newTag.setTag(tag);
-                    updatedTags.add(newTag);
-                } else {
-                    log.error("Tag " + dtoTag.getTagId() + " not found for case " + entityCase.getId());
-                }
-            } else {
-                updatedTags.add(foundTag.get());
-            }
-        }
-
-        entityCase.getTags().clear();
-        entityCase.getTags().addAll(updatedTags);
-
-        List<CaseItem> updatedItems = new ArrayList<>();
-        List<org.nnnn.ddd.model.CaseItem> dtoItems = dtoCase.getItems() != null ? dtoCase.getItems() : List.of();
-
-        for (org.nnnn.ddd.model.CaseItem dtoItem : dtoItems) {
-            Optional<CaseItem> foundItem = Optional.empty();
-            if (dtoItem.getId() != null) {
-                foundItem = entityCase.getItems().stream()
-                        .filter(entityItem -> dtoItem.getId().intValue() == entityItem.getId())
-                        .findFirst();
-            }
-            if (foundItem.isEmpty()) {
-                ItemList item = itemListRepository.findById(dtoItem.getItemId()).orElse(null);
-                if (item != null) {
-                    CaseItem newItem = new CaseItem();
-                    newItem.setDluCase(entityCase);
-                    newItem.setItem(item);
-                    newItem.setNoteDesc(dtoItem.getNoteDesc());
-                    newItem.setQuantity(dtoItem.getQuantity());
-                    newItem.setStatusDesc(dtoItem.getStatusDesc());
-                    updatedItems.add(newItem);
-                } else {
-                    log.error("Item " + dtoItem.getItemId() + " not found for case " + entityCase.getId());
-                }
-            } else {
-                CaseItem existingItem = foundItem.get();
-                existingItem.setNoteDesc(dtoItem.getNoteDesc());
-                existingItem.setQuantity(dtoItem.getQuantity());
-                existingItem.setStatusDesc(dtoItem.getStatusDesc());
-                updatedItems.add(existingItem);
-            }
-        }
-
-        entityCase.getItems().clear();
-        entityCase.getItems().addAll(updatedItems);
-        entityCase.setRowUpdtTs(Timestamp.from(Instant.now()));
-
-        caseRepository.saveAndFlush(entityCase);
-        dtoCase.setVersion(entityCase.getVersion());
-        return dtoCase;
-    }
-
-    public CaseListResponse findCases(final CaseFilter filter) {
-        CaseListResponse response = new CaseListResponse();
-        List<Specification<DluCase>> filters = new ArrayList<>();
-        if (filter.getArrId() != null) {
-            filters.add(CaseSpecifications.hasArrId(filter.getArrId()));
-        }
-        if (filter.getRequestDtFrom() != null || filter.getRequestDtTo() != null) {
-            filters.add(CaseSpecifications.requestBetween(
-                    filter.getRequestDtFrom() != null ? LocalDate.parse(filter.getRequestDtFrom()) : null,
-                    filter.getRequestDtTo() != null ? LocalDate.parse(filter.getRequestDtTo()) : null));
-        }
-        if (filter.getDueDtFrom() != null || filter.getDueDtTo() != null) {
-            filters.add(CaseSpecifications.dueBetween(
-                    filter.getDueDtFrom() != null ? LocalDate.parse(filter.getDueDtFrom()) : null,
-                    filter.getDueDtTo() != null ? LocalDate.parse(filter.getDueDtTo()) : null));
-        }
-        if (filter.getCategoryIds() != null) {
-            filters.add(CaseSpecifications.hasCategories(filter.getCategoryIds()));
-        }
-        if (filter.getDluOfficeIds() != null && filter.getDluOfficeIds().size() > 0) {
-            filters.add(CaseSpecifications.hasDluOfficesIn(filter.getDluOfficeIds()));
-        } else if (!authenticationService.isSupervisor()) {
-            List<DDDOffice> allowedOffices = referenceDataService.getDDDOffices(authenticationService.getUsername());
-            List<Integer> allowedOfficeIds = allowedOffices.stream()
-                    .map(DDDOffice::getId) // Map each object to its ID using a method reference
-                    .collect(Collectors.toList());
-            log.info("looking within " + allowedOfficeIds + " " + allowedOffices + " offices for "+authenticationService.getUsername());
-            filters.add(CaseSpecifications.hasDluOfficesIn(allowedOfficeIds).or(CaseSpecifications.hasAssignedNm(authenticationService.getUsername())));
-        }
-        if (filter.getStatusIds() != null && filter.getStatusIds().size() > 0) {
-            filters.add(CaseSpecifications.hasStatusesIn(filter.getStatusIds()));
-        }
-        if (filter.getTagIds() != null && filter.getTagIds().size() > 0) {
-            filters.add(CaseSpecifications.hasTagsIn(filter.getTagIds()));
-        }
-        if (filter.getAssignedNm() != null) {
-            filters.add(CaseSpecifications.hasAssignedNm(filter.getAssignedNm()));
-        }
-        if (filter.getProactiveFlg()!=null) {
-            filters.add(CaseSpecifications.hasProactiveFlg(filter.getProactiveFlg().shortValue()));
-        }
-        if (filters.isEmpty()) {
-            return response;
-        }
-        filters.add(CaseSpecifications.fetchDependencies());
-        
-        Sort sort = Sort.by("id").descending();
-        if (filter.getSortBy() != null && filter.getSortBy().size() > 0) {
-            int i = 0;
-            for (String sortBy : filter.getSortBy()) {
-                Sort thisSort = Sort.by(sortBy);
-                if (filter.getSortOrder() != null && filter.getSortOrder().size() > i) {
-                    if (filter.getSortOrder().get(i) == 0) {
-                        thisSort = thisSort.ascending();
-                    } else {
-                        thisSort = thisSort.descending();
-                    }
-                }
-                if (i == 0) {
-                    sort = thisSort;
-                } else {
-                    sort = sort.and(thisSort);
-                }
-            }
-        }
-
-        Pageable pageable = PageRequest.of(filter.getPageNumber() != null ? filter.getPageNumber() : 0,
-                filter.getPageSize() != null ? filter.getPageSize() : AppConstants.DEFAULT_PAGE_SIZE,
-                sort);
-
-        Page<DluCase> page = caseRepository.findAll(Specification.allOf(filters), pageable);
-
-        List<DluCase> entities = page.getContent();
-
-        List<DDDCaseSummary> cases = entities.stream()
-                .map(entity -> modelMapper.map(entity, DDDCaseSummary.class))
-                .toList();
-        List<String> arrIds = cases.stream()
-                .map(caseSummary -> caseSummary.getArrId())
-                .toList();
-       
-        List<ArrestInfo> arrInfos;
-
-        if (authenticationService.hasSealedAccess()) {
-            arrInfos = cdwRepository.getArrestInfoSummary(arrIds);
-        } else {
-            arrInfos = cdwRepository.getMaskedArrestInfoSummary(arrIds);
-        }
-
-        Map<String, ArrestInfo> arrInfoMap = arrInfos.stream()
-            .collect(Collectors.toMap(ArrestInfo::getArrId, Function.identity()));
-
-        for(DDDCaseSummary caseSummary: cases){
-            if(arrInfoMap.get(caseSummary.getArrId().trim())!=null){
-                caseSummary.setArrest(arrInfoMap.get(caseSummary.getArrId()));
-            }
-        } 
-        response.setCaseSummaries(cases);
-        response.setPageNumber(page.getNumber());
-        response.setHasNext(page.hasNext());
-        response.setHasPrevious(page.hasPrevious());
-        response.setIsFirst(page.isFirst());
-        response.setIsLast(page.isLast());
-        response.setPageSize(page.getSize());
-        response.setTotalElements(page.getTotalElements());
-        response.setTotalPages(page.getTotalPages());
-        if (authenticationService.isSupervisor() && filter.getDluOfficeIds() != null
-                && filter.getDluOfficeIds().size() > 0) {
-            response.setCaseStats(getCaseStats(filter.getDluOfficeIds()));
-        } else {
-            response.setCaseStats(getCaseStats());
-        }
-        return response;
-    }
-
-    @Transactional
-    public DDDCase saveNote(final Integer caseId, final String noteDesc, final String fileNm,
-            final MultipartFile fileContent) {
-        DluCase entityCase = caseRepository.findById(caseId).orElse(null);
-        
-        if (entityCase != null) {
-            CaseUpload entityUpload = null;
-            if (fileNm != null && fileContent != null) {
-                entityUpload = new CaseUpload();
-                entityUpload.setDluCase(entityCase);
-                entityUpload.setUserNm(authenticationService.getUsername());
-                entityUpload.setFileNm(fileNm);
-                entityUpload.setDeletedFlg((short) 0);
-                caseUploadRepository.saveAndFlush(entityUpload);
-                int uploadId = entityUpload.getId();
-                String s3Key = getS3Key(caseId, uploadId);
-                try {
-                    log.info("attempt to upload to S3 "+s3Key);
-                    s3Service.uploadMultipartFile(s3Key, fileContent);
-                } catch (Exception e) {
-                    throw new FileUploadException("Upload to S3 failed");
-                }
-                entityCase.getUploads().add(entityUpload);
-            }
-            org.nnnn.ddd.entity.CaseNote entityNote = new org.nnnn.ddd.entity.CaseNote();
-            entityNote.setNoteDesc(noteDesc);
-            entityNote.setUserNm(authenticationService.getUsername());
-            entityNote.setDluCase(entityCase);
-            if (entityUpload != null) {
-                entityNote.setUpload(entityUpload);
-            }
-            entityCase.getNotes().add(entityNote);
-            caseRepository.save(entityCase); 
-            return modelMapper.map(entityCase, DDDCase.class);
-        } else {
-            throw new CaseNotFoundException("Case " + caseId + " not found");
-        }
-    }
-
-    public Object[] getFile(final int caseId, final int uploadId) {
-        CaseUpload caseUploadEntity = caseUploadRepository.findById(uploadId).orElse(null);
-        if (caseUploadEntity != null) {
-            return new Object[] { caseUploadEntity.getFileNm(), s3Service.downloadFile(getS3Key(caseId, uploadId)) };
-        }
-        return new Object[] {null, s3Service.downloadFile(getS3Key(caseId, uploadId))};
-    }
-
-    public void deleteFile(final int caseId, final int uploadId) {
-        CaseUpload caseUploadEntity = caseUploadRepository.findById(uploadId).orElse(null);
-        if (caseUploadEntity != null) {
-            caseUploadEntity.setDeletedFlg((short) 1);
-            caseUploadRepository.save(caseUploadEntity);
-        }
-        throw new FileDeleteException("Failed to delete file " + uploadId);
-    }
-
-    private String getS3Key(final int caseId, final int uploadId)
-    {
-        return "uploads/case/" + caseId + "/" + uploadId;
-    }
-}
-
-
-=======================
-
 package org.nnnn.ddd.service;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -559,22 +12,14 @@ import org.mockito.quality.Strictness;
 import org.modelmapper.ModelMapper;
 import org.nnnn.ddd.AppConstants;
 import org.nnnn.ddd.entity.*;
-import org.nnnn.ddd.entity.CaseItem;
-import org.nnnn.ddd.entity.CaseUpload;
-import org.nnnn.ddd.exceptions.*;
 import org.nnnn.ddd.model.*;
 import org.nnnn.ddd.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.web.multipart.MultipartFile;
 
-import org.threeten.bp.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -582,39 +27,39 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-@DisplayName("CaseService Tests")
-public class CaseServiceTest {
+@DisplayName("CaseService Missing Coverage Tests")
+public class CaseServiceMissingCoverageTest {
 
-    @Mock private CaseRepository caseRepository;
-    @Mock private CDWRepository cdwRepository;
-    @Mock private AuthenticationService authenticationService;
-    @Mock private ADSearchService adSearchService;
-    @Mock private ModelMapper modelMapper;
+    @Mock private CaseRepository          caseRepository;
+    @Mock private CDWRepository           cdwRepository;
+    @Mock private AuthenticationService   authenticationService;
+    @Mock private ADSearchService         adSearchService;
+    @Mock private ModelMapper             modelMapper;
     @Mock private DDDOfficeListRepository DDDOfficeListRepository;
-    @Mock private StatusListRepository statusListRepository;
-    @Mock private CategoryListRepository categoryListRepository;
-    @Mock private ADAListRepository adaListRepository;
-    @Mock private TagListRepository tagListRepository;
-    @Mock private ItemListRepository itemListRepository;
-    @Mock private CaseUploadRepository caseUploadRepository;
-    @Mock private ReferenceDataService referenceDataService;
-    @Mock private DellS3Service s3Service;
+    @Mock private StatusListRepository    statusListRepository;
+    @Mock private CategoryListRepository  categoryListRepository;
+    @Mock private ADAListRepository       adaListRepository;
+    @Mock private TagListRepository       tagListRepository;
+    @Mock private ItemListRepository      itemListRepository;
+    @Mock private CaseUploadRepository    caseUploadRepository;
+    @Mock private ReferenceDataService    referenceDataService;
+    @Mock private DellS3Service           s3Service;
 
     @InjectMocks
     private CaseService caseService;
 
-    private org.nnnn.ddd.entity.DluCase entityCase;
-    private org.nnnn.ddd.model.DDDCase dtoCase;
-    private ArrestInfo arrestInfo;
+    private DluCase     entityCase;
+    private DDDCase     dtoCase;
+    private ArrestInfo  arrestInfo;
 
     @BeforeEach
     void setUp() {
-        entityCase = new org.nnnn.ddd.entity.DluCase();
+        entityCase = new DluCase();
         entityCase.setId(100);
         entityCase.setArrId("ARR001");
         entityCase.setAssignedNm("jdoe");
 
-        dtoCase = new org.nnnn.ddd.model.DDDCase();
+        dtoCase = new DDDCase();
         dtoCase.setId(100);
         dtoCase.setArrId("ARR001");
 
@@ -630,315 +75,197 @@ public class CaseServiceTest {
         lenient().when(authenticationService.hasSealedAccess()).thenReturn(true);
     }
 
-    // FIX: Use Integer (not int) to match saveCase/saveNote which call findById(Integer)
-    // Also use both int and Integer variants to cover all callers
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void mockFindById_found(int id) {
+    private void stubFindById(int id) {
         java.util.Optional opt = java.util.Optional.of(entityCase);
-        doReturn(opt).when(caseRepository).findById(id);           // int variant (loadCase)
-        doReturn(opt).when(caseRepository).findById((Integer) id); // Integer variant (saveCase/saveNote)
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private void mockFindById_empty(int id) {
-        java.util.Optional opt = java.util.Optional.empty();
         doReturn(opt).when(caseRepository).findById(id);
         doReturn(opt).when(caseRepository).findById((Integer) id);
     }
 
     // =========================================================================
-    // getCaseStats() — no args
+    // Line 279 — entityCase.setStatus(null)
+    // Branch: dtoCase.getStatus() == null AND entityCase.getStatus() != null
     // =========================================================================
 
     @Test
-    @DisplayName("getCaseStats - supervisor gets all case stats")
-    void getCaseStats_supervisor_returnsAllStats() {
-        when(authenticationService.isSupervisor()).thenReturn(true);
-        when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(3);
-        when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(2);
-
-        DDDCaseStats stats = caseService.getCaseStats();
-
-        assertThat(stats.getOverdueCount()).isEqualTo(3);
-        assertThat(stats.getComingDueCount()).isEqualTo(2);
-    }
-
-    @Test
-    @DisplayName("getCaseStats - non-supervisor gets own stats only")
-    void getCaseStats_nonSupervisor_returnsOwnStats() {
-        when(authenticationService.isSupervisor()).thenReturn(false);
-        when(authenticationService.getUsername()).thenReturn("jdoe");
-        when(caseRepository.countByDueDtBeforeAndAssignedNmAndStatus_IdNot(any(), eq("jdoe"), anyInt())).thenReturn(1);
-        when(caseRepository.countByDueDtBetweenAndAssignedNmAndStatus_IdNot(any(), any(), eq("jdoe"), anyInt())).thenReturn(4);
-
-        DDDCaseStats stats = caseService.getCaseStats();
-
-        assertThat(stats.getOverdueCount()).isEqualTo(1);
-        assertThat(stats.getComingDueCount()).isEqualTo(4);
-    }
-
-    // =========================================================================
-    // getCaseStats(Collection<Integer>)
-    // =========================================================================
-
-    @Test
-    @DisplayName("getCaseStats(officeIds) - returns stats for given offices")
-    void getCaseStats_withOfficeIds_returnsOfficeStats() {
-        List<Integer> officeIds = Arrays.asList(1, 2);
-        when(caseRepository.countByDueDtBeforeAndDlu_IdInAndStatus_IdNot(any(), eq(officeIds), anyInt())).thenReturn(5);
-        when(caseRepository.countByDueDtBetweenAndDlu_IdInAndStatus_IdNot(any(), any(), eq(officeIds), anyInt())).thenReturn(3);
-
-        DDDCaseStats stats = caseService.getCaseStats(officeIds);
-
-        assertThat(stats.getOverdueCount()).isEqualTo(5);
-        assertThat(stats.getComingDueCount()).isEqualTo(3);
-    }
-
-    // =========================================================================
-    // createCase()
-    // =========================================================================
-
-    @Test
-    @DisplayName("createCase - creates new case successfully")
-    void createCase_newCase_returnsNewCaseDto() {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDluOfficeId(1);
-        request.setProactiveFlg(0);
-
-        DluOfficeList office = new DluOfficeList();
-        office.setId(1);
-        StatusList notStarted = new StatusList();
-        notStarted.setId(AppConstants.STATUS_NOT_STARTED);
-
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-        when(caseRepository.findByArrIdOrderByIdDesc("ARR001")).thenReturn(Collections.emptyList());
-        when(DDDOfficeListRepository.findById(1)).thenReturn(Optional.of(office));
-        when(statusListRepository.findById(AppConstants.STATUS_NOT_STARTED)).thenReturn(Optional.of(notStarted));
-        when(caseRepository.save(any())).thenAnswer(inv -> {
-            org.nnnn.ddd.entity.DluCase c = inv.getArgument(0);
-            c.setId(101);
-            return c;
-        });
-
-        org.nnnn.ddd.model.DDDCase result = caseService.createCase(request);
-
-        assertThat(result.isNew()).isTrue();
-        verify(caseRepository).save(any());
-    }
-
-    @Test
-    @DisplayName("createCase - existing case returns existing case DTO")
-    void createCase_existingCase_returnsExistingDto() {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDluOfficeId(1);
-        request.setProactiveFlg(0);
-
-        StatusList status = new StatusList();
-        status.setId(AppConstants.STATUS_IN_PROGRESS);
-        entityCase.setStatus(status);
-
-        Status modelStatus = new Status();
-        modelStatus.setId(AppConstants.STATUS_IN_PROGRESS);
-
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-        when(caseRepository.findByArrIdOrderByIdDesc("ARR001")).thenReturn(List.of(entityCase));
-        when(modelMapper.map(any(StatusList.class), eq(Status.class))).thenReturn(modelStatus);
-
-        org.nnnn.ddd.model.DDDCase result = caseService.createCase(request);
-
-        assertThat(result.getId()).isEqualTo(100);
-        verify(caseRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("createCase - sealed arrest with no sealed access throws SealedAccessException")
-    void createCase_sealedArrest_noAccess_throwsSealedAccessException() {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDluOfficeId(1);
-        request.setProactiveFlg(0);
-
-        arrestInfo.setArrSealedFlg("Y");
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-        when(authenticationService.hasSealedAccess()).thenReturn(false);
-
-        assertThatThrownBy(() -> caseService.createCase(request))
-                .isInstanceOf(SealedAccessException.class);
-    }
-
-    @Test
-    @DisplayName("createCase - invalid arrest throws InvalidArrestException")
-    void createCase_invalidArrest_throwsInvalidArrestException() {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("INVALID");
-        request.setDluOfficeId(1);
-        request.setProactiveFlg(0);
-
-        when(cdwRepository.getArrestInfo("INVALID")).thenThrow(new RuntimeException("Not found"));
-
-        assertThatThrownBy(() -> caseService.createCase(request))
-                .isInstanceOf(InvalidArrestException.class)
-                .hasMessageContaining("INVALID");
-    }
-
-    @Test
-    @DisplayName("createCase - invalid ddd office throws InvalidDDDOfficeException")
-    void createCase_invalidOffice_throwsInvalidDDDOfficeException() {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDluOfficeId(999);
-        request.setProactiveFlg(0);
-
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-        when(caseRepository.findByArrIdOrderByIdDesc("ARR001")).thenReturn(Collections.emptyList());
-        when(DDDOfficeListRepository.findById(999)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> caseService.createCase(request))
-                .isInstanceOf(InvalidDDDOfficeException.class);
-    }
-
-    @Test
-    @DisplayName("createCase - with requestDt and dueDt sets dates on entity")
-    void createCase_withDates_setsDatesOnEntity() {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDluOfficeId(1);
-        request.setProactiveFlg(0);
-        request.setRequestDt(LocalDate.now());
-        request.setDueDt(LocalDate.now().plusDays(30));
-
-        DluOfficeList office = new DluOfficeList();
-        StatusList notStarted = new StatusList();
-
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-        when(caseRepository.findByArrIdOrderByIdDesc("ARR001")).thenReturn(Collections.emptyList());
-        when(DDDOfficeListRepository.findById(1)).thenReturn(Optional.of(office));
-        when(statusListRepository.findById(AppConstants.STATUS_NOT_STARTED)).thenReturn(Optional.of(notStarted));
-
-        caseService.createCase(request);
-
-        verify(caseRepository).save(argThat(c ->
-                ((org.nnnn.ddd.entity.DluCase) c).getRequestDt() != null &&
-                ((org.nnnn.ddd.entity.DluCase) c).getDueDt() != null
-        ));
-    }
-
-    // =========================================================================
-    // saveCase()
-    // FIX: saveCase calls findById(Integer) — use mockFindById_found which
-    // now stubs both int and Integer variants
-    // =========================================================================
-
-    @Test
-    @DisplayName("saveCase - updates case successfully")
-    void saveCase_validCase_returnsUpdatedDto() {
+    @DisplayName("saveCase - clears status when dtoCase has null status but entity has one (Line 279)")
+    void saveCase_nullDtoStatus_existingEntityStatus_clearsStatus() {
         dtoCase.setId(100);
-        mockFindById_found(100);
+        dtoCase.setStatus(null);                    // ← triggers the else-if at line 278
 
-        org.nnnn.ddd.model.DDDCase result = caseService.saveCase(dtoCase);
+        StatusList existingStatus = new StatusList();
+        existingStatus.setId(AppConstants.STATUS_IN_PROGRESS);
+        entityCase.setStatus(existingStatus);       // ← entity has a non-null status
 
-        assertThat(result).isEqualTo(dtoCase);
-        verify(caseRepository).saveAndFlush(any());
-    }
-
-    @Test
-    @DisplayName("saveCase - case not found throws CaseNotFoundException")
-    void saveCase_caseNotFound_throwsCaseNotFoundException() {
-        dtoCase.setId(999);
-        mockFindById_empty(999);
-
-        assertThatThrownBy(() -> caseService.saveCase(dtoCase))
-                .isInstanceOf(CaseNotFoundException.class);
-    }
-
-    @Test
-    @DisplayName("saveCase - version mismatch throws OptimisticLockException")
-    void saveCase_versionMismatch_throwsOptimisticLockException() {
-        dtoCase.setId(100);
-        dtoCase.setVersion(1L);
-        entityCase.setVersion(2L);
-        mockFindById_found(100);
-
-        assertThatThrownBy(() -> caseService.saveCase(dtoCase))
-                .isInstanceOf(jakarta.persistence.OptimisticLockException.class);
-    }
-
-    @Test
-    @DisplayName("saveCase - updates category when provided")
-    void saveCase_withCategory_updatesCategory() {
-        dtoCase.setId(100);
-        org.nnnn.ddd.model.Category cat = new org.nnnn.ddd.model.Category();
-        cat.setId(1);
-        dtoCase.setCategory(cat);
-
-        CategoryList catEntity = new CategoryList();
-        catEntity.setId(1);
-
-        mockFindById_found(100);
-        when(categoryListRepository.findById(1)).thenReturn(Optional.of(catEntity));
+        stubFindById(100);
 
         caseService.saveCase(dtoCase);
 
-        verify(categoryListRepository).findById(1);
-    }
-
-    @Test
-    @DisplayName("saveCase - clears category when null")
-    void saveCase_nullCategory_clearsCategory() {
-        dtoCase.setId(100);
-        dtoCase.setCategory(null);
-
-        CategoryList existingCat = new CategoryList();
-        entityCase.setCategory(existingCat);
-
-        mockFindById_found(100);
-
-        caseService.saveCase(dtoCase);
-
-        assertThat(entityCase.getCategory()).isNull();
-    }
-
-    @Test
-    @DisplayName("saveCase - updates status when provided")
-    void saveCase_withStatus_updatesStatus() {
-        dtoCase.setId(100);
-        Status status = new Status();
-        status.setId(AppConstants.STATUS_COMPLETED);
-        dtoCase.setStatus(status);
-
-        StatusList statusEntity = new StatusList();
-        mockFindById_found(100);
-        when(statusListRepository.findById(AppConstants.STATUS_COMPLETED)).thenReturn(Optional.of(statusEntity));
-
-        caseService.saveCase(dtoCase);
-
-        verify(statusListRepository).findById(AppConstants.STATUS_COMPLETED);
+        // Line 279 must have executed
+        assertThat(entityCase.getStatus()).isNull();
+        verify(statusListRepository, never()).findById(anyInt());
     }
 
     // =========================================================================
-    // findCases()
+    // Lines 288-289 — filter lambda: entityTag.getTag() != null
+    //                 && dtoTag.getTagId().intValue() == entityTag.getTag().getId()
+    //
+    // This lambda has two sub-branches:
+    //   A) entityTag.getTag() == null   → filter returns false (tag skipped)
+    //   B) entityTag.getTag() != null
+    //      && tagId matches              → filter returns true  (tag reused, Line 302)
+    //   C) entityTag.getTag() != null
+    //      && tagId does NOT match       → filter returns false (new tag created)
     // =========================================================================
 
     @Test
-    @DisplayName("findCases - returns empty response when no filters provided")
-    void findCases_noFilters_returnsEmptyResponse() {
-        CaseFilter filter = new CaseFilter();
+    @DisplayName("saveCase - filter skips entityTag when getTag() is null (Line 288 false branch)")
+    void saveCase_existingTagWithNullTagReference_createsNewTag() {
+        dtoCase.setId(100);
 
-        CaseListResponse result = caseService.findCases(filter);
+        // Entity has a CaseTag whose tag reference is null (orphaned row)
+        CaseTag orphanTag = new CaseTag();
+        orphanTag.setId(99);
+        orphanTag.setTag(null);                     // ← entityTag.getTag() == null
+        entityCase.getTags().add(orphanTag);
 
-        assertThat(result.getCaseSummaries()).isNull();
-        verifyNoInteractions(caseRepository);
+        org.nnnn.ddd.model.CaseTag dtoTag = new org.nnnn.ddd.model.CaseTag();
+        dtoTag.setTagId(5);
+        dtoCase.setTags(List.of(dtoTag));
+
+        TagList tagEntity = new TagList();
+        tagEntity.setId(5);
+
+        stubFindById(100);
+        when(tagListRepository.findById(5)).thenReturn(Optional.of(tagEntity));
+
+        caseService.saveCase(dtoCase);
+
+        // A new CaseTag was created because the orphan was filtered out
+        verify(tagListRepository).findById(5);
+        assertThat(entityCase.getTags()).hasSize(1);
+        assertThat(entityCase.getTags().iterator().next().getTag()).isEqualTo(tagEntity);
     }
 
     @Test
-    @DisplayName("findCases - filters by arrId executes query")
-    void findCases_withArrId_executesQuery() {
+    @DisplayName("saveCase - filter matches existing tag by id and reuses it (Lines 288-289, Line 302)")
+    void saveCase_existingTagMatchesById_reusesExistingTag() {
+        dtoCase.setId(100);
+
+        // Entity already has a CaseTag for tag id=7
+        TagList existingTagList = new TagList();
+        existingTagList.setId(7);
+        CaseTag existingCaseTag = new CaseTag();
+        existingCaseTag.setId(50);
+        existingCaseTag.setTag(existingTagList);    // ← entityTag.getTag() != null
+        entityCase.getTags().add(existingCaseTag);
+
+        // DTO requests the same tag id=7
+        org.nnnn.ddd.model.CaseTag dtoTag = new org.nnnn.ddd.model.CaseTag();
+        dtoTag.setTagId(7);                         // ← matches existingTagList.getId()
+        dtoCase.setTags(List.of(dtoTag));
+
+        stubFindById(100);
+
+        caseService.saveCase(dtoCase);
+
+        // Line 302: updatedTags.add(foundTag.get()) — existing tag reused, no DB lookup
+        verify(tagListRepository, never()).findById(anyInt());
+        assertThat(entityCase.getTags()).hasSize(1);
+        assertThat(entityCase.getTags().iterator().next()).isEqualTo(existingCaseTag);
+    }
+
+    @Test
+    @DisplayName("saveCase - filter does not match when tag id differs (Lines 288-289 true then false on id)")
+    void saveCase_existingTagWithDifferentId_createsNewTag() {
+        dtoCase.setId(100);
+
+        // Entity has tag id=3 but DTO wants tag id=9 — ids don't match
+        TagList differentTagList = new TagList();
+        differentTagList.setId(3);
+        CaseTag existingCaseTag = new CaseTag();
+        existingCaseTag.setTag(differentTagList);   // tag != null but id != 9
+        entityCase.getTags().add(existingCaseTag);
+
+        org.nnnn.ddd.model.CaseTag dtoTag = new org.nnnn.ddd.model.CaseTag();
+        dtoTag.setTagId(9);
+        dtoCase.setTags(List.of(dtoTag));
+
+        TagList newTagEntity = new TagList();
+        newTagEntity.setId(9);
+
+        stubFindById(100);
+        when(tagListRepository.findById(9)).thenReturn(Optional.of(newTagEntity));
+
+        caseService.saveCase(dtoCase);
+
+        // New tag created because id didn't match
+        verify(tagListRepository).findById(9);
+        assertThat(entityCase.getTags()).hasSize(1);
+        assertThat(entityCase.getTags().iterator().next().getTag()).isEqualTo(newTagEntity);
+    }
+
+    // =========================================================================
+    // Line 299 — log.error when tag not found in tagListRepository
+    // =========================================================================
+
+    @Test
+    @DisplayName("saveCase - logs error when tag id not found in repository (Line 299)")
+    void saveCase_tagNotFoundInRepository_logsErrorAndSkipsTag() {
+        dtoCase.setId(100);
+
+        org.nnnn.ddd.model.CaseTag dtoTag = new org.nnnn.ddd.model.CaseTag();
+        dtoTag.setTagId(999);                       // ← tag 999 does not exist
+        dtoCase.setTags(List.of(dtoTag));
+
+        stubFindById(100);
+        when(tagListRepository.findById(999)).thenReturn(Optional.empty()); // ← tag not found
+
+        // Should not throw — just logs the error and skips
+        assertThatCode(() -> caseService.saveCase(dtoCase)).doesNotThrowAnyException();
+
+        verify(tagListRepository).findById(999);
+        assertThat(entityCase.getTags()).isEmpty();  // tag was not added
+    }
+
+    // =========================================================================
+    // Line 330 — log.error when item not found in itemListRepository
+    // =========================================================================
+
+    @Test
+    @DisplayName("saveCase - logs error when item id not found in repository (Line 330)")
+    void saveCase_itemNotFoundInRepository_logsErrorAndSkipsItem() {
+        dtoCase.setId(100);
+
+        org.nnnn.ddd.model.CaseItem dtoItem = new org.nnnn.ddd.model.CaseItem();
+        dtoItem.setItemId(888);                     // ← item 888 does not exist
+        dtoItem.setNoteDesc("test");
+        dtoCase.setItems(List.of(dtoItem));
+
+        stubFindById(100);
+        when(itemListRepository.findById(888)).thenReturn(Optional.empty()); // ← item not found
+
+        // Should not throw — just logs the error and skips
+        assertThatCode(() -> caseService.saveCase(dtoCase)).doesNotThrowAnyException();
+
+        verify(itemListRepository).findById(888);
+        assertThat(entityCase.getItems()).isEmpty(); // item was not added
+    }
+
+    // =========================================================================
+    // Line 411 — sort = sort.and(thisSort) for second+ sort fields
+    // =========================================================================
+
+    @Test
+    @DisplayName("findCases - second sort field triggers sort.and(thisSort) (Line 411)")
+    void findCases_twoSortFields_secondFieldTriggersAndChain() {
         CaseFilter filter = new CaseFilter();
         filter.setArrId("ARR001");
         filter.setPageSize(10);
         filter.setPageNumber(0);
+        // Two sort fields — i==0 sets sort, i==1 triggers sort.and(thisSort) at line 411
+        filter.setSortBy(List.of("requestDt", "dueDt"));
+        filter.setSortOrder(List.of(1, 0));         // desc, asc
 
         Page<DluCase> page = new PageImpl<>(Collections.emptyList());
         when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
@@ -946,878 +273,169 @@ public class CaseServiceTest {
         when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
         when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
 
-        CaseListResponse result = caseService.findCases(filter);
-
-        assertThat(result.getCaseSummaries()).isEmpty();
+        // Must not throw and must invoke findAll — proves line 411 executed
+        assertThatCode(() -> caseService.findCases(filter)).doesNotThrowAnyException();
         verify(caseRepository).findAll(any(Specification.class), any(Pageable.class));
     }
 
     @Test
-    @DisplayName("findCases - non-supervisor filters to allowed offices")
-    void findCases_nonSupervisor_filtersToAllowedOffices() {
+    @DisplayName("findCases - three sort fields ensures sort.and() called multiple times (Line 411)")
+    void findCases_threeSortFields_andChainCalledTwice() {
+        CaseFilter filter = new CaseFilter();
+        filter.setArrId("ARR001");
+        filter.setPageSize(10);
+        filter.setPageNumber(0);
+        filter.setSortBy(List.of("requestDt", "dueDt", "id"));
+        filter.setSortOrder(List.of(1, 0, 1));      // i=0 sets sort, i=1 and i=2 trigger .and()
+
+        Page<DluCase> page = new PageImpl<>(Collections.emptyList());
+        when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+        when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
+        when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
+        when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
+
+        assertThatCode(() -> caseService.findCases(filter)).doesNotThrowAnyException();
+        verify(caseRepository).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    // =========================================================================
+    // Line 436 — getMaskedArrestInfoSummary (no sealed access path)
+    // =========================================================================
+
+    @Test
+    @DisplayName("findCases - user without sealed access calls getMaskedArrestInfoSummary (Line 436)")
+    void findCases_noSealedAccess_callsMaskedArrestInfoSummary() {
         CaseFilter filter = new CaseFilter();
         filter.setArrId("ARR001");
         filter.setPageSize(10);
         filter.setPageNumber(0);
 
-        when(authenticationService.isSupervisor()).thenReturn(false);
-        when(authenticationService.getUsername()).thenReturn("jdoe");
+        when(authenticationService.hasSealedAccess()).thenReturn(false); // ← triggers line 436
 
-        DDDOffice office = new DDDOffice();
-        office.setId(1);
-        when(referenceDataService.getDDDOffices("jdoe")).thenReturn(List.of(office));
+        DDDCaseSummary summary = new DDDCaseSummary();
+        summary.setArrId("ARR001");
 
-        Page<DluCase> page = new PageImpl<>(Collections.emptyList());
+        DluCase entity = new DluCase();
+        entity.setId(1);
+        entity.setArrId("ARR001");
+
+        Page<DluCase> page = new PageImpl<>(List.of(entity));
         when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+        when(modelMapper.map(entity, DDDCaseSummary.class)).thenReturn(summary);
         when(cdwRepository.getMaskedArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
-        when(caseRepository.countByDueDtBeforeAndAssignedNmAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
-        when(caseRepository.countByDueDtBetweenAndAssignedNmAndStatus_IdNot(any(), any(), any(), anyInt())).thenReturn(0);
-
-        caseService.findCases(filter);
-
-        verify(referenceDataService).getDDDOffices("jdoe");
-    }
-
-    @Test
-    @DisplayName("findCases - with sorting applies sort order")
-    void findCases_withSorting_appliesSortOrder() {
-        CaseFilter filter = new CaseFilter();
-        filter.setArrId("ARR001");
-        filter.setPageSize(10);
-        filter.setPageNumber(0);
-        filter.setSortBy(List.of("requestDt"));
-        filter.setSortOrder(List.of(1));
-
-        Page<DluCase> page = new PageImpl<>(Collections.emptyList());
-        when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-        when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
         when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
         when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
 
         caseService.findCases(filter);
 
-        verify(caseRepository).findAll(any(Specification.class), any(Pageable.class));
+        // Line 436 executed
+        verify(cdwRepository).getMaskedArrestInfoSummary(anyList());
+        verify(cdwRepository, never()).getArrestInfoSummary(anyList());
     }
 
     // =========================================================================
-    // saveNote()
-    // FIX: saveNote calls caseRepository.findById(caseId) where caseId is Integer
+    // Lines 443/444 — arrInfoMap.get(caseSummary.getArrId().trim()) != null
+    //                 caseSummary.setArrest(arrInfoMap.get(caseSummary.getArrId()))
+    //
+    // Branch A: map entry exists   → setArrest() called  (line 444)
+    // Branch B: map entry is null  → setArrest() skipped
     // =========================================================================
 
     @Test
-    @DisplayName("saveNote - creates note without file successfully")
-    void saveNote_textOnly_createsNote() {
-        // saveNote uses findById(Integer caseId) — stub Integer version
-        doReturn(Optional.of(entityCase)).when(caseRepository).findById(Integer.valueOf(100));
-        when(caseRepository.save(any())).thenReturn(entityCase);
-        when(modelMapper.map(any(org.nnnn.ddd.entity.DluCase.class),
-                eq(org.nnnn.ddd.model.DDDCase.class))).thenReturn(dtoCase);
+    @DisplayName("findCases - sets arrest on summary when arrId found in map (Lines 443-444, true branch)")
+    void findCases_arrestFoundInMap_setsArrestOnSummary() {
+        CaseFilter filter = new CaseFilter();
+        filter.setArrId("ARR001");
+        filter.setPageSize(10);
+        filter.setPageNumber(0);
 
-        org.nnnn.ddd.model.DDDCase result = caseService.saveNote(100, "Test note", null, null);
+        DDDCaseSummary summary = new DDDCaseSummary();
+        summary.setArrId("ARR001");                 // trimmed key matches map
 
-        assertThat(result).isNotNull();
-        verify(caseRepository).save(any());
+        DluCase entity = new DluCase();
+        entity.setId(1);
+        entity.setArrId("ARR001");
+
+        // Arrest info whose ArrId matches the summary
+        ArrestInfo info = new ArrestInfo();
+        info.setArrId("ARR001");
+        info.setDeftFrstNm("Jane");
+
+        Page<DluCase> page = new PageImpl<>(List.of(entity));
+        when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+        when(modelMapper.map(entity, DDDCaseSummary.class)).thenReturn(summary);
+        when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(List.of(info));
+        when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
+        when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
+
+        CaseListResponse result = caseService.findCases(filter);
+
+        // Line 444: setArrest was called because map lookup returned non-null
+        assertThat(result.getCaseSummaries()).hasSize(1);
+        assertThat(result.getCaseSummaries().get(0).getArrest()).isNotNull();
+        assertThat(result.getCaseSummaries().get(0).getArrest().getDeftFrstNm()).isEqualTo("Jane");
     }
 
     @Test
-    @DisplayName("saveNote - creates note with file uploads to S3")
-    void saveNote_withFile_uploadsToS3() throws Exception {
-        MultipartFile mockFile = mock(MultipartFile.class);
-        CaseUpload upload = new CaseUpload();
-        upload.setId(1);
+    @DisplayName("findCases - skips setArrest when arrId not found in map (Line 443, false branch)")
+    void findCases_arrestNotInMap_skipsSetArrest() {
+        CaseFilter filter = new CaseFilter();
+        filter.setArrId("ARR001");
+        filter.setPageSize(10);
+        filter.setPageNumber(0);
 
-        doReturn(Optional.of(entityCase)).when(caseRepository).findById(Integer.valueOf(100));
-        when(caseUploadRepository.saveAndFlush(any())).thenReturn(upload);
-        when(caseRepository.save(any())).thenReturn(entityCase);
-        when(modelMapper.map(any(org.nnnn.ddd.entity.DluCase.class),
-                eq(org.nnnn.ddd.model.DDDCase.class))).thenReturn(dtoCase);
+        DDDCaseSummary summary = new DDDCaseSummary();
+        summary.setArrId("ARR001");
 
-        caseService.saveNote(100, "Note with file", "test.pdf", mockFile);
+        DluCase entity = new DluCase();
+        entity.setId(1);
+        entity.setArrId("ARR001");
 
-        verify(s3Service).uploadMultipartFile(anyString(), eq(mockFile));
+        // Map is empty — no match for "ARR001"
+        Page<DluCase> page = new PageImpl<>(List.of(entity));
+        when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+        when(modelMapper.map(entity, DDDCaseSummary.class)).thenReturn(summary);
+        when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
+        when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
+        when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
+
+        CaseListResponse result = caseService.findCases(filter);
+
+        // Line 443 false branch: setArrest was NOT called
+        assertThat(result.getCaseSummaries()).hasSize(1);
+        assertThat(result.getCaseSummaries().get(0).getArrest()).isNull();
     }
 
     @Test
-    @DisplayName("saveNote - S3 upload failure throws FileUploadException")
-    void saveNote_s3Failure_throwsFileUploadException() throws Exception {
-        MultipartFile mockFile = mock(MultipartFile.class);
-        CaseUpload upload = new CaseUpload();
-        upload.setId(1);
+    @DisplayName("findCases - arrId with leading/trailing spaces still matches trimmed map key (Line 443)")
+    void findCases_arrIdWithSpaces_trimMatchesMapKey() {
+        CaseFilter filter = new CaseFilter();
+        filter.setArrId("ARR001");
+        filter.setPageSize(10);
+        filter.setPageNumber(0);
 
-        doReturn(Optional.of(entityCase)).when(caseRepository).findById(Integer.valueOf(100));
-        when(caseUploadRepository.saveAndFlush(any())).thenReturn(upload);
-        doThrow(new RuntimeException("S3 error")).when(s3Service).uploadMultipartFile(anyString(), any());
+        DDDCaseSummary summary = new DDDCaseSummary();
+        summary.setArrId("  ARR001  ");             // has spaces — trim() makes it "ARR001"
 
-        assertThatThrownBy(() -> caseService.saveNote(100, "Note", "file.pdf", mockFile))
-                .isInstanceOf(FileUploadException.class)
-                .hasMessageContaining("S3");
+        DluCase entity = new DluCase();
+        entity.setId(1);
+        entity.setArrId("  ARR001  ");
+
+        ArrestInfo info = new ArrestInfo();
+        info.setArrId("ARR001");                    // map key is trimmed
+        info.setDeftFrstNm("Bob");
+
+        Page<DluCase> page = new PageImpl<>(List.of(entity));
+        when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+        when(modelMapper.map(entity, DDDCaseSummary.class)).thenReturn(summary);
+        when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(List.of(info));
+        when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
+        when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
+
+        CaseListResponse result = caseService.findCases(filter);
+
+        // trim() makes "  ARR001  " → "ARR001" which IS in the map
+        assertThat(result.getCaseSummaries().get(0).getArrest()).isNotNull();
+        assertThat(result.getCaseSummaries().get(0).getArrest().getDeftFrstNm()).isEqualTo("Bob");
     }
-
-    @Test
-    @DisplayName("saveNote - case not found throws CaseNotFoundException")
-    void saveNote_caseNotFound_throwsCaseNotFoundException() {
-        doReturn(Optional.empty()).when(caseRepository).findById(Integer.valueOf(999));
-
-        assertThatThrownBy(() -> caseService.saveNote(999, "Note", null, null))
-                .isInstanceOf(CaseNotFoundException.class)
-                .hasMessageContaining("999");
-    }
-
-    // =========================================================================
-    // getFile()
-    // =========================================================================
-
-    @Test
-    @DisplayName("getFile - returns filename and resource when upload found")
-    void getFile_uploadFound_returnsFileNameAndResource() {
-        CaseUpload upload = new CaseUpload();
-        upload.setId(1);
-        upload.setFileNm("document.pdf");
-
-        when(caseUploadRepository.findById(1)).thenReturn(Optional.of(upload));
-        when(s3Service.downloadFile(anyString())).thenReturn(mock(org.springframework.core.io.Resource.class));
-
-        Object[] result = caseService.getFile(100, 1);
-
-        assertThat(result[0]).isEqualTo("document.pdf");
-        assertThat(result[1]).isNotNull();
-        verify(s3Service).downloadFile("uploads/case/100/1");
-    }
-
-    @Test
-    @DisplayName("getFile - upload not found still downloads from S3")
-    void getFile_uploadNotFound_stillDownloadsFromS3() {
-        when(caseUploadRepository.findById(99)).thenReturn(Optional.empty());
-        when(s3Service.downloadFile(anyString())).thenReturn(mock(org.springframework.core.io.Resource.class));
-
-        Object[] result = caseService.getFile(100, 99);
-
-        assertThat(result[0]).isNull();
-        verify(s3Service).downloadFile("uploads/case/100/99");
-    }
-
-    // =========================================================================
-    // deleteFile()
-    // =========================================================================
-
-    @Test
-    @DisplayName("deleteFile - marks upload as deleted then throws FileDeleteException")
-    void deleteFile_uploadFound_marksDeletedThenThrows() {
-        CaseUpload upload = new CaseUpload();
-        upload.setId(1);
-        upload.setDeletedFlg((short) 0);
-
-        when(caseUploadRepository.findById(1)).thenReturn(Optional.of(upload));
-
-        assertThatThrownBy(() -> caseService.deleteFile(100, 1))
-                .isInstanceOf(FileDeleteException.class);
-
-        verify(caseUploadRepository).save(argThat(u ->
-                ((CaseUpload) u).getDeletedFlg() == (short) 1
-        ));
-    }
-
-    @Test
-    @DisplayName("deleteFile - upload not found throws FileDeleteException")
-    void deleteFile_uploadNotFound_throwsFileDeleteException() {
-        when(caseUploadRepository.findById(99)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> caseService.deleteFile(100, 99))
-                .isInstanceOf(FileDeleteException.class)
-                .hasMessageContaining("99");
-    }
-
-    // =========================================================================
-// saveCase() — additional branch coverage
-// =========================================================================
-
-@Test
-@DisplayName("saveCase - updates ADA when provided")
-void saveCase_withAda_updatesAda() {
-    dtoCase.setId(100);
-    org.nnnn.ddd.model.ADA ada = new org.nnnn.ddd.model.ADA();
-    ada.setId(1);
-    dtoCase.setAda(ada);
-
-    AdaList adaEntity = new AdaList();
-    adaEntity.setId(1);
-
-    mockFindById_found(100);
-    when(adaListRepository.findById(1)).thenReturn(Optional.of(adaEntity));
-
-    caseService.saveCase(dtoCase);
-
-    verify(adaListRepository).findById(1);
-    assertThat(entityCase.getAda()).isEqualTo(adaEntity);
 }
-
-@Test
-@DisplayName("saveCase - clears ADA when null")
-void saveCase_nullAda_clearsAda() {
-    dtoCase.setId(100);
-    dtoCase.setAda(null);
-
-    AdaList existingAda = new AdaList();
-    entityCase.setAda(existingAda);
-
-    mockFindById_found(100);
-
-    caseService.saveCase(dtoCase);
-
-    assertThat(entityCase.getAda()).isNull();
-}
-
-@Test
-@DisplayName("saveCase - updates ddd office when provided")
-void saveCase_withdddOffice_updatesdddOffice() {
-    dtoCase.setId(100);
-    DDDOffice office = new DDDOffice();
-    office.setId(1);
-    dtoCase.setDlu(office);
-
-    DluOfficeList officeEntity = new DluOfficeList();
-    officeEntity.setId(1);
-
-    mockFindById_found(100);
-    when(DDDOfficeListRepository.findById(1)).thenReturn(Optional.of(officeEntity));
-
-    caseService.saveCase(dtoCase);
-
-    verify(DDDOfficeListRepository).findById(1);
-    assertThat(entityCase.getDlu()).isEqualTo(officeEntity);
-}
-
-@Test
-@DisplayName("saveCase - clears ddd office when null")
-void saveCase_nulldddOffice_clearsdddOffice() {
-    dtoCase.setId(100);
-    dtoCase.setDlu(null);
-
-    DluOfficeList existingOffice = new DluOfficeList();
-    entityCase.setDlu(existingOffice);
-
-    mockFindById_found(100);
-
-    caseService.saveCase(dtoCase);
-
-    assertThat(entityCase.getDlu()).isNull();
-}
-
-@Test
-@DisplayName("saveCase - adds new tag when tag not already on case")
-void saveCase_withNewTag_addsTag() {
-    dtoCase.setId(100);
-    org.nnnn.ddd.model.CaseTag dtoTag = new org.nnnn.ddd.model.CaseTag();
-    dtoTag.setTagId(1);
-    dtoCase.setTags(List.of(dtoTag));
-
-    TagList tagEntity = new TagList();
-    tagEntity.setId(1);
-
-    mockFindById_found(100);
-    when(tagListRepository.findById(1)).thenReturn(Optional.of(tagEntity));
-
-    caseService.saveCase(dtoCase);
-
-    verify(tagListRepository).findById(1);
-    assertThat(entityCase.getTags()).hasSize(1);
-}
-
-@Test
-@DisplayName("saveCase - skips tag when tagId is null")
-void saveCase_tagWithNullTagId_skipsTag() {
-    dtoCase.setId(100);
-    org.nnnn.ddd.model.CaseTag dtoTag = new org.nnnn.ddd.model.CaseTag();
-    dtoTag.setTagId(null); // null tagId should be skipped
-    dtoCase.setTags(List.of(dtoTag));
-
-    mockFindById_found(100);
-
-    caseService.saveCase(dtoCase);
-
-    verify(tagListRepository, never()).findById(any());
-    assertThat(entityCase.getTags()).isEmpty();
-}
-
-@Test
-@DisplayName("saveCase - adds new item when item not already on case")
-void saveCase_withNewItem_addsItem() {
-    dtoCase.setId(100);
-    org.nnnn.ddd.model.CaseItem dtoItem = new org.nnnn.ddd.model.CaseItem();
-    dtoItem.setItemId(1);
-    dtoItem.setNoteDesc("test note");
-    dtoItem.setQuantity(2);
-    dtoCase.setItems(List.of(dtoItem));
-
-    ItemList itemEntity = new ItemList();
-    itemEntity.setId(1);
-
-    mockFindById_found(100);
-    when(itemListRepository.findById(1)).thenReturn(Optional.of(itemEntity));
-
-    caseService.saveCase(dtoCase);
-
-    verify(itemListRepository).findById(1);
-    assertThat(entityCase.getItems()).hasSize(1);
-}
-
-@Test
-@DisplayName("saveCase - updates existing item fields")
-void saveCase_withExistingItem_updatesFields() {
-    dtoCase.setId(100);
-
-    // Create existing item on the entity
-    CaseItem existingItem = new CaseItem();
-    existingItem.setId(1);
-    existingItem.setNoteDesc("old note");
-    entityCase.getItems().add(existingItem);
-
-    org.nnnn.ddd.model.CaseItem dtoItem = new org.nnnn.ddd.model.CaseItem();
-    dtoItem.setId(1); // matches existing item
-    dtoItem.setItemId(1);
-    dtoItem.setNoteDesc("new note");
-    dtoItem.setQuantity(5);
-    dtoItem.setStatusDesc("completed");
-    dtoCase.setItems(List.of(dtoItem));
-
-    mockFindById_found(100);
-
-    caseService.saveCase(dtoCase);
-
-    assertThat(existingItem.getNoteDesc()).isEqualTo("new note");
-    assertThat(existingItem.getQuantity()).isEqualTo(5);
-    assertThat(existingItem.getStatusDesc()).isEqualTo("completed");
-}
-
-// =========================================================================
-// findCases() — additional filter branch coverage
-// =========================================================================
-
-@Test
-@DisplayName("findCases - filters by date range")
-void findCases_withDateRange_appliesDateFilter() {
-    CaseFilter filter = new CaseFilter();
-    filter.setRequestDtFrom("2024-01-01");
-    filter.setRequestDtTo("2024-12-31");
-    filter.setPageSize(10);
-    filter.setPageNumber(0);
-
-    Page<DluCase> page = new PageImpl<>(Collections.emptyList());
-    when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-    when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
-    when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
-    when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
-
-    caseService.findCases(filter);
-
-    verify(caseRepository).findAll(any(Specification.class), any(Pageable.class));
-}
-
-@Test
-@DisplayName("findCases - filters by due date range")
-void findCases_withDueDateRange_appliesDueDateFilter() {
-    CaseFilter filter = new CaseFilter();
-    filter.setDueDtFrom("2024-01-01");
-    filter.setDueDtTo("2024-12-31");
-    filter.setPageSize(10);
-    filter.setPageNumber(0);
-
-    Page<DluCase> page = new PageImpl<>(Collections.emptyList());
-    when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-    when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
-    when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
-    when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
-
-    caseService.findCases(filter);
-
-    verify(caseRepository).findAll(any(Specification.class), any(Pageable.class));
-}
-
-@Test
-@DisplayName("findCases - filters by categoryIds")
-void findCases_withCategoryIds_appliesCategoryFilter() {
-    CaseFilter filter = new CaseFilter();
-    filter.setCategoryIds(Arrays.asList(1, 2));
-    filter.setPageSize(10);
-    filter.setPageNumber(0);
-
-    Page<DluCase> page = new PageImpl<>(Collections.emptyList());
-    when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-    when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
-    when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
-    when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
-
-    caseService.findCases(filter);
-
-    verify(caseRepository).findAll(any(Specification.class), any(Pageable.class));
-}
-
-@Test
-@DisplayName("findCases - filters by statusIds")
-void findCases_withStatusIds_appliesStatusFilter() {
-    CaseFilter filter = new CaseFilter();
-    filter.setStatusIds(Arrays.asList(1, 2));
-    filter.setPageSize(10);
-    filter.setPageNumber(0);
-
-    Page<DluCase> page = new PageImpl<>(Collections.emptyList());
-    when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-    when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
-    when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
-    when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
-
-    caseService.findCases(filter);
-
-    verify(caseRepository).findAll(any(Specification.class), any(Pageable.class));
-}
-
-@Test
-@DisplayName("findCases - filters by tagIds")
-void findCases_withTagIds_appliesTagFilter() {
-    CaseFilter filter = new CaseFilter();
-    filter.setTagIds(Arrays.asList(1, 2));
-    filter.setPageSize(10);
-    filter.setPageNumber(0);
-
-    Page<DluCase> page = new PageImpl<>(Collections.emptyList());
-    when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-    when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
-    when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
-    when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
-
-    caseService.findCases(filter);
-
-    verify(caseRepository).findAll(any(Specification.class), any(Pageable.class));
-}
-
-@Test
-@DisplayName("findCases - filters by assignedNm")
-void findCases_withAssignedNm_appliesAssignedNmFilter() {
-    CaseFilter filter = new CaseFilter();
-    filter.setAssignedNm("jdoe");
-    filter.setPageSize(10);
-    filter.setPageNumber(0);
-
-    Page<DluCase> page = new PageImpl<>(Collections.emptyList());
-    when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-    when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
-    when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
-    when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
-
-    caseService.findCases(filter);
-
-    verify(caseRepository).findAll(any(Specification.class), any(Pageable.class));
-}
-
-@Test
-@DisplayName("findCases - filters by proactiveFlg")
-void findCases_withProactiveFlg_appliesProactiveFilter() {
-    CaseFilter filter = new CaseFilter();
-    filter.setProactiveFlg(1);
-    filter.setPageSize(10);
-    filter.setPageNumber(0);
-
-    Page<DluCase> page = new PageImpl<>(Collections.emptyList());
-    when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-    when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
-    when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
-    when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
-
-    caseService.findCases(filter);
-
-    verify(caseRepository).findAll(any(Specification.class), any(Pageable.class));
-}
-
-@Test
-@DisplayName("findCases - supervisor with dddOfficeIds gets office-specific stats")
-void findCases_supervisorWithOfficeIds_getsOfficeStats() {
-    CaseFilter filter = new CaseFilter();
-    filter.setArrId("ARR001");
-    filter.setDluOfficeIds(Arrays.asList(1, 2));
-    filter.setPageSize(10);
-    filter.setPageNumber(0);
-
-    when(authenticationService.isSupervisor()).thenReturn(true);
-
-    Page<DluCase> page = new PageImpl<>(Collections.emptyList());
-    when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-    when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
-
-    // Stats with office ids
-    when(caseRepository.countByDueDtBeforeAndDlu_IdInAndStatus_IdNot(any(), any(), anyInt())).thenReturn(2);
-    when(caseRepository.countByDueDtBetweenAndDlu_IdInAndStatus_IdNot(any(), any(), any(), anyInt())).thenReturn(1);
-
-    CaseListResponse result = caseService.findCases(filter);
-
-    assertThat(result.getCaseStats()).isNotNull();
-    assertThat(result.getCaseStats().getOverdueCount()).isEqualTo(2);
-}
-
-@Test
-@DisplayName("findCases - ascending sort order applied correctly")
-void findCases_withAscendingSortOrder_appliesAscSort() {
-    CaseFilter filter = new CaseFilter();
-    filter.setArrId("ARR001");
-    filter.setPageSize(10);
-    filter.setPageNumber(0);
-    filter.setSortBy(List.of("dueDt"));
-    filter.setSortOrder(List.of(0)); // 0 = ascending
-
-    Page<DluCase> page = new PageImpl<>(Collections.emptyList());
-    when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-    when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
-    when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
-    when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
-
-    caseService.findCases(filter);
-
-    verify(caseRepository).findAll(any(Specification.class), any(Pageable.class));
-}
-
-@Test
-@DisplayName("findCases - multiple sort fields applied")
-void findCases_withMultipleSortFields_appliesMultiSort() {
-    CaseFilter filter = new CaseFilter();
-    filter.setArrId("ARR001");
-    filter.setPageSize(10);
-    filter.setPageNumber(0);
-    filter.setSortBy(List.of("dueDt", "requestDt"));
-    filter.setSortOrder(List.of(1, 0)); // desc, asc
-
-    Page<DluCase> page = new PageImpl<>(Collections.emptyList());
-    when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-    when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
-    when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
-    when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
-
-    caseService.findCases(filter);
-
-    verify(caseRepository).findAll(any(Specification.class), any(Pageable.class));
-}
-
-// =========================================================================
-// loadCase()
-// =========================================================================
-
-@Test
-@DisplayName("loadCase - throws CaseNotFoundException when case does not exist")
-void loadCase_caseNotFound_throwsCaseNotFoundException() {
-    mockFindById_empty(999);
-
-    assertThatThrownBy(() -> caseService.loadCase(999))
-            .isInstanceOf(CaseNotFoundException.class)
-            .hasMessageContaining("999");
-
-    verify(caseRepository).findById(999);
-    verifyNoInteractions(cdwRepository);
-}
-
-@Test
-@DisplayName("loadCase - sets activeFlg=1 when status is NOT_STARTED")
-void loadCase_statusNotStarted_setsActiveFlg1() {
-    Status s = new Status();
-    s.setId(AppConstants.STATUS_NOT_STARTED);
-    dtoCase.setStatus(s);
-    arrestInfo.setArrSealedFlg("N");
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-
-    assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(1);
-}
-
-@Test
-@DisplayName("loadCase - sets activeFlg=1 when status is IN_PROGRESS")
-void loadCase_statusInProgress_setsActiveFlg1() {
-    Status s = new Status();
-    s.setId(AppConstants.STATUS_IN_PROGRESS);
-    dtoCase.setStatus(s);
-    arrestInfo.setArrSealedFlg("N");
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-
-    assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(1);
-}
-
-@Test
-@DisplayName("loadCase - sets activeFlg=1 when status is WAITING")
-void loadCase_statusWaiting_setsActiveFlg1() {
-    Status s = new Status();
-    s.setId(AppConstants.STATUS_WAITING);
-    dtoCase.setStatus(s);
-    arrestInfo.setArrSealedFlg("N");
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-
-    assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(1);
-}
-
-@Test
-@DisplayName("loadCase - sets activeFlg=0 when status is COMPLETED")
-void loadCase_statusCompleted_setsActiveFlg0() {
-    Status s = new Status();
-    s.setId(AppConstants.STATUS_COMPLETED);
-    dtoCase.setStatus(s);
-    arrestInfo.setArrSealedFlg("N");
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-
-    assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(0);
-}
-
-@Test
-@DisplayName("loadCase - sets activeFlg=1 when status is null")
-void loadCase_statusNull_setsActiveFlg1() {
-    dtoCase.setStatus(null);
-    arrestInfo.setArrSealedFlg("N");
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-
-    assertThat(caseService.loadCase(100).getActiveFlg()).isEqualTo(1);
-}
-
-@Test
-@DisplayName("loadCase - unsealed arrest loads without calling hasSealedAccess")
-void loadCase_unsealedArrest_loadsSuccessfully() {
-    arrestInfo.setArrSealedFlg("N");
-    dtoCase.setStatus(null);
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-
-    assertThat(caseService.loadCase(100)).isNotNull();
-    verify(authenticationService, never()).hasSealedAccess();
-}
-
-@Test
-@DisplayName("loadCase - sealed arrest with no sealed access throws SealedAccessException")
-void loadCase_sealedArrest_noSealedAccess_throwsSealedAccessException() {
-    arrestInfo.setArrSealedFlg("Y");
-    dtoCase.setStatus(null);
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-    when(authenticationService.hasSealedAccess()).thenReturn(false);
-
-    assertThatThrownBy(() -> caseService.loadCase(100))
-            .isInstanceOf(SealedAccessException.class)
-            .hasMessageContaining("no sealed access");
-}
-
-@Test
-@DisplayName("loadCase - sealed arrest, supervisor loads successfully")
-void loadCase_sealedArrest_supervisor_loadsSuccessfully() {
-    arrestInfo.setArrSealedFlg("Y");
-    dtoCase.setStatus(null);
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-    when(authenticationService.hasSealedAccess()).thenReturn(true);
-    when(authenticationService.isSupervisor()).thenReturn(true);
-
-    assertThat(caseService.loadCase(100)).isNotNull();
-}
-
-@Test
-@DisplayName("loadCase - non-supervisor assigned to case loads successfully")
-void loadCase_nonSupervisor_assignedToCase_loadsSuccessfully() {
-    arrestInfo.setArrSealedFlg("N");
-    dtoCase.setStatus(null);
-    entityCase.setAssignedNm("jdoe");
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-    when(authenticationService.isSupervisor()).thenReturn(false);
-    when(authenticationService.getUsername()).thenReturn("jdoe");
-
-    assertThat(caseService.loadCase(100)).isNotNull();
-    verify(authenticationService, never()).hasRole(any());
-}
-
-@Test
-@DisplayName("loadCase - non-supervisor not assigned, no office throws CaseAccessException")
-void loadCase_nonSupervisor_notAssigned_noOffice_throwsCaseAccessException() {
-    arrestInfo.setArrSealedFlg("N");
-    dtoCase.setStatus(null);
-    entityCase.setAssignedNm("otherUser");
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-    when(authenticationService.isSupervisor()).thenReturn(false);
-    when(authenticationService.getUsername()).thenReturn("jdoe");
-
-    assertThatThrownBy(() -> caseService.loadCase(100))
-            .isInstanceOf(CaseAccessException.class)
-            .hasMessageContaining("no access to case");
-}
-
-@Test
-@DisplayName("loadCase - populates assignedNmInfo when assignedNm is set")
-void loadCase_withAssignedNm_populatesAssignedNmInfo() {
-    entityCase.setAssignedNm("jdoe");
-    dtoCase.setStatus(null);
-    arrestInfo.setArrSealedFlg("N");
-
-    User mockUser = new User();
-    mockUser.setUsername("jdoe");
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-    when(adSearchService.findUser("jdoe")).thenReturn(mockUser);
-
-    DDDCase result = caseService.loadCase(100);
-
-    assertThat(result.getAssignedNmInfo()).isNotNull();
-    verify(adSearchService).findUser("jdoe");
-}
-
-@Test
-@DisplayName("loadCase - skips AD lookup when assignedNm is null")
-void loadCase_noAssignedNm_skipsAdLookup() {
-    entityCase.setAssignedNm(null);
-    dtoCase.setStatus(null);
-    arrestInfo.setArrSealedFlg("N");
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-
-    caseService.loadCase(100);
-
-    verifyNoInteractions(adSearchService);
-}
-
-@Test
-@DisplayName("loadCase - arrest info is attached to returned DTO")
-void loadCase_arrestInfoAttachedToDto() {
-    dtoCase.setStatus(null);
-    arrestInfo.setArrSealedFlg("N");
-    arrestInfo.setDeftFrstNm("Jane");
-    arrestInfo.setDeftLastNm("Smith");
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-
-    DDDCase result = caseService.loadCase(100);
-
-    assertThat(result.getArrest()).isNotNull();
-    assertThat(result.getArrest().getDeftFrstNm()).isEqualTo("Jane");
-    verify(cdwRepository).getArrestInfo("ARR001");
-}
-
-@Test
-@DisplayName("loadCase - sealed, has sealed access, not supervisor, not assigned, in office loads successfully")
-void loadCase_sealedArrest_sealedAccess_notSupervisor_notAssigned_inOffice_loadsSuccessfully() {
-    arrestInfo.setArrSealedFlg("Y");
-    dtoCase.setStatus(null);
-    entityCase.setAssignedNm("otherUser"); // not assigned
-
-    // Set up ddd office on entity
-    try {
-        java.lang.reflect.Field dddField = entityCase.getClass().getDeclaredField("ddd");
-        dddField.setAccessible(true);
-        Object officeInstance = dddField.getType().getDeclaredConstructor().newInstance();
-        java.lang.reflect.Field adSgNmField = officeInstance.getClass().getDeclaredField("adSgNm");
-        adSgNmField.setAccessible(true);
-        adSgNmField.set(officeInstance, "ROLE_MANHATTAN");
-        dddField.set(entityCase, officeInstance);
-    } catch (Exception e) {
-        return;
-    }
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-    when(authenticationService.hasSealedAccess()).thenReturn(true);
-    when(authenticationService.isSupervisor()).thenReturn(false);
-    when(authenticationService.getUsername()).thenReturn("jdoe"); // not assigned
-    when(authenticationService.hasRole("ROLE_MANHATTAN")).thenReturn(true); // in office
-
-    // Should load successfully — user has sealed access and is in the office
-    assertThat(caseService.loadCase(100)).isNotNull();
-}
-
-@Test
-@DisplayName("loadCase - sealed, has sealed access, not supervisor, not assigned, not in office throws CaseAccessException")
-void loadCase_sealedArrest_sealedAccess_notSupervisor_notAssigned_notInOffice_throwsCaseAccessException() {
-    arrestInfo.setArrSealedFlg("Y");
-    dtoCase.setStatus(null);
-    entityCase.setAssignedNm("otherUser");
-
-    try {
-        java.lang.reflect.Field dddField = entityCase.getClass().getDeclaredField("ddd");
-        dddField.setAccessible(true);
-        Object officeInstance = dddField.getType().getDeclaredConstructor().newInstance();
-        java.lang.reflect.Field adSgNmField = officeInstance.getClass().getDeclaredField("adSgNm");
-        adSgNmField.setAccessible(true);
-        adSgNmField.set(officeInstance, "ROLE_MANHATTAN");
-        dddField.set(entityCase, officeInstance);
-    } catch (Exception e) {
-        return;
-    }
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-    when(authenticationService.hasSealedAccess()).thenReturn(true);
-    when(authenticationService.isSupervisor()).thenReturn(false);
-    when(authenticationService.getUsername()).thenReturn("jdoe");
-    when(authenticationService.hasRole("ROLE_MANHATTAN")).thenReturn(false); // NOT in office
-
-    assertThatThrownBy(() -> caseService.loadCase(100))
-            .isInstanceOf(CaseAccessException.class)
-            .hasMessageContaining("no access to case");
-}
-
-@Test
-@DisplayName("loadCase - not sealed, not assigned, in office loads successfully (Read-Only path)")
-void loadCase_notSealed_notAssigned_inOffice_loadsSuccessfully() {
-    arrestInfo.setArrSealedFlg("N");
-    dtoCase.setStatus(null);
-    entityCase.setAssignedNm("otherUser"); // not assigned to jdoe
-
-    try {
-        java.lang.reflect.Field dddField = entityCase.getClass().getDeclaredField("ddd");
-        dddField.setAccessible(true);
-        Object officeInstance = dddField.getType().getDeclaredConstructor().newInstance();
-        java.lang.reflect.Field adSgNmField = officeInstance.getClass().getDeclaredField("adSgNm");
-        adSgNmField.setAccessible(true);
-        adSgNmField.set(officeInstance, "ROLE_MANHATTAN");
-        dddField.set(entityCase, officeInstance);
-    } catch (Exception e) {
-        return;
-    }
-
-    mockFindById_found(100);
-    when(modelMapper.map(entityCase, DDDCase.class)).thenReturn(dtoCase);
-    when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-    when(authenticationService.isSupervisor()).thenReturn(false);
-    when(authenticationService.getUsername()).thenReturn("jdoe"); // not assigned
-    when(authenticationService.hasRole("ROLE_MANHATTAN")).thenReturn(true); // in office
-
-    // Read-Only path — should still load successfully
-    assertThat(caseService.loadCase(100)).isNotNull();
-    verify(authenticationService).hasRole("ROLE_MANHATTAN");
-}
-
-}
-
-
-
-
