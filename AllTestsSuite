@@ -1,68 +1,61 @@
 package org.nnnn.ddd.exceptions;
 
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ExceptionClassesTest {
+/**
+ * Covers the (String, Throwable) constructors for FileDeleteException,
+ * CaseAccessException, and InvalidDluOfficeException — the three constructors
+ * reported as missed branches in SonarQube.
+ */
+public class ExceptionClassesMissingTest {
+
+    // -------------------------------------------------------------------------
+    // FileDeleteException
+    // -------------------------------------------------------------------------
 
     @Test
-    void invalidArrestException_messageConstructor() {
-        InvalidArrestException ex = new InvalidArrestException("Invalid arrest");
-        assertEquals("Invalid arrest", ex.getMessage());
-    }
-
-    @Test
-    void invalidArrestException_messageCauseConstructor() {
+    void fileDeleteException_messageCauseConstructor_setsMessageAndCause() {
         Throwable cause = new RuntimeException("root cause");
-        InvalidArrestException ex = new InvalidArrestException("Invalid arrest", cause);
-        assertEquals("Invalid arrest", ex.getMessage());
+
+        FileDeleteException ex = new FileDeleteException("Delete failed", cause);
+
+        assertEquals("Delete failed", ex.getMessage());
         assertEquals(cause, ex.getCause());
     }
 
-    @Test
-    void sealedAccessException_messageConstructor() {
-        SealedAccessException ex = new SealedAccessException("Sealed");
-        assertEquals("Sealed", ex.getMessage());
-    }
+    // -------------------------------------------------------------------------
+    // CaseAccessException
+    // -------------------------------------------------------------------------
 
     @Test
-    void sealedAccessException_messageCauseConstructor() {
+    void caseAccessException_messageCauseConstructor_setsMessageAndCause() {
         Throwable cause = new RuntimeException("root cause");
-        SealedAccessException ex = new SealedAccessException("Sealed", cause);
-        assertEquals("Sealed", ex.getMessage());
+
+        CaseAccessException ex = new CaseAccessException("Access denied", cause);
+
+        assertEquals("Access denied", ex.getMessage());
         assertEquals(cause, ex.getCause());
     }
 
-    @Test
-    void fileUploadException_messageConstructor() {
-        FileUploadException ex = new FileUploadException("Upload failed");
-        assertEquals("Upload failed", ex.getMessage());
-    }
+    // -------------------------------------------------------------------------
+    // InvalidDluOfficeException
+    // -------------------------------------------------------------------------
 
     @Test
-    void fileUploadException_messageCauseConstructor() {
+    void invalidDluOfficeException_messageCauseConstructor_setsMessageAndCause() {
         Throwable cause = new RuntimeException("root cause");
-        FileUploadException ex = new FileUploadException("Upload failed", cause);
-        assertEquals("Upload failed", ex.getMessage());
-        assertEquals(cause, ex.getCause());
-    }
 
-    @Test
-    void caseNotFoundException_messageConstructor() {
-        CaseNotFoundException ex = new CaseNotFoundException("Not found");
-        assertEquals("Not found", ex.getMessage());
-    }
+        InvalidDluOfficeException ex = new InvalidDluOfficeException("Invalid office", cause);
 
-    @Test
-    void caseNotFoundException_messageCauseConstructor() {
-        Throwable cause = new RuntimeException("root cause");
-        CaseNotFoundException ex = new CaseNotFoundException("Not found", cause);
-        assertEquals("Not found", ex.getMessage());
+        assertEquals("Invalid office", ex.getMessage());
         assertEquals(cause, ex.getCause());
     }
 }
 
-=======================
+===========================
+
 
 package org.nnnn.ddd.exceptions;
 
@@ -75,48 +68,46 @@ import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Covers the two handler methods missing from GlobalExceptionHandlerTest:
+ *   - handleFileDeleteException(FileDeleteException)
+ *   - handleOptimisticLock(Exception)
+ */
 @ExtendWith(MockitoExtension.class)
-public class GlobalExceptionHandlerTest {
+public class GlobalExceptionHandlerMissingTest {
 
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
 
-    @Test
-    void handleSealedAccessException_returnsForbidden() {
-        SealedAccessException ex = new SealedAccessException("Sealed");
-        ResponseEntity<Error> response = handler.handleSealedAccessException(ex);
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertNotNull(response.getBody().getMessage());
-        assertNotNull(response.getBody().getCode());
-    }
+    // -------------------------------------------------------------------------
+    // handleFileDeleteException
+    // -------------------------------------------------------------------------
 
     @Test
-    void handleCaseNotFoundException_returns500() {
-        CaseNotFoundException ex = new CaseNotFoundException("Not found");
-        ResponseEntity<Error> response = handler.handleCaseNotFoundException(ex);
+    void handleFileDeleteException_returns500() {
+        FileDeleteException ex = new FileDeleteException("Delete failed");
+
+        ResponseEntity<Error> response = handler.handleFileDeleteException(ex);
+
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertNotNull(response.getBody());
         assertNotNull(response.getBody().getMessage());
         assertNotNull(response.getBody().getCode());
     }
 
-    @Test
-    void handleInvalidArrestException_returns500() {
-        InvalidArrestException ex = new InvalidArrestException("Invalid arrest");
-        ResponseEntity<Error> response = handler.handleInvalidArrestException(ex);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertNotNull(response.getBody().getMessage());
-        assertNotNull(response.getBody().getCode());
-    }
+    // -------------------------------------------------------------------------
+    // handleOptimisticLock
+    // -------------------------------------------------------------------------
 
     @Test
-    void handleFileUploadException_returns500() {
-        FileUploadException ex = new FileUploadException("Upload failed");
-        ResponseEntity<Error> response = handler.handleFileUploadException(ex);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    void handleOptimisticLock_returns409Conflict() {
+        Exception ex = new Exception("Optimistic lock conflict");
+
+        ResponseEntity<Error> response = handler.handleOptimisticLock(ex);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertNotNull(response.getBody());
         assertNotNull(response.getBody().getMessage());
         assertNotNull(response.getBody().getCode());
     }
 }
+
