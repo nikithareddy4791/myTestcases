@@ -1,14 +1,307 @@
- 
-[ERROR] Failures: 
-[ERROR]   BuildInfoHealthIndicatorTest$WhenResourceMissing.health_buildTimeNotPresent:304 
-Expecting actual:
-  {"buildTime"="2026-04-02T15:42:11.261Z", "buildTimeDisplay"="Apr 2, 2026, 11:42 AM ET", "version"="1.0.0"}
-not to contain key:
-  "buildTime"
-[ERROR]   BuildInfoHealthIndicatorTest$WhenResourceMissing.health_versionNotPresent:311 
-Expecting actual:
-  {"buildTime"="2026-04-02T15:42:11.261Z", "buildTimeDisplay"="Apr 2, 2026, 11:42 AM ET", "version"="1.0.0"}
-not to contain key:
-  "version"
-[INFO] 
-[ERROR]
+package org.nnnn.ddd.actuator;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockedConstruction;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.Status;
+import org.springframework.core.io.ClassPathResource;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+/**
+ * Tests for BuildInfoHealthIndicator.
+ *
+ * No constructor change to the production class.
+ * No separate .properties files.
+ *
+ * Uses Mockito.mockConstruction() to intercept new ClassPathResource(...)
+ * inside health(), giving full control over exists() and getInputStream()
+ * without touching the real filesystem or overriding health().
+ *
+ * The REAL health() method body executes in every test — JaCoCo sees
+ * all lines and branches.
+ *
+ * For the happy-path tests, a real file is written to the classpath via
+ * @BeforeAll so that ClassPathResource works naturally without mocking.
+ */
+@ExtendWith(MockitoExtension.class)
+@DisplayName("BuildInfoHealthIndicator Tests")
+class BuildInfoHealthIndicatorTest {
+
+    // =========================================================================
+    // Inline properties content
+    // =========================================================================
+
+    private static final String PROPS_ALL_FIELDS =
+            "build.time=2026-03-09T20\\:46\\:00Z\n" +
+            "build.version=1.0.0\n";
+
+    private static final String PROPS_NO_TIME =
+            "build.version=2.0.0\n";
+
+    private static final String PROPS_BLANK_TIME =
+            "build.time=\n" +
+            "build.version=3.0.0\n";
+
+    private static final String PROPS_NO_VERSION =
+            "build.time=2026-03-09T20\\:46\\:00Z\n";
+
+    // =========================================================================
+    // Write happy-path file to classpath once for natural ClassPathResource use
+    // =========================================================================
+
+    @BeforeAll
+    static void writePropsToClasspath() throws Exception {
+        Path classesRoot = Paths.get(
+                BuildInfoHealthIndicatorTest.class
+                        .getProtectionDomain()
+                        .getCodeSource()
+                        .getLocation()
+                        .toURI());
+        Path metaInfDir = classesRoot.resolve("META-INF");
+        Files.createDirectories(metaInfDir);
+        Files.writeString(metaInfDir.resolve("build-info.properties"), PROPS_ALL_FIELDS);
+    }
+
+    // =========================================================================
+    // Helper — builds a mocked ClassPathResource backed by an in-memory string
+    // =========================================================================
+
+    private InputStream streamOf(String content) {
+        return new ByteArrayInputStream(content.getBytes(StandardCharsets.ISO_8859_1));
+    }
+
+    // =========================================================================
+    // Happy path — uses real classpath file (no mocking needed)
+    // =========================================================================
+
+    @Nested
+    @DisplayName("when build-info has all fields")
+    class WhenAllFieldsPresent {
+
+        private final BuildInfoHealthIndicator indicator = new BuildInfoHealthIndicator();
+
+        @Test
+        @DisplayName("health status is UP")
+        void health_statusIsUp() {
+            assertThat(indicator.health().getStatus()).isEqualTo(Status.UP);
+        }
+
+        @Test
+        @DisplayName("buildTime detail is set to ISO-8601 instant string")
+        void health_buildTimeIsSet() {
+            Map<String, Object> details = indicator.health().getDetails();
+            assertThat(details).containsKey("buildTime");
+            assertThat(details.get("buildTime")).asString()
+                    .isEqualTo("2026-03-09T20:46:00Z");
+        }
+
+        @Test
+        @DisplayName("buildTimeDisplay is formatted with ET suffix")
+        void health_buildTimeDisplayIsFormatted() {
+            Map<String, Object> details = indicator.health().getDetails();
+            assertThat(details).containsKey("buildTimeDisplay");
+            assertThat(details.get("buildTimeDisplay")).asString().endsWith("ET");
+        }
+
+        @Test
+        @DisplayName("version detail matches value from properties")
+        void health_versionIsSet() {
+            assertThat(indicator.health().getDetails().get("version"))
+                    .isEqualTo("1.0.0");
+        }
+
+        @Test
+        @DisplayName("escaped colons in build.time are unescaped before Instant.parse()")
+        void health_escapedColonsAreUnescaped() {
+            assertThat(indicator.health().getDetails().get("version")).isEqualTo("1.0.0");
+            assertThat(indicator.health().getDetails().get("buildTime"))
+                    .asString().contains(":");
+        }
+    }
+
+    // =========================================================================
+    // build.time absent — mocked resource returns PROPS_NO_TIME stream
+    // =========================================================================
+
+    @Nested
+    @DisplayName("when build.time property is absent")
+    class WhenBuildTimeAbsent {
+
+        @Test
+        @DisplayName("buildTime detail is not added when property is absent")
+        void health_buildTimeNotPresent() throws Exception {
+            try (MockedConstruction<ClassPathResource> mocked =
+                         Mockito.mockConstruction(ClassPathResource.class, (mock, ctx) -> {
+                             when(mock.exists()).thenReturn(true);
+                             when(mock.getInputStream()).thenReturn(streamOf(PROPS_NO_TIME));
+                         })) {
+                Health health = new BuildInfoHealthIndicator().health();
+                assertThat(health.getStatus()).isEqualTo(Status.UP);
+                assertThat(health.getDetails()).doesNotContainKey("buildTime");
+                assertThat(health.getDetails()).doesNotContainKey("buildTimeDisplay");
+                assertThat(health.getDetails().get("version")).isEqualTo("2.0.0");
+            }
+        }
+    }
+
+    // =========================================================================
+    // build.time blank — mocked resource returns PROPS_BLANK_TIME stream
+    // =========================================================================
+
+    @Nested
+    @DisplayName("when build.time property is blank")
+    class WhenBuildTimeBlank {
+
+        @Test
+        @DisplayName("buildTime detail is not added when value is blank")
+        void health_buildTimeNotPresent() throws Exception {
+            try (MockedConstruction<ClassPathResource> mocked =
+                         Mockito.mockConstruction(ClassPathResource.class, (mock, ctx) -> {
+                             when(mock.exists()).thenReturn(true);
+                             when(mock.getInputStream()).thenReturn(streamOf(PROPS_BLANK_TIME));
+                         })) {
+                Health health = new BuildInfoHealthIndicator().health();
+                assertThat(health.getStatus()).isEqualTo(Status.UP);
+                assertThat(health.getDetails()).doesNotContainKey("buildTime");
+                assertThat(health.getDetails().get("version")).isEqualTo("3.0.0");
+            }
+        }
+    }
+
+    // =========================================================================
+    // build.version absent — mocked resource returns PROPS_NO_VERSION stream
+    // =========================================================================
+
+    @Nested
+    @DisplayName("when build.version property is absent")
+    class WhenBuildVersionAbsent {
+
+        @Test
+        @DisplayName("version falls back to 'unknown' when property is absent")
+        void health_versionFallsBackToUnknown() throws Exception {
+            try (MockedConstruction<ClassPathResource> mocked =
+                         Mockito.mockConstruction(ClassPathResource.class, (mock, ctx) -> {
+                             when(mock.exists()).thenReturn(true);
+                             when(mock.getInputStream()).thenReturn(streamOf(PROPS_NO_VERSION));
+                         })) {
+                Health health = new BuildInfoHealthIndicator().health();
+                assertThat(health.getDetails().get("version")).isEqualTo("unknown");
+                assertThat(health.getDetails()).containsKey("buildTime");
+            }
+        }
+    }
+
+    // =========================================================================
+    // resource.exists() == false — covers Lines 34-37
+    // Mocked resource returns exists() == false
+    // =========================================================================
+
+    @Nested
+    @DisplayName("when build-info.properties does not exist on classpath (Lines 34-37)")
+    class WhenResourceMissing {
+
+        @Test
+        @DisplayName("health status is UP when file is missing")
+        void health_statusIsUp() {
+            try (MockedConstruction<ClassPathResource> mocked =
+                         Mockito.mockConstruction(ClassPathResource.class, (mock, ctx) ->
+                                 when(mock.exists()).thenReturn(false))) {
+                Health health = new BuildInfoHealthIndicator().health();
+                assertThat(health.getStatus()).isEqualTo(Status.UP);
+            }
+        }
+
+        @Test
+        @DisplayName("buildTime detail is not present when file is missing (Line 35)")
+        void health_buildTimeNotPresent() {
+            try (MockedConstruction<ClassPathResource> mocked =
+                         Mockito.mockConstruction(ClassPathResource.class, (mock, ctx) ->
+                                 when(mock.exists()).thenReturn(false))) {
+                Health health = new BuildInfoHealthIndicator().health();
+                // Health.Builder silently drops null — key is never added
+                assertThat(health.getDetails()).doesNotContainKey("buildTime");
+            }
+        }
+
+        @Test
+        @DisplayName("version detail is not present when file is missing (Line 36)")
+        void health_versionNotPresent() {
+            try (MockedConstruction<ClassPathResource> mocked =
+                         Mockito.mockConstruction(ClassPathResource.class, (mock, ctx) ->
+                                 when(mock.exists()).thenReturn(false))) {
+                Health health = new BuildInfoHealthIndicator().health();
+                // Health.Builder silently drops null — key is never added
+                assertThat(health.getDetails()).doesNotContainKey("version");
+            }
+        }
+    }
+
+    // =========================================================================
+    // IOException catch block — covers Lines 53-54
+    // Mocked resource exists but getInputStream() throws IOException
+    // =========================================================================
+
+    @Nested
+    @DisplayName("when reading properties throws IOException (Lines 53-54)")
+    class WhenIOExceptionThrown {
+
+        @Test
+        @DisplayName("health status is still UP after IOException")
+        void health_statusIsUp() throws Exception {
+            try (MockedConstruction<ClassPathResource> mocked =
+                         Mockito.mockConstruction(ClassPathResource.class, (mock, ctx) -> {
+                             when(mock.exists()).thenReturn(true);
+                             when(mock.getInputStream())
+                                     .thenThrow(new IOException("Simulated IO failure"));
+                         })) {
+                assertThat(new BuildInfoHealthIndicator().health().getStatus())
+                        .isEqualTo(Status.UP);
+            }
+        }
+
+        @Test
+        @DisplayName("version is set to 'unknown' when IOException is thrown (Lines 53-54)")
+        void health_versionIsUnknown() throws Exception {
+            try (MockedConstruction<ClassPathResource> mocked =
+                         Mockito.mockConstruction(ClassPathResource.class, (mock, ctx) -> {
+                             when(mock.exists()).thenReturn(true);
+                             when(mock.getInputStream())
+                                     .thenThrow(new IOException("Simulated IO failure"));
+                         })) {
+                assertThat(new BuildInfoHealthIndicator().health()
+                        .getDetails().get("version")).isEqualTo("unknown");
+            }
+        }
+
+        @Test
+        @DisplayName("buildTime is not set when IOException is thrown")
+        void health_buildTimeNotSet() throws Exception {
+            try (MockedConstruction<ClassPathResource> mocked =
+                         Mockito.mockConstruction(ClassPathResource.class, (mock, ctx) -> {
+                             when(mock.exists()).thenReturn(true);
+                             when(mock.getInputStream())
+                                     .thenThrow(new IOException("Simulated IO failure"));
+                         })) {
+                assertThat(new BuildInfoHealthIndicator().health().getDetails())
+                        .doesNotContainKey("buildTime");
+            }
+        }
+    }
+}
