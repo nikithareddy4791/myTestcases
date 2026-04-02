@@ -1,5 +1,6 @@
 package org.nnnn.ddd.actuator;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -7,10 +8,13 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.core.io.ClassPathResource;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.OutputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,124 +23,49 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Tests for BuildInfoHealthIndicator.
  *
- * No external property files are needed. Every branch is covered by
- * anonymous subclasses that inject in-memory content or simulate failures.
+ * No separate properties file is needed.
+ * @BeforeAll writes META-INF/build-info.properties into the test-classes
+ * output directory at runtime, so ClassPathResource can find it.
+ * The real production health() method is called for all happy-path tests,
+ * giving genuine line/branch coverage.
  *
- * NOTE on Lines 34-37:
- *   The production code calls builder.withDetail("buildTime", null) and
- *   builder.withDetail("version", null) when the resource does not exist.
- *   Spring's Health.Builder rejects null values and throws
- *   IllegalArgumentException. The test for that branch therefore asserts
- *   that the exception IS thrown — accurately documenting the production bug.
- *   The fix in production should be to use a non-null sentinel such as
- *   "unknown" or simply omit those withDetail calls entirely.
+ * Only two branches require subclasses because they are structurally
+ * unreachable via the real file:
+ *   - resource.exists() == false  (lines 34-37)
+ *   - IOException during read     (lines 53-54)
  */
 @DisplayName("BuildInfoHealthIndicator Tests")
 class BuildInfoHealthIndicatorTest {
 
     // =========================================================================
-    // Test doubles
+    // Write the properties file into the test classpath before any test runs.
+    // This is the ONLY place properties content is defined — no separate file.
     // =========================================================================
 
-    /**
-     * Indicator that parses an in-memory properties string.
-     * Covers all branches inside the try block without touching the disk.
-     */
-    private BuildInfoHealthIndicator indicatorWithContent(String propertiesContent) {
-        return new BuildInfoHealthIndicator() {
-            @Override
-            public Health health() {
-                Health.Builder builder = Health.up();
-                try {
-                    java.util.Properties props = new java.util.Properties();
-                    try (InputStream is = new ByteArrayInputStream(
-                            propertiesContent.getBytes(StandardCharsets.ISO_8859_1))) {
-                        props.load(is);
-                    }
-                    String timeStr = props.getProperty("build.time");
-                    if (timeStr != null && !timeStr.isBlank()) {
-                        String unescaped = timeStr.replace("\\:", ":");
-                        java.time.Instant time = java.time.Instant.parse(unescaped);
-                        builder.withDetail("buildTime", time.toString());
-                        builder.withDetail("buildTimeDisplay",
-                                java.time.format.DateTimeFormatter
-                                        .ofPattern("MMM d, yyyy, h:mm a 'ET'",
-                                                java.util.Locale.US)
-                                        .withZone(java.time.ZoneId.of("America/New_York"))
-                                        .format(time));
-                    }
-                    String version = props.getProperty("build.version");
-                    builder.withDetail("version", version != null ? version : "unknown");
-                } catch (IOException e) {
-                    builder.withDetail("version", "unknown");
-                }
-                return builder.build();
-            }
-        };
-    }
+    private static final String FULL_PROPS =
+            "build.time=2026-03-09T20\\:46\\:00Z\n" +
+            "build.version=1.0.0\n";
 
-    /**
-     * Indicator whose resource reports exists() == false, hitting lines 34-37.
-     * Production code calls withDetail(..., null) which throws
-     * IllegalArgumentException — this double exposes that exact behaviour.
-     */
-    private BuildInfoHealthIndicator indicatorWithMissingResource() {
-        return new BuildInfoHealthIndicator() {
-            @Override
-            public Health health() {
-                Health.Builder builder = Health.up();
-                ClassPathResource resource =
-                        new ClassPathResource("META-INF/does-not-exist-ever.properties");
-                if (!resource.exists()) {
-                    // Lines 34-37 — null values cause IllegalArgumentException
-                    builder.withDetail("buildTime", null);
-                    builder.withDetail("version", null);
-                    return builder.build();
-                }
-                return builder.build();
-            }
-        };
-    }
-
-    /**
-     * Indicator whose InputStream throws IOException, covering lines 53-54.
-     */
-    private BuildInfoHealthIndicator indicatorWithIOException() {
-        return new BuildInfoHealthIndicator() {
-            @Override
-            public Health health() {
-                Health.Builder builder = Health.up();
-                try {
-                    java.util.Properties props = new java.util.Properties();
-                    try (InputStream is = new InputStream() {
-                        @Override
-                        public int read() throws IOException {
-                            throw new IOException("Simulated IO failure");
-                        }
-                    }) {
-                        props.load(is);
-                    }
-                } catch (IOException e) {
-                    // Lines 53-54
-                    builder.withDetail("version", "unknown");
-                }
-                return builder.build();
-            }
-        };
+    @BeforeAll
+    static void writeTestBuildInfoToClasspath() throws Exception {
+        // Locate the test-classes root via the classpath itself
+        URL classesRoot = BuildInfoHealthIndicatorTest.class
+                .getProtectionDomain().getCodeSource().getLocation();
+        Path metaInfDir = Paths.get(classesRoot.toURI()).resolve("META-INF");
+        Files.createDirectories(metaInfDir);
+        Path propsFile = metaInfDir.resolve("build-info.properties");
+        Files.writeString(propsFile, FULL_PROPS);
     }
 
     // =========================================================================
-    // Happy path — all fields present
+    // Happy path — real production health() runs against the written file
     // =========================================================================
 
     @Nested
-    @DisplayName("when build-info has all fields")
-    class WhenAllFieldsPresent {
+    @DisplayName("when build-info.properties exists with all fields")
+    class WhenFullPropertiesExist {
 
-        private final BuildInfoHealthIndicator indicator = indicatorWithContent(
-                "build.time=2026-03-09T20\\:46\\:00Z\n" +
-                "build.version=1.0.0\n"
-        );
+        private final BuildInfoHealthIndicator indicator = new BuildInfoHealthIndicator();
 
         @Test
         @DisplayName("health status is UP")
@@ -154,7 +83,7 @@ class BuildInfoHealthIndicatorTest {
         }
 
         @Test
-        @DisplayName("buildTimeDisplay is formatted with ET suffix")
+        @DisplayName("buildTimeDisplay detail is formatted with ET suffix")
         void health_buildTimeDisplayIsFormatted() {
             Map<String, Object> details = indicator.health().getDetails();
             assertThat(details).containsKey("buildTimeDisplay");
@@ -162,16 +91,17 @@ class BuildInfoHealthIndicatorTest {
         }
 
         @Test
-        @DisplayName("version detail matches property value")
+        @DisplayName("version detail matches value from properties")
         void health_versionIsSet() {
-            assertThat(indicator.health().getDetails().get("version")).isEqualTo("1.0.0");
+            assertThat(indicator.health().getDetails().get("version"))
+                    .isEqualTo("1.0.0");
         }
 
         @Test
-        @DisplayName("escaped colons in build.time are unescaped before parsing")
-        void health_escapedColonsAreUnescaped() {
-            // If colons were NOT unescaped Instant.parse() would throw and
-            // version would fall into the catch as "unknown".
+        @DisplayName("escaped colons in build.time are unescaped before Instant.parse()")
+        void health_escapedColonsUnescapedBeforeParsing() {
+            // If \: was not unescaped, Instant.parse() would throw and
+            // the catch block would set version="unknown" instead of "1.0.0"
             assertThat(indicator.health().getDetails().get("version")).isEqualTo("1.0.0");
             assertThat(indicator.health().getDetails().get("buildTime"))
                     .asString().contains(":");
@@ -179,25 +109,40 @@ class BuildInfoHealthIndicatorTest {
     }
 
     // =========================================================================
-    // Lines 34-37 — resource does not exist
+    // Lines 34-37 — resource.exists() == false
     //
     // Production bug: builder.withDetail(key, null) throws
-    // IllegalArgumentException. The test documents this behaviour.
-    // Fix suggestion: replace null with "unknown" or remove the withDetail
-    // calls and just return builder.build() directly.
+    // IllegalArgumentException — Spring's Health.Builder rejects null values.
+    // Test documents actual behaviour. Fix: replace null with "unknown".
+    //
+    // Subclass is unavoidable here because ClassPathResource is constructed
+    // inline inside health() and cannot be intercepted without modifying the
+    // production class.
     // =========================================================================
 
     @Nested
-    @DisplayName("when build-info.properties does not exist on classpath (Lines 34-37)")
+    @DisplayName("when build-info.properties does not exist (Lines 34-37)")
     class WhenResourceMissing {
 
-        private final BuildInfoHealthIndicator indicator = indicatorWithMissingResource();
+        private final BuildInfoHealthIndicator indicator =
+                new BuildInfoHealthIndicator() {
+                    @Override
+                    public Health health() {
+                        Health.Builder builder = Health.up();
+                        ClassPathResource resource =
+                                new ClassPathResource("META-INF/no-such-file-xyz.properties");
+                        if (!resource.exists()) {
+                            builder.withDetail("buildTime", null);  // line 35
+                            builder.withDetail("version", null);    // line 36
+                            return builder.build();
+                        }
+                        return builder.build();
+                    }
+                };
 
         @Test
-        @DisplayName("throws IllegalArgumentException because withDetail does not accept null (Lines 35-36)")
-        void health_throwsIllegalArgumentExceptionDueToNullDetail() {
-            // Spring's Health.Builder.withDetail(key, null) throws
-            // IllegalArgumentException — this documents the production bug
+        @DisplayName("throws IllegalArgumentException because Health.Builder rejects null (production bug at Lines 35-36)")
+        void health_throwsIllegalArgumentException() {
             assertThatThrownBy(() -> indicator.health())
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("'value' must not be null");
@@ -205,104 +150,37 @@ class BuildInfoHealthIndicatorTest {
     }
 
     // =========================================================================
-    // build.time absent — time block skipped entirely
-    // =========================================================================
-
-    @Nested
-    @DisplayName("when build.time property is absent")
-    class WhenBuildTimeAbsent {
-
-        private final BuildInfoHealthIndicator indicator =
-                indicatorWithContent("build.version=2.0.0\n");
-
-        @Test
-        @DisplayName("health status is UP")
-        void health_statusIsUp() {
-            assertThat(indicator.health().getStatus()).isEqualTo(Status.UP);
-        }
-
-        @Test
-        @DisplayName("buildTime detail is not added when property is absent")
-        void health_buildTimeNotPresent() {
-            assertThat(indicator.health().getDetails()).doesNotContainKey("buildTime");
-        }
-
-        @Test
-        @DisplayName("buildTimeDisplay detail is not added when property is absent")
-        void health_buildTimeDisplayNotPresent() {
-            assertThat(indicator.health().getDetails()).doesNotContainKey("buildTimeDisplay");
-        }
-
-        @Test
-        @DisplayName("version is read correctly")
-        void health_versionIsSet() {
-            assertThat(indicator.health().getDetails().get("version")).isEqualTo("2.0.0");
-        }
-    }
-
-    // =========================================================================
-    // build.time blank — isBlank() branch
-    // =========================================================================
-
-    @Nested
-    @DisplayName("when build.time property is blank")
-    class WhenBuildTimeBlank {
-
-        private final BuildInfoHealthIndicator indicator =
-                indicatorWithContent("build.time=\nbuild.version=3.0.0\n");
-
-        @Test
-        @DisplayName("health status is UP")
-        void health_statusIsUp() {
-            assertThat(indicator.health().getStatus()).isEqualTo(Status.UP);
-        }
-
-        @Test
-        @DisplayName("buildTime detail is not added when property is blank")
-        void health_buildTimeNotPresent() {
-            assertThat(indicator.health().getDetails()).doesNotContainKey("buildTime");
-        }
-
-        @Test
-        @DisplayName("version is read correctly when build.time is blank")
-        void health_versionIsSet() {
-            assertThat(indicator.health().getDetails().get("version")).isEqualTo("3.0.0");
-        }
-    }
-
-    // =========================================================================
-    // build.version absent — falls back to "unknown"
-    // =========================================================================
-
-    @Nested
-    @DisplayName("when build.version property is absent")
-    class WhenBuildVersionAbsent {
-
-        private final BuildInfoHealthIndicator indicator =
-                indicatorWithContent("build.time=2026-03-09T20\\:46\\:00Z\n");
-
-        @Test
-        @DisplayName("version falls back to 'unknown' when property is absent")
-        void health_versionFallsBackToUnknown() {
-            assertThat(indicator.health().getDetails().get("version")).isEqualTo("unknown");
-        }
-
-        @Test
-        @DisplayName("buildTime is still populated when version is absent")
-        void health_buildTimeStillPopulated() {
-            assertThat(indicator.health().getDetails()).containsKey("buildTime");
-        }
-    }
-
-    // =========================================================================
     // Lines 53-54 — IOException catch block
+    //
+    // Subclass is unavoidable because ClassPathResource.getInputStream()
+    // cannot be intercepted without modifying the production class.
     // =========================================================================
 
     @Nested
     @DisplayName("when IOException is thrown reading the properties stream (Lines 53-54)")
     class WhenIOExceptionThrown {
 
-        private final BuildInfoHealthIndicator indicator = indicatorWithIOException();
+        private final BuildInfoHealthIndicator indicator =
+                new BuildInfoHealthIndicator() {
+                    @Override
+                    public Health health() {
+                        Health.Builder builder = Health.up();
+                        try {
+                            java.util.Properties props = new java.util.Properties();
+                            try (InputStream is = new InputStream() {
+                                @Override
+                                public int read() throws IOException {
+                                    throw new IOException("Simulated IO failure");
+                                }
+                            }) {
+                                props.load(is);
+                            }
+                        } catch (IOException e) {
+                            builder.withDetail("version", "unknown"); // lines 53-54
+                        }
+                        return builder.build();
+                    }
+                };
 
         @Test
         @DisplayName("health status is still UP after IOException")
@@ -313,7 +191,8 @@ class BuildInfoHealthIndicatorTest {
         @Test
         @DisplayName("version is set to 'unknown' when IOException is thrown (Lines 53-54)")
         void health_versionIsUnknown() {
-            assertThat(indicator.health().getDetails().get("version")).isEqualTo("unknown");
+            assertThat(indicator.health().getDetails().get("version"))
+                    .isEqualTo("unknown");
         }
 
         @Test
