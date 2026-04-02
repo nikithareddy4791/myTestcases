@@ -1,18 +1,17 @@
 package org.nnnn.ddd.actuator;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
-import org.springframework.core.io.ClassPathResource;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,23 +20,24 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Tests for BuildInfoHealthIndicator.
  *
- * No separate .properties file is needed — all content is defined inline.
+ * No constructor change to the production class.
+ * No separate .properties files.
  *
- * Coverage strategy:
- *   - @BeforeAll writes META-INF/build-info.properties into the test-classes
- *     output dir at runtime so ClassPathResource can find it.
- *   - ALL tests use the REAL health() method via the package-private
- *     constructor that accepts a custom resource path.
- *   - No overriding of health() anywhere — JaCoCo sees every production line.
+ * All branch content is defined as string constants here and written to
+ * target/test-classes/META-INF/ by @BeforeAll at runtime, making them
+ * visible to ClassPathResource("META-INF/build-info.properties").
  *
- * Branches covered:
- *   resource.exists() == true  → happy path (real file written by @BeforeAll)
- *   resource.exists() == false → "does-not-exist" path via package-private ctor
- *   build.time present & valid → asserts buildTime + buildTimeDisplay set
- *   build.time absent          → asserts buildTime not added
- *   build.time blank           → asserts buildTime not added
- *   build.version absent       → asserts version = "unknown"
- *   IOException during read    → custom broken-stream path via package-private ctor
+ * Branch strategy:
+ *
+ *   resource.exists() == true  — real file present on classpath (happy path)
+ *   resource.exists() == false — file temporarily renamed away so exists()
+ *                                returns false; restored in @AfterAll
+ *   IOException during read    — file replaced with a directory of the same
+ *                                name; getInputStream() on a directory throws
+ *                                IOException; restored in @AfterAll
+ *
+ * Since all branches hit the real health() method, JaCoCo records full
+ * line and branch coverage on the production class.
  */
 @DisplayName("BuildInfoHealthIndicator Tests")
 class BuildInfoHealthIndicatorTest {
@@ -61,16 +61,15 @@ class BuildInfoHealthIndicatorTest {
             "build.time=2026-03-09T20\\:46\\:00Z\n";
 
     // =========================================================================
-    // Write files into the test-classes directory before any test runs.
-    // ClassPathResource resolves against the classpath, so writing here
-    // makes the files visible to the real health() method.
+    // Classpath paths resolved once
     // =========================================================================
 
     private static Path metaInfDir;
+    private static Path propsFile;
+    private static Path propsFileBackup;
 
     @BeforeAll
-    static void writePropsToClasspath() throws Exception {
-        // Resolve to target/test-classes (Maven) or build/classes/test (Gradle)
+    static void setUp() throws Exception {
         Path classesRoot = Paths.get(
                 BuildInfoHealthIndicatorTest.class
                         .getProtectionDomain()
@@ -80,29 +79,36 @@ class BuildInfoHealthIndicatorTest {
         metaInfDir = classesRoot.resolve("META-INF");
         Files.createDirectories(metaInfDir);
 
-        // Write every variant — each test references a different file name
-        Files.writeString(metaInfDir.resolve("build-info.properties"),          PROPS_ALL_FIELDS);
-        Files.writeString(metaInfDir.resolve("build-info-no-time.properties"),  PROPS_NO_TIME);
-        Files.writeString(metaInfDir.resolve("build-info-blank-time.properties"), PROPS_BLANK_TIME);
-        Files.writeString(metaInfDir.resolve("build-info-no-version.properties"), PROPS_NO_VERSION);
+        propsFile   = metaInfDir.resolve("build-info.properties");
+        propsFileBackup = metaInfDir.resolve("build-info.properties.bak");
 
-        // Write a deliberately broken (non-parseable) file for the IOException path
-        // Properties.load() will throw when it tries to parse binary garbage
-        Files.write(metaInfDir.resolve("build-info-broken.properties"),
-                new byte[]{(byte) 0xFF, (byte) 0xFE, 0x00, 0x00}); // binary, not ISO-8859-1 props
+        // Start with the happy-path content
+        Files.writeString(propsFile, PROPS_ALL_FIELDS);
+    }
+
+    @AfterAll
+    static void tearDown() throws Exception {
+        // Ensure the original file is always restored after the full suite
+        if (Files.exists(propsFileBackup)) {
+            Files.move(propsFileBackup, propsFile, StandardCopyOption.REPLACE_EXISTING);
+        }
+        // Remove any directory stub left by the IOException test
+        if (Files.isDirectory(propsFile)) {
+            Files.delete(propsFile);
+            Files.writeString(propsFile, PROPS_ALL_FIELDS);
+        }
     }
 
     // =========================================================================
-    // Happy path — all fields present (covers main try block fully)
+    // Happy path — all fields present
+    // File: PROPS_ALL_FIELDS written by @BeforeAll
     // =========================================================================
 
     @Nested
     @DisplayName("when build-info has all fields")
     class WhenAllFieldsPresent {
 
-        // Package-private constructor — real health() runs, no override
-        private final BuildInfoHealthIndicator indicator =
-                new BuildInfoHealthIndicator("META-INF/build-info.properties");
+        private final BuildInfoHealthIndicator indicator = new BuildInfoHealthIndicator();
 
         @Test
         @DisplayName("health status is UP")
@@ -137,8 +143,6 @@ class BuildInfoHealthIndicatorTest {
         @Test
         @DisplayName("escaped colons in build.time are unescaped before Instant.parse()")
         void health_escapedColonsAreUnescaped() {
-            // If \: was not unescaped Instant.parse() would throw and
-            // the catch block would set version="unknown" instead of "1.0.0"
             assertThat(indicator.health().getDetails().get("version")).isEqualTo("1.0.0");
             assertThat(indicator.health().getDetails().get("buildTime"))
                     .asString().contains(":");
@@ -146,41 +150,24 @@ class BuildInfoHealthIndicatorTest {
     }
 
     // =========================================================================
-    // resource.exists() == false — covers the if (!resource.exists()) branch
-    //
-    // Production bug: builder.withDetail(key, null) throws
-    // IllegalArgumentException. Test documents actual runtime behaviour.
-    // Fix: replace null with "unknown" or omit the withDetail calls.
-    // =========================================================================
-
-    @Nested
-    @DisplayName("when build-info.properties does not exist on classpath")
-    class WhenResourceMissing {
-
-        // Points at a path that does not exist — real health() runs,
-        // resource.exists() returns false, lines 34-37 execute
-        private final BuildInfoHealthIndicator indicator =
-                new BuildInfoHealthIndicator("META-INF/no-such-file-xyz.properties");
-
-        @Test
-        @DisplayName("throws IllegalArgumentException because Health.Builder rejects null (production bug lines 35-36)")
-        void health_throwsIllegalArgumentExceptionDueToNullDetail() {
-            assertThatThrownBy(() -> indicator.health())
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("'value' must not be null");
-        }
-    }
-
-    // =========================================================================
-    // build.time absent — if (timeStr != null && !timeStr.isBlank()) == false
+    // build.time absent
     // =========================================================================
 
     @Nested
     @DisplayName("when build.time property is absent")
     class WhenBuildTimeAbsent {
 
-        private final BuildInfoHealthIndicator indicator =
-                new BuildInfoHealthIndicator("META-INF/build-info-no-time.properties");
+        private final BuildInfoHealthIndicator indicator = new BuildInfoHealthIndicator();
+
+        @BeforeAll
+        static void writeBuildTimeAbsentProps() throws Exception {
+            Files.writeString(propsFile, PROPS_NO_TIME);
+        }
+
+        @AfterAll
+        static void restoreFullProps() throws Exception {
+            Files.writeString(propsFile, PROPS_ALL_FIELDS);
+        }
 
         @Test
         @DisplayName("health status is UP")
@@ -189,13 +176,13 @@ class BuildInfoHealthIndicatorTest {
         }
 
         @Test
-        @DisplayName("buildTime detail is not added")
+        @DisplayName("buildTime detail is not added when property is absent")
         void health_buildTimeNotPresent() {
             assertThat(indicator.health().getDetails()).doesNotContainKey("buildTime");
         }
 
         @Test
-        @DisplayName("buildTimeDisplay detail is not added")
+        @DisplayName("buildTimeDisplay detail is not added when property is absent")
         void health_buildTimeDisplayNotPresent() {
             assertThat(indicator.health().getDetails()).doesNotContainKey("buildTimeDisplay");
         }
@@ -208,15 +195,24 @@ class BuildInfoHealthIndicatorTest {
     }
 
     // =========================================================================
-    // build.time blank — isBlank() branch of the if condition
+    // build.time blank
     // =========================================================================
 
     @Nested
     @DisplayName("when build.time property is blank")
     class WhenBuildTimeBlank {
 
-        private final BuildInfoHealthIndicator indicator =
-                new BuildInfoHealthIndicator("META-INF/build-info-blank-time.properties");
+        private final BuildInfoHealthIndicator indicator = new BuildInfoHealthIndicator();
+
+        @BeforeAll
+        static void writeBlankTimeProps() throws Exception {
+            Files.writeString(propsFile, PROPS_BLANK_TIME);
+        }
+
+        @AfterAll
+        static void restoreFullProps() throws Exception {
+            Files.writeString(propsFile, PROPS_ALL_FIELDS);
+        }
 
         @Test
         @DisplayName("health status is UP")
@@ -238,15 +234,24 @@ class BuildInfoHealthIndicatorTest {
     }
 
     // =========================================================================
-    // build.version absent — version != null ternary false branch
+    // build.version absent — version ternary false branch
     // =========================================================================
 
     @Nested
     @DisplayName("when build.version property is absent")
     class WhenBuildVersionAbsent {
 
-        private final BuildInfoHealthIndicator indicator =
-                new BuildInfoHealthIndicator("META-INF/build-info-no-version.properties");
+        private final BuildInfoHealthIndicator indicator = new BuildInfoHealthIndicator();
+
+        @BeforeAll
+        static void writeNoVersionProps() throws Exception {
+            Files.writeString(propsFile, PROPS_NO_VERSION);
+        }
+
+        @AfterAll
+        static void restoreFullProps() throws Exception {
+            Files.writeString(propsFile, PROPS_ALL_FIELDS);
+        }
 
         @Test
         @DisplayName("version falls back to 'unknown'")
@@ -262,19 +267,71 @@ class BuildInfoHealthIndicatorTest {
     }
 
     // =========================================================================
-    // IOException catch block (lines 53-54)
+    // resource.exists() == false — covers the if (!resource.exists()) branch
     //
-    // The broken binary file causes Properties.load() to throw IOException,
-    // which is caught and sets version="unknown".
-    // The real health() method runs — no override needed.
+    // Rename the real file away so ClassPathResource.exists() returns false.
+    // The real health() method runs and hits lines 34-37.
+    //
+    // Production bug: builder.withDetail(key, null) throws
+    // IllegalArgumentException — Spring's Health.Builder rejects null.
+    // Test documents actual runtime behaviour.
+    // Fix: replace null with "unknown" or omit the withDetail calls.
     // =========================================================================
 
     @Nested
-    @DisplayName("when reading the properties file causes IOException (Lines 53-54)")
+    @DisplayName("when build-info.properties does not exist (Lines 34-37)")
+    class WhenResourceMissing {
+
+        private final BuildInfoHealthIndicator indicator = new BuildInfoHealthIndicator();
+
+        @BeforeAll
+        static void hidePropsFile() throws Exception {
+            // Rename file so ClassPathResource.exists() returns false
+            Files.move(propsFile, propsFileBackup, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        @AfterAll
+        static void restorePropsFile() throws Exception {
+            Files.move(propsFileBackup, propsFile, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        @Test
+        @DisplayName("throws IllegalArgumentException because Health.Builder rejects null (Lines 35-36 production bug)")
+        void health_throwsIllegalArgumentException() {
+            assertThatThrownBy(() -> indicator.health())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("'value' must not be null");
+        }
+    }
+
+    // =========================================================================
+    // IOException catch block (lines 53-54)
+    //
+    // Replace the file with a directory of the same name.
+    // ClassPathResource.exists() returns true (the path exists),
+    // but getInputStream() on a directory throws IOException.
+    // The real health() method runs and the catch block at lines 53-54 fires.
+    // =========================================================================
+
+    @Nested
+    @DisplayName("when reading properties throws IOException (Lines 53-54)")
     class WhenIOExceptionThrown {
 
-        private final BuildInfoHealthIndicator indicator =
-                new BuildInfoHealthIndicator("META-INF/build-info-broken.properties");
+        private final BuildInfoHealthIndicator indicator = new BuildInfoHealthIndicator();
+
+        @BeforeAll
+        static void replaceFileWithDirectory() throws Exception {
+            // Back up the real file, delete it, create a directory in its place
+            Files.move(propsFile, propsFileBackup, StandardCopyOption.REPLACE_EXISTING);
+            Files.createDirectory(propsFile); // same path, now a directory
+        }
+
+        @AfterAll
+        static void restoreFile() throws Exception {
+            // Remove the directory stub and restore the real file
+            Files.delete(propsFile);
+            Files.move(propsFileBackup, propsFile, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         @Test
         @DisplayName("health status is still UP after IOException")
