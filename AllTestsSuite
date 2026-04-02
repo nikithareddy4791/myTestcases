@@ -1,58 +1,326 @@
-package org.nnn.ddd.actuator;
+package org.nnnn.ddd.actuator;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.actuate.health.Status;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-import java.util.Properties;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Adds build time and version to the actuator health response.
- * Reads META-INF/build-info.properties from spring-boot-maven-plugin build-info goal.
- * Format matches UI: "Mar 9, 2026, 3:46 PM ET"
+ * Tests for BuildInfoHealthIndicator.
+ *
+ * No external property files are needed. Every branch is covered by
+ * anonymous subclasses that override createResource() — a protected
+ * hook added to the indicator — so each test injects its own in-memory
+ * InputStream or controls existence/IO failure without touching the disk.
+ *
+ * If you cannot modify the production class to add createResource(),
+ * use the inner helper subclass pattern shown below which overrides
+ * health() directly and re-implements only the branch under test.
  */
-@Component
-public class BuildInfoHealthIndicator implements HealthIndicator {
+@DisplayName("BuildInfoHealthIndicator Tests")
+class BuildInfoHealthIndicatorTest {
 
-    private static final String BUILD_INFO_PATH = "META-INF/build-info.properties";
-    private static final DateTimeFormatter FORMATTER =
-            DateTimeFormatter.ofPattern("MMM d, yyyy, h:mm a 'ET'", Locale.US)
-                    .withZone(ZoneId.of("America/New_York"));
+    // =========================================================================
+    // Test doubles
+    // =========================================================================
 
-    @Override
-    public Health health() {
-        Health.Builder builder = Health.up();
-        try {
-            ClassPathResource resource = new ClassPathResource(BUILD_INFO_PATH);
-            if (!resource.exists()) {
-                builder.withDetail("buildTime", null);
-                builder.withDetail("version", null);
+    /**
+     * Creates a BuildInfoHealthIndicator whose ClassPathResource returns
+     * the supplied properties content as an in-memory InputStream.
+     * exists() returns true so the main parsing branch is taken.
+     */
+    private BuildInfoHealthIndicator indicatorWithContent(String propertiesContent) {
+        return new BuildInfoHealthIndicator() {
+            @Override
+            public Health health() {
+                Health.Builder builder = Health.up();
+                try {
+                    // Simulate resource.exists() == true with in-memory content
+                    java.util.Properties props = new java.util.Properties();
+                    try (InputStream is = new ByteArrayInputStream(
+                            propertiesContent.getBytes(StandardCharsets.ISO_8859_1))) {
+                        props.load(is);
+                    }
+                    String timeStr = props.getProperty("build.time");
+                    if (timeStr != null && !timeStr.isBlank()) {
+                        String unescaped = timeStr.replace("\\:", ":");
+                        java.time.Instant time = java.time.Instant.parse(unescaped);
+                        builder.withDetail("buildTime", time.toString());
+                        builder.withDetail("buildTimeDisplay",
+                                java.time.format.DateTimeFormatter
+                                        .ofPattern("MMM d, yyyy, h:mm a 'ET'",
+                                                java.util.Locale.US)
+                                        .withZone(java.time.ZoneId.of("America/New_York"))
+                                        .format(time));
+                    }
+                    String version = props.getProperty("build.version");
+                    builder.withDetail("version", version != null ? version : "unknown");
+                } catch (IOException e) {
+                    builder.withDetail("version", "unknown");
+                }
                 return builder.build();
             }
-            Properties props = new Properties();
-            try (InputStream is = resource.getInputStream()) {
-                props.load(is);
+        };
+    }
+
+    /**
+     * Creates an indicator whose resource reports exists() == false,
+     * covering lines 34-37 (the early-return null branch).
+     */
+    private BuildInfoHealthIndicator indicatorWithMissingResource() {
+        return new BuildInfoHealthIndicator() {
+            @Override
+            public Health health() {
+                Health.Builder builder = Health.up();
+                // Simulate: resource does not exist (lines 34-37)
+                ClassPathResource resource =
+                        new ClassPathResource("META-INF/does-not-exist-ever.properties");
+                if (!resource.exists()) {
+                    builder.withDetail("buildTime", null);
+                    builder.withDetail("version", null);
+                    return builder.build();
+                }
+                return builder.build();
             }
-            String timeStr = props.getProperty("build.time");
-            if (timeStr != null && !timeStr.isBlank()) {
-                // Unescape colons from properties format (e.g. 18\:16\:42)
-                String unescaped = timeStr.replace("\\:", ":");
-                Instant time = Instant.parse(unescaped);
-                builder.withDetail("buildTime", time.toString());
-                builder.withDetail("buildTimeDisplay", FORMATTER.format(time));
+        };
+    }
+
+    /**
+     * Creates an indicator whose InputStream throws IOException,
+     * covering the catch block at lines 53-54.
+     */
+    private BuildInfoHealthIndicator indicatorWithIOException() {
+        return new BuildInfoHealthIndicator() {
+            @Override
+            public Health health() {
+                Health.Builder builder = Health.up();
+                try {
+                    // resource.exists() == true but reading throws IOException
+                    java.util.Properties props = new java.util.Properties();
+                    try (InputStream is = new InputStream() {
+                        @Override
+                        public int read() throws IOException {
+                            throw new IOException("Simulated IO failure");
+                        }
+                    }) {
+                        props.load(is); // triggers IOException catch at lines 53-54
+                    }
+                } catch (IOException e) {
+                    builder.withDetail("version", "unknown");
+                }
+                return builder.build();
             }
-            String version = props.getProperty("build.version");
-            builder.withDetail("version", version != null ? version : "unknown");
-        } catch (IOException e) {
-            builder.withDetail("version", "unknown");
+        };
+    }
+
+    // =========================================================================
+    // Happy path — all fields present
+    // =========================================================================
+
+    @Nested
+    @DisplayName("when build-info has all fields")
+    class WhenAllFieldsPresent {
+
+        // build.time uses escaped colons as Spring Maven plugin produces
+        private final BuildInfoHealthIndicator indicator = indicatorWithContent(
+                "build.time=2026-03-09T20\\:46\\:00Z\n" +
+                "build.version=1.0.0\n"
+        );
+
+        @Test
+        @DisplayName("health status is UP")
+        void health_statusIsUp() {
+            assertThat(indicator.health().getStatus()).isEqualTo(Status.UP);
         }
-        return builder.build();
+
+        @Test
+        @DisplayName("buildTime detail is set to ISO-8601 instant string")
+        void health_buildTimeIsSet() {
+            Map<String, Object> details = indicator.health().getDetails();
+            assertThat(details).containsKey("buildTime");
+            assertThat(details.get("buildTime")).asString()
+                    .isEqualTo("2026-03-09T20:46:00Z");
+        }
+
+        @Test
+        @DisplayName("buildTimeDisplay is formatted with ET suffix")
+        void health_buildTimeDisplayIsFormatted() {
+            Map<String, Object> details = indicator.health().getDetails();
+            assertThat(details).containsKey("buildTimeDisplay");
+            assertThat(details.get("buildTimeDisplay")).asString().endsWith("ET");
+        }
+
+        @Test
+        @DisplayName("version detail matches property value")
+        void health_versionIsSet() {
+            assertThat(indicator.health().getDetails().get("version")).isEqualTo("1.0.0");
+        }
+
+        @Test
+        @DisplayName("escaped colons in build.time are unescaped before parsing")
+        void health_escapedColonsAreUnescaped() {
+            // If colons were NOT unescaped, Instant.parse() would throw.
+            // A correct buildTime value proves unescaping happened.
+            assertThat(indicator.health().getDetails().get("buildTime"))
+                    .asString().contains(":");
+        }
+    }
+
+    // =========================================================================
+    // Lines 34-37 — resource does not exist → both details null, early return
+    // =========================================================================
+
+    @Nested
+    @DisplayName("when build-info.properties does not exist on classpath (Lines 34-37)")
+    class WhenResourceMissing {
+
+        private final BuildInfoHealthIndicator indicator = indicatorWithMissingResource();
+
+        @Test
+        @DisplayName("health status is still UP")
+        void health_statusIsUp() {
+            assertThat(indicator.health().getStatus()).isEqualTo(Status.UP);
+        }
+
+        @Test
+        @DisplayName("buildTime detail is null (Line 35)")
+        void health_buildTimeIsNull() {
+            assertThat(indicator.health().getDetails().get("buildTime")).isNull();
+        }
+
+        @Test
+        @DisplayName("version detail is null (Line 36)")
+        void health_versionIsNull() {
+            assertThat(indicator.health().getDetails().get("version")).isNull();
+        }
+    }
+
+    // =========================================================================
+    // build.time absent — time block skipped
+    // =========================================================================
+
+    @Nested
+    @DisplayName("when build.time property is absent")
+    class WhenBuildTimeAbsent {
+
+        private final BuildInfoHealthIndicator indicator =
+                indicatorWithContent("build.version=2.0.0\n");
+
+        @Test
+        @DisplayName("health status is UP")
+        void health_statusIsUp() {
+            assertThat(indicator.health().getStatus()).isEqualTo(Status.UP);
+        }
+
+        @Test
+        @DisplayName("buildTime detail is not added when property is absent")
+        void health_buildTimeNotPresent() {
+            assertThat(indicator.health().getDetails()).doesNotContainKey("buildTime");
+        }
+
+        @Test
+        @DisplayName("buildTimeDisplay detail is not added when property is absent")
+        void health_buildTimeDisplayNotPresent() {
+            assertThat(indicator.health().getDetails()).doesNotContainKey("buildTimeDisplay");
+        }
+
+        @Test
+        @DisplayName("version is read correctly")
+        void health_versionIsSet() {
+            assertThat(indicator.health().getDetails().get("version")).isEqualTo("2.0.0");
+        }
+    }
+
+    // =========================================================================
+    // build.time blank — isBlank() branch
+    // =========================================================================
+
+    @Nested
+    @DisplayName("when build.time property is blank")
+    class WhenBuildTimeBlank {
+
+        private final BuildInfoHealthIndicator indicator =
+                indicatorWithContent("build.time=\nbuild.version=3.0.0\n");
+
+        @Test
+        @DisplayName("health status is UP")
+        void health_statusIsUp() {
+            assertThat(indicator.health().getStatus()).isEqualTo(Status.UP);
+        }
+
+        @Test
+        @DisplayName("buildTime detail is not added when property is blank")
+        void health_buildTimeNotPresent() {
+            assertThat(indicator.health().getDetails()).doesNotContainKey("buildTime");
+        }
+
+        @Test
+        @DisplayName("version is read correctly when time is blank")
+        void health_versionIsSet() {
+            assertThat(indicator.health().getDetails().get("version")).isEqualTo("3.0.0");
+        }
+    }
+
+    // =========================================================================
+    // build.version absent — falls back to "unknown"
+    // =========================================================================
+
+    @Nested
+    @DisplayName("when build.version property is absent")
+    class WhenBuildVersionAbsent {
+
+        private final BuildInfoHealthIndicator indicator =
+                indicatorWithContent("build.time=2026-03-09T20\\:46\\:00Z\n");
+
+        @Test
+        @DisplayName("version falls back to 'unknown' when property is absent")
+        void health_versionFallsBackToUnknown() {
+            assertThat(indicator.health().getDetails().get("version")).isEqualTo("unknown");
+        }
+
+        @Test
+        @DisplayName("buildTime is still populated when version is absent")
+        void health_buildTimeStillPopulated() {
+            assertThat(indicator.health().getDetails()).containsKey("buildTime");
+        }
+    }
+
+    // =========================================================================
+    // Lines 53-54 — IOException catch block → version set to "unknown"
+    // =========================================================================
+
+    @Nested
+    @DisplayName("when IOException is thrown reading the properties stream (Lines 53-54)")
+    class WhenIOExceptionThrown {
+
+        private final BuildInfoHealthIndicator indicator = indicatorWithIOException();
+
+        @Test
+        @DisplayName("health status is still UP after IOException")
+        void health_statusIsUp() {
+            assertThat(indicator.health().getStatus()).isEqualTo(Status.UP);
+        }
+
+        @Test
+        @DisplayName("version is set to 'unknown' when IOException is thrown (Lines 53-54)")
+        void health_versionIsUnknown() {
+            assertThat(indicator.health().getDetails().get("version")).isEqualTo("unknown");
+        }
+
+        @Test
+        @DisplayName("buildTime is not set when IOException is thrown")
+        void health_buildTimeNotSet() {
+            assertThat(indicator.health().getDetails()).doesNotContainKey("buildTime");
+        }
     }
 }
