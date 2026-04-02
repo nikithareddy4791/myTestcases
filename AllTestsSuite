@@ -31,6 +31,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   resource.exists() == false — file renamed away so exists() returns false
  *   IOException during read    — file replaced with a directory of same name;
  *                                getInputStream() on a directory throws IOException
+ *
+ * Note on Lines 34-37 (resource missing branch):
+ *   Production code calls builder.withDetail("buildTime", null) and
+ *   builder.withDetail("version", null). Spring Boot's Health.Builder
+ *   silently drops null values — the keys are never added to the details
+ *   map. So the correct assertion is doesNotContainKey(), not isNull().
  */
 @DisplayName("BuildInfoHealthIndicator Tests")
 class BuildInfoHealthIndicatorTest {
@@ -259,8 +265,14 @@ class BuildInfoHealthIndicatorTest {
     // resource.exists() == false — covers the if (!resource.exists()) branch
     //
     // File is renamed away so ClassPathResource.exists() returns false.
-    // Spring Boot accepts null detail values silently in newer versions,
-    // so health() returns normally with null details for buildTime and version.
+    // The real health() method runs and hits lines 34-37.
+    //
+    // Spring Boot's Health.Builder silently drops null values — withDetail(k, null)
+    // does NOT add the key to the map at all. So the correct assertion is
+    // doesNotContainKey(), not isNull() — map.get() on a missing key also
+    // returns null, which made isNull() misleadingly pass the null check but
+    // fail the assertion because the failure mode was "key not present" not
+    // "key present with null value".
     // =========================================================================
 
     @Nested
@@ -286,15 +298,17 @@ class BuildInfoHealthIndicatorTest {
         }
 
         @Test
-        @DisplayName("buildTime detail is null when file is missing (Line 35)")
-        void health_buildTimeIsNull() {
-            assertThat(indicator.health().getDetails().get("buildTime")).isNull();
+        @DisplayName("buildTime detail is not present when file is missing (Line 35)")
+        void health_buildTimeNotPresent() {
+            // Health.Builder silently drops null — key is never added to the map
+            assertThat(indicator.health().getDetails()).doesNotContainKey("buildTime");
         }
 
         @Test
-        @DisplayName("version detail is null when file is missing (Line 36)")
-        void health_versionIsNull() {
-            assertThat(indicator.health().getDetails().get("version")).isNull();
+        @DisplayName("version detail is not present when file is missing (Line 36)")
+        void health_versionNotPresent() {
+            // Health.Builder silently drops null — key is never added to the map
+            assertThat(indicator.health().getDetails()).doesNotContainKey("version");
         }
     }
 
