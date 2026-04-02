@@ -20,6 +20,156 @@ class CaseFilterTest {
     }
 
     // =========================================================================
+    // arrId
+    // =========================================================================
+
+    @Nested
+    @DisplayName("arrId")
+    class ArrIdTests {
+
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setArrId("ARR001");
+            assertThat(filter.getArrId()).isEqualTo("ARR001");
+        }
+
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.arrId("ARR002");
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getArrId()).isEqualTo("ARR002");
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getArrId()).isNull();
+        }
+    }
+
+    // =========================================================================
+    // assignedNm
+    // =========================================================================
+
+    @Nested
+    @DisplayName("assignedNm")
+    class AssignedNmTests {
+
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setAssignedNm("jdoe");
+            assertThat(filter.getAssignedNm()).isEqualTo("jdoe");
+        }
+
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.assignedNm("jsmith");
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getAssignedNm()).isEqualTo("jsmith");
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getAssignedNm()).isNull();
+        }
+    }
+
+    // =========================================================================
+    // proactiveFlg
+    // =========================================================================
+
+    @Nested
+    @DisplayName("proactiveFlg")
+    class ProactiveFlgTests {
+
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setProactiveFlg(1);
+            assertThat(filter.getProactiveFlg()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.proactiveFlg(0);
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getProactiveFlg()).isEqualTo(0);
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getProactiveFlg()).isNull();
+        }
+    }
+
+    // =========================================================================
+    // pageSize
+    // =========================================================================
+
+    @Nested
+    @DisplayName("pageSize")
+    class PageSizeTests {
+
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setPageSize(25);
+            assertThat(filter.getPageSize()).isEqualTo(25);
+        }
+
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.pageSize(50);
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getPageSize()).isEqualTo(50);
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getPageSize()).isNull();
+        }
+    }
+
+    // =========================================================================
+    // pageNumber
+    // =========================================================================
+
+    @Nested
+    @DisplayName("pageNumber")
+    class PageNumberTests {
+
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setPageNumber(2);
+            assertThat(filter.getPageNumber()).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.pageNumber(3);
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getPageNumber()).isEqualTo(3);
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getPageNumber()).isNull();
+        }
+    }
+
+    // =========================================================================
     // requestDtFrom
     // =========================================================================
 
@@ -166,10 +316,8 @@ class CaseFilterTest {
         @DisplayName("addCategoryIdsItem initialises list when null then appends")
         void addItem_initialisesListAndAppends() {
             assertThat(filter.getCategoryIds()).isNull();
-
             filter.addCategoryIdsItem(10);
             assertThat(filter.getCategoryIds()).containsExactly(10);
-
             filter.addCategoryIdsItem(20);
             assertThat(filter.getCategoryIds()).containsExactly(10, 20);
         }
@@ -177,8 +325,7 @@ class CaseFilterTest {
         @Test
         @DisplayName("addCategoryIdsItem returns same instance for chaining")
         void addItem_returnsSameInstance() {
-            CaseFilter result = filter.addCategoryIdsItem(5);
-            assertThat(result).isSameAs(filter);
+            assertThat(filter.addCategoryIdsItem(5)).isSameAs(filter);
         }
 
         @Test
@@ -215,10 +362,8 @@ class CaseFilterTest {
         @DisplayName("addDluOfficeIdsItem initialises list when null then appends")
         void addItem_initialisesListAndAppends() {
             assertThat(filter.getDluOfficeIds()).isNull();
-
             filter.addDluOfficeIdsItem(1);
             assertThat(filter.getDluOfficeIds()).containsExactly(1);
-
             filter.addDluOfficeIdsItem(2);
             assertThat(filter.getDluOfficeIds()).containsExactly(1, 2);
         }
@@ -226,8 +371,7 @@ class CaseFilterTest {
         @Test
         @DisplayName("addDluOfficeIdsItem returns same instance for chaining")
         void addItem_returnsSameInstance() {
-            CaseFilter result = filter.addDluOfficeIdsItem(3);
-            assertThat(result).isSameAs(filter);
+            assertThat(filter.addDluOfficeIdsItem(3)).isSameAs(filter);
         }
 
         @Test
@@ -264,10 +408,8 @@ class CaseFilterTest {
         @DisplayName("addStatusIdsItem initialises list when null then appends")
         void addItem_initialisesListAndAppends() {
             assertThat(filter.getStatusIds()).isNull();
-
             filter.addStatusIdsItem(10);
             assertThat(filter.getStatusIds()).containsExactly(10);
-
             filter.addStatusIdsItem(20);
             assertThat(filter.getStatusIds()).containsExactly(10, 20);
         }
@@ -275,8 +417,7 @@ class CaseFilterTest {
         @Test
         @DisplayName("addStatusIdsItem returns same instance for chaining")
         void addItem_returnsSameInstance() {
-            CaseFilter result = filter.addStatusIdsItem(1);
-            assertThat(result).isSameAs(filter);
+            assertThat(filter.addStatusIdsItem(1)).isSameAs(filter);
         }
 
         @Test
@@ -313,10 +454,8 @@ class CaseFilterTest {
         @DisplayName("addTagIdsItem initialises list when null then appends")
         void addItem_initialisesListAndAppends() {
             assertThat(filter.getTagIds()).isNull();
-
             filter.addTagIdsItem(100);
             assertThat(filter.getTagIds()).containsExactly(100);
-
             filter.addTagIdsItem(200);
             assertThat(filter.getTagIds()).containsExactly(100, 200);
         }
@@ -324,8 +463,7 @@ class CaseFilterTest {
         @Test
         @DisplayName("addTagIdsItem returns same instance for chaining")
         void addItem_returnsSameInstance() {
-            CaseFilter result = filter.addTagIdsItem(5);
-            assertThat(result).isSameAs(filter);
+            assertThat(filter.addTagIdsItem(5)).isSameAs(filter);
         }
 
         @Test
@@ -362,10 +500,8 @@ class CaseFilterTest {
         @DisplayName("addSortByItem initialises list when null then appends")
         void addItem_initialisesListAndAppends() {
             assertThat(filter.getSortBy()).isNull();
-
             filter.addSortByItem("requestDt");
             assertThat(filter.getSortBy()).containsExactly("requestDt");
-
             filter.addSortByItem("dueDt");
             assertThat(filter.getSortBy()).containsExactly("requestDt", "dueDt");
         }
@@ -373,8 +509,7 @@ class CaseFilterTest {
         @Test
         @DisplayName("addSortByItem returns same instance for chaining")
         void addItem_returnsSameInstance() {
-            CaseFilter result = filter.addSortByItem("id");
-            assertThat(result).isSameAs(filter);
+            assertThat(filter.addSortByItem("id")).isSameAs(filter);
         }
 
         @Test
@@ -411,10 +546,8 @@ class CaseFilterTest {
         @DisplayName("addSortOrderItem initialises list when null then appends")
         void addItem_initialisesListAndAppends() {
             assertThat(filter.getSortOrder()).isNull();
-
             filter.addSortOrderItem(1);
             assertThat(filter.getSortOrder()).containsExactly(1);
-
             filter.addSortOrderItem(0);
             assertThat(filter.getSortOrder()).containsExactly(1, 0);
         }
@@ -422,8 +555,7 @@ class CaseFilterTest {
         @Test
         @DisplayName("addSortOrderItem returns same instance for chaining")
         void addItem_returnsSameInstance() {
-            CaseFilter result = filter.addSortOrderItem(0);
-            assertThat(result).isSameAs(filter);
+            assertThat(filter.addSortOrderItem(0)).isSameAs(filter);
         }
 
         @Test
@@ -456,9 +588,7 @@ class CaseFilterTest {
         @Test
         @DisplayName("filters with same field values are equal")
         void sameFieldValues_areEqual() {
-            CaseFilter a = buildFullFilter();
-            CaseFilter b = buildFullFilter();
-            assertThat(a.equals(b)).isTrue();
+            assertThat(buildFullFilter().equals(buildFullFilter())).isTrue();
         }
 
         @Test
@@ -476,10 +606,40 @@ class CaseFilterTest {
         @Test
         @DisplayName("different arrId is not equal")
         void differentArrId_isNotEqual() {
-            CaseFilter a = new CaseFilter();
-            a.setArrId("ARR001");
-            CaseFilter b = new CaseFilter();
-            b.setArrId("ARR002");
+            CaseFilter a = new CaseFilter(); a.setArrId("ARR001");
+            CaseFilter b = new CaseFilter(); b.setArrId("ARR002");
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different assignedNm is not equal")
+        void differentAssignedNm_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setAssignedNm("jdoe");
+            CaseFilter b = new CaseFilter(); b.setAssignedNm("jsmith");
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different proactiveFlg is not equal")
+        void differentProactiveFlg_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setProactiveFlg(0);
+            CaseFilter b = new CaseFilter(); b.setProactiveFlg(1);
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different pageSize is not equal")
+        void differentPageSize_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setPageSize(10);
+            CaseFilter b = new CaseFilter(); b.setPageSize(20);
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different pageNumber is not equal")
+        void differentPageNumber_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setPageNumber(0);
+            CaseFilter b = new CaseFilter(); b.setPageNumber(1);
             assertThat(a.equals(b)).isFalse();
         }
 
@@ -574,10 +734,8 @@ class CaseFilterTest {
 
         @Test
         @DisplayName("equal filters produce the same hash code")
-        void equalFilters_samHashCode() {
-            CaseFilter a = buildFullFilter();
-            CaseFilter b = buildFullFilter();
-            assertThat(a.hashCode()).isEqualTo(b.hashCode());
+        void equalFilters_sameHashCode() {
+            assertThat(buildFullFilter().hashCode()).isEqualTo(buildFullFilter().hashCode());
         }
 
         @Test
@@ -635,12 +793,16 @@ class CaseFilterTest {
         @DisplayName("contains field values when set")
         void containsFieldValues() {
             filter.setArrId("ARR001");
-            filter.setRequestDtFrom("2024-01-01");
+            filter.setAssignedNm("jdoe");
+            filter.setProactiveFlg(1);
             filter.setPageSize(10);
+            filter.setPageNumber(2);
             String s = filter.toString();
             assertThat(s).contains("ARR001");
-            assertThat(s).contains("2024-01-01");
+            assertThat(s).contains("jdoe");
+            assertThat(s).contains("1");
             assertThat(s).contains("10");
+            assertThat(s).contains("2");
         }
 
         @Test
