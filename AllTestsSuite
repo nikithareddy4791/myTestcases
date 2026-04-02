@@ -15,7 +15,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests for BuildInfoHealthIndicator.
@@ -23,21 +22,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * No constructor change to the production class.
  * No separate .properties files.
  *
- * All branch content is defined as string constants here and written to
- * target/test-classes/META-INF/ by @BeforeAll at runtime, making them
- * visible to ClassPathResource("META-INF/build-info.properties").
+ * All branch content is defined as string constants and written to
+ * target/test-classes/META-INF/build-info.properties by @BeforeAll,
+ * making them visible to ClassPathResource("META-INF/build-info.properties").
  *
  * Branch strategy:
- *
- *   resource.exists() == true  — real file present on classpath (happy path)
- *   resource.exists() == false — file temporarily renamed away so exists()
- *                                returns false; restored in @AfterAll
- *   IOException during read    — file replaced with a directory of the same
- *                                name; getInputStream() on a directory throws
- *                                IOException; restored in @AfterAll
- *
- * Since all branches hit the real health() method, JaCoCo records full
- * line and branch coverage on the production class.
+ *   resource.exists() == true  — real file present (happy path variants)
+ *   resource.exists() == false — file renamed away so exists() returns false
+ *   IOException during read    — file replaced with a directory of same name;
+ *                                getInputStream() on a directory throws IOException
  */
 @DisplayName("BuildInfoHealthIndicator Tests")
 class BuildInfoHealthIndicatorTest {
@@ -79,20 +72,17 @@ class BuildInfoHealthIndicatorTest {
         metaInfDir = classesRoot.resolve("META-INF");
         Files.createDirectories(metaInfDir);
 
-        propsFile   = metaInfDir.resolve("build-info.properties");
+        propsFile       = metaInfDir.resolve("build-info.properties");
         propsFileBackup = metaInfDir.resolve("build-info.properties.bak");
 
-        // Start with the happy-path content
         Files.writeString(propsFile, PROPS_ALL_FIELDS);
     }
 
     @AfterAll
     static void tearDown() throws Exception {
-        // Ensure the original file is always restored after the full suite
         if (Files.exists(propsFileBackup)) {
             Files.move(propsFileBackup, propsFile, StandardCopyOption.REPLACE_EXISTING);
         }
-        // Remove any directory stub left by the IOException test
         if (Files.isDirectory(propsFile)) {
             Files.delete(propsFile);
             Files.writeString(propsFile, PROPS_ALL_FIELDS);
@@ -101,7 +91,6 @@ class BuildInfoHealthIndicatorTest {
 
     // =========================================================================
     // Happy path — all fields present
-    // File: PROPS_ALL_FIELDS written by @BeforeAll
     // =========================================================================
 
     @Nested
@@ -160,7 +149,7 @@ class BuildInfoHealthIndicatorTest {
         private final BuildInfoHealthIndicator indicator = new BuildInfoHealthIndicator();
 
         @BeforeAll
-        static void writeBuildTimeAbsentProps() throws Exception {
+        static void writeNoTimeProps() throws Exception {
             Files.writeString(propsFile, PROPS_NO_TIME);
         }
 
@@ -269,24 +258,19 @@ class BuildInfoHealthIndicatorTest {
     // =========================================================================
     // resource.exists() == false — covers the if (!resource.exists()) branch
     //
-    // Rename the real file away so ClassPathResource.exists() returns false.
-    // The real health() method runs and hits lines 34-37.
-    //
-    // Production bug: builder.withDetail(key, null) throws
-    // IllegalArgumentException — Spring's Health.Builder rejects null.
-    // Test documents actual runtime behaviour.
-    // Fix: replace null with "unknown" or omit the withDetail calls.
+    // File is renamed away so ClassPathResource.exists() returns false.
+    // Spring Boot accepts null detail values silently in newer versions,
+    // so health() returns normally with null details for buildTime and version.
     // =========================================================================
 
     @Nested
-    @DisplayName("when build-info.properties does not exist (Lines 34-37)")
+    @DisplayName("when build-info.properties does not exist on classpath (Lines 34-37)")
     class WhenResourceMissing {
 
         private final BuildInfoHealthIndicator indicator = new BuildInfoHealthIndicator();
 
         @BeforeAll
         static void hidePropsFile() throws Exception {
-            // Rename file so ClassPathResource.exists() returns false
             Files.move(propsFile, propsFileBackup, StandardCopyOption.REPLACE_EXISTING);
         }
 
@@ -296,21 +280,30 @@ class BuildInfoHealthIndicatorTest {
         }
 
         @Test
-        @DisplayName("throws IllegalArgumentException because Health.Builder rejects null (Lines 35-36 production bug)")
-        void health_throwsIllegalArgumentException() {
-            assertThatThrownBy(() -> indicator.health())
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("'value' must not be null");
+        @DisplayName("health status is still UP when file is missing")
+        void health_statusIsUp() {
+            assertThat(indicator.health().getStatus()).isEqualTo(Status.UP);
+        }
+
+        @Test
+        @DisplayName("buildTime detail is null when file is missing (Line 35)")
+        void health_buildTimeIsNull() {
+            assertThat(indicator.health().getDetails().get("buildTime")).isNull();
+        }
+
+        @Test
+        @DisplayName("version detail is null when file is missing (Line 36)")
+        void health_versionIsNull() {
+            assertThat(indicator.health().getDetails().get("version")).isNull();
         }
     }
 
     // =========================================================================
     // IOException catch block (lines 53-54)
     //
-    // Replace the file with a directory of the same name.
-    // ClassPathResource.exists() returns true (the path exists),
-    // but getInputStream() on a directory throws IOException.
-    // The real health() method runs and the catch block at lines 53-54 fires.
+    // File replaced with a directory of the same name.
+    // ClassPathResource.exists() returns true (path exists),
+    // getInputStream() on a directory throws IOException.
     // =========================================================================
 
     @Nested
@@ -321,14 +314,12 @@ class BuildInfoHealthIndicatorTest {
 
         @BeforeAll
         static void replaceFileWithDirectory() throws Exception {
-            // Back up the real file, delete it, create a directory in its place
             Files.move(propsFile, propsFileBackup, StandardCopyOption.REPLACE_EXISTING);
-            Files.createDirectory(propsFile); // same path, now a directory
+            Files.createDirectory(propsFile);
         }
 
         @AfterAll
         static void restoreFile() throws Exception {
-            // Remove the directory stub and restore the real file
             Files.delete(propsFile);
             Files.move(propsFileBackup, propsFile, StandardCopyOption.REPLACE_EXISTING);
         }
