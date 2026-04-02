@@ -1,471 +1,676 @@
 package org.nnnn.ddd.model;
 
-import java.util.Objects;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.ArrayList;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import java.util.List;
-import org.springframework.validation.annotation.Validated;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
 
-/**
- * CaseFilter
- */
-@Validated
-@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-03-19T10:45:48.904-04:00")
+import static org.assertj.core.api.Assertions.assertThat;
 
+@DisplayName("CaseFilter Model Tests")
+class CaseFilterTest {
 
-public class CaseFilter   {
-  @JsonProperty("arrId")
-  private String arrId = null;
+    private CaseFilter filter;
 
-  @JsonProperty("requestDtFrom")
-  private String requestDtFrom = null;
-
-  @JsonProperty("requestDtTo")
-  private String requestDtTo = null;
-
-  @JsonProperty("dueDtFrom")
-  private String dueDtFrom = null;
-
-  @JsonProperty("dueDtTo")
-  private String dueDtTo = null;
-
-  @JsonProperty("assignedNm")
-  private String assignedNm = null;
-
-  @JsonProperty("categoryIds")
-  @Valid
-  private List<Integer> categoryIds = null;
-
-  @JsonProperty("dddOfficeIds")
-  @Valid
-  private List<Integer> dddOfficeIds = null;
-
-  @JsonProperty("statusIds")
-  @Valid
-  private List<Integer> statusIds = null;
-
-  @JsonProperty("tagIds")
-  @Valid
-  private List<Integer> tagIds = null;
-
-  @JsonProperty("proactiveFlg")
-  private Integer proactiveFlg = null;
-
-  @JsonProperty("pageSize")
-  private Integer pageSize = null;
-
-  @JsonProperty("pageNumber")
-  private Integer pageNumber = null;
-
-  @JsonProperty("sortBy")
-  @Valid
-  private List<String> sortBy = null;
-
-  @JsonProperty("sortOrder")
-  @Valid
-  private List<Integer> sortOrder = null;
-
-  public CaseFilter arrId(String arrId) {
-    this.arrId = arrId;
-    return this;
-  }
-
-  /**
-   * Get arrId
-   * @return arrId
-   **/
-  @Schema(description = "")
-  
-    public String getArrId() {
-    return arrId;
-  }
-
-  public void setArrId(String arrId) {
-    this.arrId = arrId;
-  }
-
-  public CaseFilter requestDtFrom(String requestDtFrom) {
-    this.requestDtFrom = requestDtFrom;
-    return this;
-  }
-
-  /**
-   * Get requestDtFrom
-   * @return requestDtFrom
-   **/
-  @Schema(description = "")
-  
-    public String getRequestDtFrom() {
-    return requestDtFrom;
-  }
-
-  public void setRequestDtFrom(String requestDtFrom) {
-    this.requestDtFrom = requestDtFrom;
-  }
-
-  public CaseFilter requestDtTo(String requestDtTo) {
-    this.requestDtTo = requestDtTo;
-    return this;
-  }
-
-  /**
-   * Get requestDtTo
-   * @return requestDtTo
-   **/
-  @Schema(description = "")
-  
-    public String getRequestDtTo() {
-    return requestDtTo;
-  }
-
-  public void setRequestDtTo(String requestDtTo) {
-    this.requestDtTo = requestDtTo;
-  }
-
-  public CaseFilter dueDtFrom(String dueDtFrom) {
-    this.dueDtFrom = dueDtFrom;
-    return this;
-  }
-
-  /**
-   * Get dueDtFrom
-   * @return dueDtFrom
-   **/
-  @Schema(description = "")
-  
-    public String getDueDtFrom() {
-    return dueDtFrom;
-  }
-
-  public void setDueDtFrom(String dueDtFrom) {
-    this.dueDtFrom = dueDtFrom;
-  }
-
-  public CaseFilter dueDtTo(String dueDtTo) {
-    this.dueDtTo = dueDtTo;
-    return this;
-  }
-
-  /**
-   * Get dueDtTo
-   * @return dueDtTo
-   **/
-  @Schema(description = "")
-  
-    public String getDueDtTo() {
-    return dueDtTo;
-  }
-
-  public void setDueDtTo(String dueDtTo) {
-    this.dueDtTo = dueDtTo;
-  }
-
-  public CaseFilter assignedNm(String assignedNm) {
-    this.assignedNm = assignedNm;
-    return this;
-  }
-
-  /**
-   * Get assignedNm
-   * @return assignedNm
-   **/
-  @Schema(description = "")
-  
-    public String getAssignedNm() {
-    return assignedNm;
-  }
-
-  public void setAssignedNm(String assignedNm) {
-    this.assignedNm = assignedNm;
-  }
-
-  public CaseFilter categoryIds(List<Integer> categoryIds) {
-    this.categoryIds = categoryIds;
-    return this;
-  }
-
-  public CaseFilter addCategoryIdsItem(Integer categoryIdsItem) {
-    if (this.categoryIds == null) {
-      this.categoryIds = new ArrayList<Integer>();
+    @BeforeEach
+    void setUp() {
+        filter = new CaseFilter();
     }
-    this.categoryIds.add(categoryIdsItem);
-    return this;
-  }
 
-  /**
-   * Get categoryIds
-   * @return categoryIds
-   **/
-  @Schema(description = "")
-  
-    public List<Integer> getCategoryIds() {
-    return categoryIds;
-  }
+    // =========================================================================
+    // requestDtFrom
+    // =========================================================================
 
-  public void setCategoryIds(List<Integer> categoryIds) {
-    this.categoryIds = categoryIds;
-  }
+    @Nested
+    @DisplayName("requestDtFrom")
+    class RequestDtFromTests {
 
-  public CaseFilter dddOfficeIds(List<Integer> dddOfficeIds) {
-    this.dddOfficeIds = dddOfficeIds;
-    return this;
-  }
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setRequestDtFrom("2024-01-01");
+            assertThat(filter.getRequestDtFrom()).isEqualTo("2024-01-01");
+        }
 
-  public CaseFilter addDluOfficeIdsItem(Integer dddOfficeIdsItem) {
-    if (this.dddOfficeIds == null) {
-      this.dddOfficeIds = new ArrayList<Integer>();
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.requestDtFrom("2024-01-01");
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getRequestDtFrom()).isEqualTo("2024-01-01");
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getRequestDtFrom()).isNull();
+        }
     }
-    this.dddOfficeIds.add(dddOfficeIdsItem);
-    return this;
-  }
 
-  /**
-   * Get dddOfficeIds
-   * @return dddOfficeIds
-   **/
-  @Schema(description = "")
-  
-    public List<Integer> getDluOfficeIds() {
-    return dddOfficeIds;
-  }
+    // =========================================================================
+    // requestDtTo
+    // =========================================================================
 
-  public void setDluOfficeIds(List<Integer> dddOfficeIds) {
-    this.dddOfficeIds = dddOfficeIds;
-  }
+    @Nested
+    @DisplayName("requestDtTo")
+    class RequestDtToTests {
 
-  public CaseFilter statusIds(List<Integer> statusIds) {
-    this.statusIds = statusIds;
-    return this;
-  }
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setRequestDtTo("2024-12-31");
+            assertThat(filter.getRequestDtTo()).isEqualTo("2024-12-31");
+        }
 
-  public CaseFilter addStatusIdsItem(Integer statusIdsItem) {
-    if (this.statusIds == null) {
-      this.statusIds = new ArrayList<Integer>();
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.requestDtTo("2024-12-31");
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getRequestDtTo()).isEqualTo("2024-12-31");
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getRequestDtTo()).isNull();
+        }
     }
-    this.statusIds.add(statusIdsItem);
-    return this;
-  }
 
-  /**
-   * Get statusIds
-   * @return statusIds
-   **/
-  @Schema(description = "")
-  
-    public List<Integer> getStatusIds() {
-    return statusIds;
-  }
+    // =========================================================================
+    // dueDtFrom
+    // =========================================================================
 
-  public void setStatusIds(List<Integer> statusIds) {
-    this.statusIds = statusIds;
-  }
+    @Nested
+    @DisplayName("dueDtFrom")
+    class DueDtFromTests {
 
-  public CaseFilter tagIds(List<Integer> tagIds) {
-    this.tagIds = tagIds;
-    return this;
-  }
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setDueDtFrom("2024-03-01");
+            assertThat(filter.getDueDtFrom()).isEqualTo("2024-03-01");
+        }
 
-  public CaseFilter addTagIdsItem(Integer tagIdsItem) {
-    if (this.tagIds == null) {
-      this.tagIds = new ArrayList<Integer>();
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.dueDtFrom("2024-03-01");
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getDueDtFrom()).isEqualTo("2024-03-01");
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getDueDtFrom()).isNull();
+        }
     }
-    this.tagIds.add(tagIdsItem);
-    return this;
-  }
 
-  /**
-   * Get tagIds
-   * @return tagIds
-   **/
-  @Schema(description = "")
-  
-    public List<Integer> getTagIds() {
-    return tagIds;
-  }
+    // =========================================================================
+    // dueDtTo
+    // =========================================================================
 
-  public void setTagIds(List<Integer> tagIds) {
-    this.tagIds = tagIds;
-  }
+    @Nested
+    @DisplayName("dueDtTo")
+    class DueDtToTests {
 
-  public CaseFilter proactiveFlg(Integer proactiveFlg) {
-    this.proactiveFlg = proactiveFlg;
-    return this;
-  }
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setDueDtTo("2024-06-30");
+            assertThat(filter.getDueDtTo()).isEqualTo("2024-06-30");
+        }
 
-  /**
-   * Get proactiveFlg
-   * @return proactiveFlg
-   **/
-  @Schema(description = "")
-  
-    public Integer getProactiveFlg() {
-    return proactiveFlg;
-  }
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.dueDtTo("2024-06-30");
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getDueDtTo()).isEqualTo("2024-06-30");
+        }
 
-  public void setProactiveFlg(Integer proactiveFlg) {
-    this.proactiveFlg = proactiveFlg;
-  }
-
-  public CaseFilter pageSize(Integer pageSize) {
-    this.pageSize = pageSize;
-    return this;
-  }
-
-  /**
-   * Get pageSize
-   * @return pageSize
-   **/
-  @Schema(description = "")
-  
-    public Integer getPageSize() {
-    return pageSize;
-  }
-
-  public void setPageSize(Integer pageSize) {
-    this.pageSize = pageSize;
-  }
-
-  public CaseFilter pageNumber(Integer pageNumber) {
-    this.pageNumber = pageNumber;
-    return this;
-  }
-
-  /**
-   * Get pageNumber
-   * @return pageNumber
-   **/
-  @Schema(description = "")
-  
-    public Integer getPageNumber() {
-    return pageNumber;
-  }
-
-  public void setPageNumber(Integer pageNumber) {
-    this.pageNumber = pageNumber;
-  }
-
-  public CaseFilter sortBy(List<String> sortBy) {
-    this.sortBy = sortBy;
-    return this;
-  }
-
-  public CaseFilter addSortByItem(String sortByItem) {
-    if (this.sortBy == null) {
-      this.sortBy = new ArrayList<String>();
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getDueDtTo()).isNull();
+        }
     }
-    this.sortBy.add(sortByItem);
-    return this;
-  }
 
-  /**
-   * Get sortBy
-   * @return sortBy
-   **/
-  @Schema(description = "")
-  
-    public List<String> getSortBy() {
-    return sortBy;
-  }
+    // =========================================================================
+    // categoryIds
+    // =========================================================================
 
-  public void setSortBy(List<String> sortBy) {
-    this.sortBy = sortBy;
-  }
+    @Nested
+    @DisplayName("categoryIds")
+    class CategoryIdsTests {
 
-  public CaseFilter sortOrder(List<Integer> sortOrder) {
-    this.sortOrder = sortOrder;
-    return this;
-  }
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setCategoryIds(List.of(1, 2, 3));
+            assertThat(filter.getCategoryIds()).containsExactly(1, 2, 3);
+        }
 
-  public CaseFilter addSortOrderItem(Integer sortOrderItem) {
-    if (this.sortOrder == null) {
-      this.sortOrder = new ArrayList<Integer>();
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.categoryIds(List.of(1, 2));
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getCategoryIds()).containsExactly(1, 2);
+        }
+
+        @Test
+        @DisplayName("addCategoryIdsItem initialises list when null then appends")
+        void addItem_initialisesListAndAppends() {
+            assertThat(filter.getCategoryIds()).isNull();
+
+            filter.addCategoryIdsItem(10);
+            assertThat(filter.getCategoryIds()).containsExactly(10);
+
+            filter.addCategoryIdsItem(20);
+            assertThat(filter.getCategoryIds()).containsExactly(10, 20);
+        }
+
+        @Test
+        @DisplayName("addCategoryIdsItem returns same instance for chaining")
+        void addItem_returnsSameInstance() {
+            CaseFilter result = filter.addCategoryIdsItem(5);
+            assertThat(result).isSameAs(filter);
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getCategoryIds()).isNull();
+        }
     }
-    this.sortOrder.add(sortOrderItem);
-    return this;
-  }
 
-  /**
-   * Get sortOrder
-   * @return sortOrder
-   **/
-  @Schema(description = "")
-  
-    public List<Integer> getSortOrder() {
-    return sortOrder;
-  }
+    // =========================================================================
+    // dluOfficeIds
+    // =========================================================================
 
-  public void setSortOrder(List<Integer> sortOrder) {
-    this.sortOrder = sortOrder;
-  }
+    @Nested
+    @DisplayName("dluOfficeIds")
+    class DluOfficeIdsTests {
 
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setDluOfficeIds(List.of(5, 6));
+            assertThat(filter.getDluOfficeIds()).containsExactly(5, 6);
+        }
 
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.dddOfficeIds(List.of(7, 8));
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getDluOfficeIds()).containsExactly(7, 8);
+        }
+
+        @Test
+        @DisplayName("addDluOfficeIdsItem initialises list when null then appends")
+        void addItem_initialisesListAndAppends() {
+            assertThat(filter.getDluOfficeIds()).isNull();
+
+            filter.addDluOfficeIdsItem(1);
+            assertThat(filter.getDluOfficeIds()).containsExactly(1);
+
+            filter.addDluOfficeIdsItem(2);
+            assertThat(filter.getDluOfficeIds()).containsExactly(1, 2);
+        }
+
+        @Test
+        @DisplayName("addDluOfficeIdsItem returns same instance for chaining")
+        void addItem_returnsSameInstance() {
+            CaseFilter result = filter.addDluOfficeIdsItem(3);
+            assertThat(result).isSameAs(filter);
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getDluOfficeIds()).isNull();
+        }
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    // =========================================================================
+    // statusIds
+    // =========================================================================
+
+    @Nested
+    @DisplayName("statusIds")
+    class StatusIdsTests {
+
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setStatusIds(List.of(1, 2));
+            assertThat(filter.getStatusIds()).containsExactly(1, 2);
+        }
+
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.statusIds(List.of(3));
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getStatusIds()).containsExactly(3);
+        }
+
+        @Test
+        @DisplayName("addStatusIdsItem initialises list when null then appends")
+        void addItem_initialisesListAndAppends() {
+            assertThat(filter.getStatusIds()).isNull();
+
+            filter.addStatusIdsItem(10);
+            assertThat(filter.getStatusIds()).containsExactly(10);
+
+            filter.addStatusIdsItem(20);
+            assertThat(filter.getStatusIds()).containsExactly(10, 20);
+        }
+
+        @Test
+        @DisplayName("addStatusIdsItem returns same instance for chaining")
+        void addItem_returnsSameInstance() {
+            CaseFilter result = filter.addStatusIdsItem(1);
+            assertThat(result).isSameAs(filter);
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getStatusIds()).isNull();
+        }
     }
-    CaseFilter caseFilter = (CaseFilter) o;
-    return Objects.equals(this.arrId, caseFilter.arrId) &&
-        Objects.equals(this.requestDtFrom, caseFilter.requestDtFrom) &&
-        Objects.equals(this.requestDtTo, caseFilter.requestDtTo) &&
-        Objects.equals(this.dueDtFrom, caseFilter.dueDtFrom) &&
-        Objects.equals(this.dueDtTo, caseFilter.dueDtTo) &&
-        Objects.equals(this.assignedNm, caseFilter.assignedNm) &&
-        Objects.equals(this.categoryIds, caseFilter.categoryIds) &&
-        Objects.equals(this.dddOfficeIds, caseFilter.dddOfficeIds) &&
-        Objects.equals(this.statusIds, caseFilter.statusIds) &&
-        Objects.equals(this.tagIds, caseFilter.tagIds) &&
-        Objects.equals(this.proactiveFlg, caseFilter.proactiveFlg) &&
-        Objects.equals(this.pageSize, caseFilter.pageSize) &&
-        Objects.equals(this.pageNumber, caseFilter.pageNumber) &&
-        Objects.equals(this.sortBy, caseFilter.sortBy) &&
-        Objects.equals(this.sortOrder, caseFilter.sortOrder);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(arrId, requestDtFrom, requestDtTo, dueDtFrom, dueDtTo, assignedNm, categoryIds, dddOfficeIds, statusIds, tagIds, proactiveFlg, pageSize, pageNumber, sortBy, sortOrder);
-  }
+    // =========================================================================
+    // tagIds
+    // =========================================================================
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class CaseFilter {\n");
-    
-    sb.append("    arrId: ").append(toIndentedString(arrId)).append("\n");
-    sb.append("    requestDtFrom: ").append(toIndentedString(requestDtFrom)).append("\n");
-    sb.append("    requestDtTo: ").append(toIndentedString(requestDtTo)).append("\n");
-    sb.append("    dueDtFrom: ").append(toIndentedString(dueDtFrom)).append("\n");
-    sb.append("    dueDtTo: ").append(toIndentedString(dueDtTo)).append("\n");
-    sb.append("    assignedNm: ").append(toIndentedString(assignedNm)).append("\n");
-    sb.append("    categoryIds: ").append(toIndentedString(categoryIds)).append("\n");
-    sb.append("    dddOfficeIds: ").append(toIndentedString(dddOfficeIds)).append("\n");
-    sb.append("    statusIds: ").append(toIndentedString(statusIds)).append("\n");
-    sb.append("    tagIds: ").append(toIndentedString(tagIds)).append("\n");
-    sb.append("    proactiveFlg: ").append(toIndentedString(proactiveFlg)).append("\n");
-    sb.append("    pageSize: ").append(toIndentedString(pageSize)).append("\n");
-    sb.append("    pageNumber: ").append(toIndentedString(pageNumber)).append("\n");
-    sb.append("    sortBy: ").append(toIndentedString(sortBy)).append("\n");
-    sb.append("    sortOrder: ").append(toIndentedString(sortOrder)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+    @Nested
+    @DisplayName("tagIds")
+    class TagIdsTests {
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setTagIds(List.of(7, 8, 9));
+            assertThat(filter.getTagIds()).containsExactly(7, 8, 9);
+        }
+
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.tagIds(List.of(1));
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getTagIds()).containsExactly(1);
+        }
+
+        @Test
+        @DisplayName("addTagIdsItem initialises list when null then appends")
+        void addItem_initialisesListAndAppends() {
+            assertThat(filter.getTagIds()).isNull();
+
+            filter.addTagIdsItem(100);
+            assertThat(filter.getTagIds()).containsExactly(100);
+
+            filter.addTagIdsItem(200);
+            assertThat(filter.getTagIds()).containsExactly(100, 200);
+        }
+
+        @Test
+        @DisplayName("addTagIdsItem returns same instance for chaining")
+        void addItem_returnsSameInstance() {
+            CaseFilter result = filter.addTagIdsItem(5);
+            assertThat(result).isSameAs(filter);
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getTagIds()).isNull();
+        }
     }
-    return o.toString().replace("\n", "\n    ");
-  }
+
+    // =========================================================================
+    // sortBy
+    // =========================================================================
+
+    @Nested
+    @DisplayName("sortBy")
+    class SortByTests {
+
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setSortBy(List.of("requestDt", "dueDt"));
+            assertThat(filter.getSortBy()).containsExactly("requestDt", "dueDt");
+        }
+
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.sortBy(List.of("id"));
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getSortBy()).containsExactly("id");
+        }
+
+        @Test
+        @DisplayName("addSortByItem initialises list when null then appends")
+        void addItem_initialisesListAndAppends() {
+            assertThat(filter.getSortBy()).isNull();
+
+            filter.addSortByItem("requestDt");
+            assertThat(filter.getSortBy()).containsExactly("requestDt");
+
+            filter.addSortByItem("dueDt");
+            assertThat(filter.getSortBy()).containsExactly("requestDt", "dueDt");
+        }
+
+        @Test
+        @DisplayName("addSortByItem returns same instance for chaining")
+        void addItem_returnsSameInstance() {
+            CaseFilter result = filter.addSortByItem("id");
+            assertThat(result).isSameAs(filter);
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getSortBy()).isNull();
+        }
+    }
+
+    // =========================================================================
+    // sortOrder
+    // =========================================================================
+
+    @Nested
+    @DisplayName("sortOrder")
+    class SortOrderTests {
+
+        @Test
+        @DisplayName("setter and getter")
+        void setterGetter() {
+            filter.setSortOrder(List.of(1, 0));
+            assertThat(filter.getSortOrder()).containsExactly(1, 0);
+        }
+
+        @Test
+        @DisplayName("fluent builder returns same instance")
+        void fluentBuilder_returnsSameInstance() {
+            CaseFilter result = filter.sortOrder(List.of(1));
+            assertThat(result).isSameAs(filter);
+            assertThat(filter.getSortOrder()).containsExactly(1);
+        }
+
+        @Test
+        @DisplayName("addSortOrderItem initialises list when null then appends")
+        void addItem_initialisesListAndAppends() {
+            assertThat(filter.getSortOrder()).isNull();
+
+            filter.addSortOrderItem(1);
+            assertThat(filter.getSortOrder()).containsExactly(1);
+
+            filter.addSortOrderItem(0);
+            assertThat(filter.getSortOrder()).containsExactly(1, 0);
+        }
+
+        @Test
+        @DisplayName("addSortOrderItem returns same instance for chaining")
+        void addItem_returnsSameInstance() {
+            CaseFilter result = filter.addSortOrderItem(0);
+            assertThat(result).isSameAs(filter);
+        }
+
+        @Test
+        @DisplayName("null by default")
+        void nullByDefault() {
+            assertThat(filter.getSortOrder()).isNull();
+        }
+    }
+
+    // =========================================================================
+    // equals()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("equals()")
+    class EqualsTests {
+
+        @Test
+        @DisplayName("same instance is equal to itself")
+        void sameInstance_isEqualToItself() {
+            assertThat(filter.equals(filter)).isTrue();
+        }
+
+        @Test
+        @DisplayName("two empty filters are equal")
+        void twoEmptyFilters_areEqual() {
+            assertThat(filter.equals(new CaseFilter())).isTrue();
+        }
+
+        @Test
+        @DisplayName("filters with same field values are equal")
+        void sameFieldValues_areEqual() {
+            CaseFilter a = buildFullFilter();
+            CaseFilter b = buildFullFilter();
+            assertThat(a.equals(b)).isTrue();
+        }
+
+        @Test
+        @DisplayName("null is not equal")
+        void null_isNotEqual() {
+            assertThat(filter.equals(null)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different type is not equal")
+        void differentType_isNotEqual() {
+            assertThat(filter.equals("not a filter")).isFalse();
+        }
+
+        @Test
+        @DisplayName("different arrId is not equal")
+        void differentArrId_isNotEqual() {
+            CaseFilter a = new CaseFilter();
+            a.setArrId("ARR001");
+            CaseFilter b = new CaseFilter();
+            b.setArrId("ARR002");
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different requestDtFrom is not equal")
+        void differentRequestDtFrom_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setRequestDtFrom("2024-01-01");
+            CaseFilter b = new CaseFilter(); b.setRequestDtFrom("2024-06-01");
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different requestDtTo is not equal")
+        void differentRequestDtTo_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setRequestDtTo("2024-01-01");
+            CaseFilter b = new CaseFilter(); b.setRequestDtTo("2024-06-01");
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different dueDtFrom is not equal")
+        void differentDueDtFrom_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setDueDtFrom("2024-01-01");
+            CaseFilter b = new CaseFilter(); b.setDueDtFrom("2024-06-01");
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different dueDtTo is not equal")
+        void differentDueDtTo_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setDueDtTo("2024-01-01");
+            CaseFilter b = new CaseFilter(); b.setDueDtTo("2024-06-01");
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different categoryIds is not equal")
+        void differentCategoryIds_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setCategoryIds(List.of(1));
+            CaseFilter b = new CaseFilter(); b.setCategoryIds(List.of(2));
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different dluOfficeIds is not equal")
+        void differentDluOfficeIds_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setDluOfficeIds(List.of(1));
+            CaseFilter b = new CaseFilter(); b.setDluOfficeIds(List.of(2));
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different statusIds is not equal")
+        void differentStatusIds_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setStatusIds(List.of(1));
+            CaseFilter b = new CaseFilter(); b.setStatusIds(List.of(2));
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different tagIds is not equal")
+        void differentTagIds_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setTagIds(List.of(1));
+            CaseFilter b = new CaseFilter(); b.setTagIds(List.of(2));
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different sortBy is not equal")
+        void differentSortBy_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setSortBy(List.of("id"));
+            CaseFilter b = new CaseFilter(); b.setSortBy(List.of("requestDt"));
+            assertThat(a.equals(b)).isFalse();
+        }
+
+        @Test
+        @DisplayName("different sortOrder is not equal")
+        void differentSortOrder_isNotEqual() {
+            CaseFilter a = new CaseFilter(); a.setSortOrder(List.of(0));
+            CaseFilter b = new CaseFilter(); b.setSortOrder(List.of(1));
+            assertThat(a.equals(b)).isFalse();
+        }
+    }
+
+    // =========================================================================
+    // hashCode()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("hashCode()")
+    class HashCodeTests {
+
+        @Test
+        @DisplayName("equal filters produce the same hash code")
+        void equalFilters_samHashCode() {
+            CaseFilter a = buildFullFilter();
+            CaseFilter b = buildFullFilter();
+            assertThat(a.hashCode()).isEqualTo(b.hashCode());
+        }
+
+        @Test
+        @DisplayName("two empty filters produce the same hash code")
+        void emptyFilters_sameHashCode() {
+            assertThat(new CaseFilter().hashCode()).isEqualTo(new CaseFilter().hashCode());
+        }
+
+        @Test
+        @DisplayName("hash code is consistent across multiple calls")
+        void hashCode_isConsistent() {
+            CaseFilter f = buildFullFilter();
+            int first = f.hashCode();
+            assertThat(f.hashCode()).isEqualTo(first);
+            assertThat(f.hashCode()).isEqualTo(first);
+        }
+    }
+
+    // =========================================================================
+    // toString()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("toString()")
+    class ToStringTests {
+
+        @Test
+        @DisplayName("contains class name")
+        void containsClassName() {
+            assertThat(filter.toString()).contains("CaseFilter");
+        }
+
+        @Test
+        @DisplayName("contains all field names")
+        void containsAllFieldNames() {
+            String s = filter.toString();
+            assertThat(s).contains("arrId");
+            assertThat(s).contains("requestDtFrom");
+            assertThat(s).contains("requestDtTo");
+            assertThat(s).contains("dueDtFrom");
+            assertThat(s).contains("dueDtTo");
+            assertThat(s).contains("assignedNm");
+            assertThat(s).contains("categoryIds");
+            assertThat(s).contains("dddOfficeIds");
+            assertThat(s).contains("statusIds");
+            assertThat(s).contains("tagIds");
+            assertThat(s).contains("proactiveFlg");
+            assertThat(s).contains("pageSize");
+            assertThat(s).contains("pageNumber");
+            assertThat(s).contains("sortBy");
+            assertThat(s).contains("sortOrder");
+        }
+
+        @Test
+        @DisplayName("contains field values when set")
+        void containsFieldValues() {
+            filter.setArrId("ARR001");
+            filter.setRequestDtFrom("2024-01-01");
+            filter.setPageSize(10);
+            String s = filter.toString();
+            assertThat(s).contains("ARR001");
+            assertThat(s).contains("2024-01-01");
+            assertThat(s).contains("10");
+        }
+
+        @Test
+        @DisplayName("shows null for unset fields")
+        void showsNullForUnsetFields() {
+            assertThat(filter.toString()).contains("null");
+        }
+    }
+
+    // =========================================================================
+    // Helper
+    // =========================================================================
+
+    private CaseFilter buildFullFilter() {
+        CaseFilter f = new CaseFilter();
+        f.setArrId("ARR001");
+        f.setRequestDtFrom("2024-01-01");
+        f.setRequestDtTo("2024-12-31");
+        f.setDueDtFrom("2024-03-01");
+        f.setDueDtTo("2024-06-30");
+        f.setAssignedNm("jdoe");
+        f.setCategoryIds(List.of(1, 2));
+        f.setDluOfficeIds(List.of(3, 4));
+        f.setStatusIds(List.of(5));
+        f.setTagIds(List.of(6, 7));
+        f.setProactiveFlg(1);
+        f.setPageSize(10);
+        f.setPageNumber(0);
+        f.setSortBy(List.of("requestDt"));
+        f.setSortOrder(List.of(1));
+        return f;
+    }
 }
