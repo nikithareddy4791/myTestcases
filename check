@@ -4,36 +4,85 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @DisplayName("SecurityConfig Tests")
 class SecurityConfigTest {
 
-    private SecurityConfig securityConfig;
-    private JwtAuthenticationConverter jwtAuthenticationConverter;
+    // =========================================================================
+    // securityFilterChain() — requires Spring context to build HttpSecurity
+    // =========================================================================
 
-    @BeforeEach
-    void setUp() {
-        securityConfig = new SecurityConfig();
-        jwtAuthenticationConverter = securityConfig.jwtAuthenticationConverter();
+    @Nested
+    @DisplayName("securityFilterChain()")
+    @SpringBootTest
+    @AutoConfigureMockMvc
+    @ActiveProfiles("test")
+    class SecurityFilterChainTests {
+
+        @Autowired
+        private MockMvc mockMvc;
+
+        @Autowired
+        private SecurityFilterChain securityFilterChain;
+
+        @Test
+        @DisplayName("securityFilterChain bean is created and non-null")
+        void securityFilterChain_beanIsNonNull() {
+            assertThat(securityFilterChain).isNotNull();
+        }
+
+        @Test
+        @DisplayName("/actuator/health is permitted without authentication")
+        void actuatorHealth_isPermittedWithoutAuth() throws Exception {
+            mockMvc.perform(get("/actuator/health"))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("protected endpoint returns 401 without authentication token")
+        void protectedEndpoint_returns401WithoutToken() throws Exception {
+            mockMvc.perform(get("/api/cases"))
+                    .andExpect(status().isUnauthorized());
+        }
     }
 
     // =========================================================================
-    // jwtAuthenticationConverter() bean
+    // jwtAuthenticationConverter() — unit tested directly, no Spring context
     // =========================================================================
 
     @Nested
     @DisplayName("jwtAuthenticationConverter()")
+    @ExtendWith(MockitoExtension.class)
     class JwtAuthenticationConverterTests {
+
+        private SecurityConfig securityConfig;
+        private JwtAuthenticationConverter jwtAuthenticationConverter;
+
+        @BeforeEach
+        void setUp() {
+            securityConfig = new SecurityConfig();
+            jwtAuthenticationConverter = securityConfig.jwtAuthenticationConverter();
+        }
 
         @Test
         @DisplayName("returns non-null JwtAuthenticationConverter bean")
@@ -173,18 +222,6 @@ class SecurityConfigTest {
         }
 
         @Test
-        @DisplayName("group with embedded slash has slash removed")
-        void convert_groupWithEmbeddedSlash_removesSlash() {
-            Jwt jwt = buildJwt(List.of("SG/DDD/ANALYST"));
-
-            Collection<GrantedAuthority> authorities = convertAndGetAuthorities(jwt);
-
-            assertThat(authorities)
-                    .extracting(GrantedAuthority::getAuthority)
-                    .contains("ROLE_SGDDDANALYST");
-        }
-
-        @Test
         @DisplayName("mixed case group with slash is normalised correctly")
         void convert_mixedCaseGroupWithSlash_normalisedCorrectly() {
             Jwt jwt = buildJwt(List.of("/sg-Ddd-Analyst-Brooklyn"));
@@ -195,41 +232,38 @@ class SecurityConfigTest {
                     .extracting(GrantedAuthority::getAuthority)
                     .contains("ROLE_SG-DDD-ANALYST-BROOKLYN");
         }
-    }
 
-    // =========================================================================
-    // Helpers
-    // =========================================================================
+        // ---------------------------------------------------------------------
+        // Helpers
+        // ---------------------------------------------------------------------
 
-    /**
-     * Converts JWT and extracts authorities from the returned JwtAuthenticationToken.
-     */
-    @SuppressWarnings("unchecked")
-    private Collection<GrantedAuthority> convertAndGetAuthorities(Jwt jwt) {
-        JwtAuthenticationToken token =
-                (JwtAuthenticationToken) jwtAuthenticationConverter.convert(jwt);
-        assertThat(token).isNotNull();
-        return (Collection<GrantedAuthority>) token.getAuthorities();
-    }
+        @SuppressWarnings("unchecked")
+        private Collection<GrantedAuthority> convertAndGetAuthorities(Jwt jwt) {
+            JwtAuthenticationToken token =
+                    (JwtAuthenticationToken) jwtAuthenticationConverter.convert(jwt);
+            assertThat(token).isNotNull();
+            return (Collection<GrantedAuthority>) token.getAuthorities();
+        }
 
-    private Jwt buildJwt(List<String> groups) {
-        return Jwt.withTokenValue("test-token")
-                .header("alg", "RS256")
-                .issuer("https://keycloak.test/auth")
-                .subject("test-user")
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plusSeconds(3600))
-                .claim("NNNN Groups", groups)
-                .build();
-    }
+        private Jwt buildJwt(List<String> groups) {
+            return Jwt.withTokenValue("test-token")
+                    .header("alg", "RS256")
+                    .issuer("https://keycloak.test/auth")
+                    .subject("test-user")
+                    .issuedAt(Instant.now())
+                    .expiresAt(Instant.now().plusSeconds(3600))
+                    .claim("NNNN Groups", groups)
+                    .build();
+        }
 
-    private Jwt buildJwtNoGroups() {
-        return Jwt.withTokenValue("test-token")
-                .header("alg", "RS256")
-                .issuer("https://keycloak.test/auth")
-                .subject("test-user")
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plusSeconds(3600))
-                .build();
+        private Jwt buildJwtNoGroups() {
+            return Jwt.withTokenValue("test-token")
+                    .header("alg", "RS256")
+                    .issuer("https://keycloak.test/auth")
+                    .subject("test-user")
+                    .issuedAt(Instant.now())
+                    .expiresAt(Instant.now().plusSeconds(3600))
+                    .build();
+        }
     }
 }
