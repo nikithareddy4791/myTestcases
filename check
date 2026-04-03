@@ -19,7 +19,112 @@ import io.swagger.Swagger2SpringBoot;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableCaching
+@EnableCachingpackage org.nnnn.ddd;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.actuate.jdbc.DataSourceHealthIndicator;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+
+import javax.sql.DataSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("ServletInitializer Tests")
+class ServletInitializerTest {
+
+    private ServletInitializer servletInitializer;
+
+    @Mock
+    private DataSource dataSource;
+
+    @BeforeEach
+    void setUp() {
+        servletInitializer = new ServletInitializer();
+    }
+
+    // =========================================================================
+    // configure()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("configure()")
+    class ConfigureTests {
+
+        @Test
+        @DisplayName("returns the same SpringApplicationBuilder instance")
+        void configure_returnsSameBuilderInstance() {
+            SpringApplicationBuilder builder = mock(SpringApplicationBuilder.class);
+            when(builder.sources(any(Class.class))).thenReturn(builder);
+
+            SpringApplicationBuilder result = servletInitializer.configure(builder);
+
+            assertThat(result).isSameAs(builder);
+        }
+
+        @Test
+        @DisplayName("configures sources with Swagger2SpringBoot class")
+        void configure_setsSwagger2SpringBootAsSource() {
+            SpringApplicationBuilder builder = mock(SpringApplicationBuilder.class);
+            when(builder.sources(io.swagger.Swagger2SpringBoot.class)).thenReturn(builder);
+
+            servletInitializer.configure(builder);
+
+            verify(builder).sources(io.swagger.Swagger2SpringBoot.class);
+        }
+    }
+
+    // =========================================================================
+    // dbHealthIndicator()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("dbHealthIndicator()")
+    class DbHealthIndicatorTests {
+
+        @Test
+        @DisplayName("returns a non-null HealthIndicator bean")
+        void dbHealthIndicator_returnsNonNull() {
+            HealthIndicator indicator = servletInitializer.dbHealthIndicator(dataSource);
+
+            assertThat(indicator).isNotNull();
+        }
+
+        @Test
+        @DisplayName("returns a DataSourceHealthIndicator instance")
+        void dbHealthIndicator_returnsDataSourceHealthIndicator() {
+            HealthIndicator indicator = servletInitializer.dbHealthIndicator(dataSource);
+
+            assertThat(indicator).isInstanceOf(DataSourceHealthIndicator.class);
+        }
+
+        @Test
+        @DisplayName("uses the DB2 validation query SELECT 1 FROM SYSIBM.SYSDUMMY1")
+        void dbHealthIndicator_usesCorrectValidationQuery() {
+            DataSourceHealthIndicator indicator =
+                    (DataSourceHealthIndicator) servletInitializer.dbHealthIndicator(dataSource);
+
+            assertThat(indicator.getQuery()).isEqualTo("SELECT 1 FROM SYSIBM.SYSDUMMY1");
+        }
+
+        @Test
+        @DisplayName("uses the supplied DataSource")
+        void dbHealthIndicator_usesSuppliedDataSource() {
+            DataSourceHealthIndicator indicator =
+                    (DataSourceHealthIndicator) servletInitializer.dbHealthIndicator(dataSource);
+
+            assertThat(indicator.getDataSource()).isSameAs(dataSource);
+        }
+    }
+}
 //@EnableAspectJAutoProxy
 public class ServletInitializer extends SpringBootServletInitializer {
 
