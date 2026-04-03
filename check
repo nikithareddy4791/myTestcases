@@ -1,229 +1,140 @@
 package org.nnnn.ddd.service;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.nnnn.ddd.AppConstants;
-import org.nnnn.ddd.entity.AdaList;
-import org.nnnn.ddd.entity.StatusList;
 import org.nnnn.ddd.entity.DddCase;
 import org.nnnn.ddd.model.User;
 import org.nnnn.ddd.repository.CaseRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import jakarta.mail.Session;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.*;
+@Service
+@Profile({ "dev", "uat", "prod" })
+public class EmailService {
+    @Autowired
+    CaseRepository caseRepository;
 
-/**
- * Covers the two missing branches in EmailService:
- *
- *   Line 117  — plural coming due: "You have N cases coming due:"
- *               (triggered when comingDueCases.size() > 1)
- *
- *   Lines 133/134 — ADA info block inside appendCaseInfo():
- *               if (caseInfo.getAda() != null) { body.append("ADA: ...") }
- *               (triggered when the case has an ADA assigned)
- */
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
-@DisplayName("EmailService Missing Coverage Tests")
-public class EmailServiceMissingCoverageTest {
+    @Autowired
+    ADSearchService adSearchService;
 
-    @Mock private CaseRepository      caseRepository;
-    @Mock private ADSearchService     adSearchService;
-    @Mock private JavaMailSenderImpl  mailSender;
-    @Mock private Environment         env;
+    @Autowired
+    private JavaMailSender mailSender;
 
-    @InjectMocks
-    private EmailService emailService;
+    @Autowired
+    private Environment env;
 
-    private User         regularUser;
-    private StatusList   statusInProgress;
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
-    @BeforeEach
-    void setUp() {
-        statusInProgress = new StatusList();
-        statusInProgress.setId(AppConstants.STATUS_IN_PROGRESS);
-        statusInProgress.setStatusDesc("In Progress");
-
-        regularUser = new User();
-        regularUser.setUsername("jdoe");
-        regularUser.setFirstName("John");
-        regularUser.setLastName("Doe");
-        regularUser.setEmail("jdoe@nnnn.org");
-        regularUser.setRank("Detective");
-
-        lenient().when(env.acceptsProfiles(Profiles.of("prod"))).thenReturn(false);
-        lenient().when(env.getActiveProfiles()).thenReturn(new String[]{"dev"});
-
-        jakarta.mail.Session mockSession = mock(jakarta.mail.Session.class);
-        lenient().when(mailSender.getSession()).thenReturn(mockSession);
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void runScheduledTask() {
+        sendOverdueEmail();
     }
 
-    // =========================================================================
-    // Helper
-    // =========================================================================
-
-    private DddCase buildCase(int id, String arrId, String assignedNm) {
-        DddCase c = new DddCase();
-        c.setId(id);
-        c.setArrId(arrId);
-        c.setAssignedNm(assignedNm);
-        c.setStatus(statusInProgress);
-        c.setRequestDt(java.sql.Date.valueOf(LocalDate.now().minusDays(10)));
-        c.setDueDt(java.sql.Date.valueOf(LocalDate.now().plusDays(2)));
-        return c;
+    public void sendOverdueEmail() {
+        LocalDate today = LocalDate.now();
+        LocalDate threeDaysLater = today.plusDays(3);
+        List<DddCase> overdueList = caseRepository.findByDueDtBeforeAndStatus_IdNotAndAssignedNmNotNull(today,
+                AppConstants.STATUS_COMPLETED);
+        List<DddCase> comingDueList = caseRepository.findByDueDtBetweenAndStatus_IdNotAndAssignedNmNotNull(today,
+                threeDaysLater,
+                AppConstants.STATUS_COMPLETED);
+        Map<String, List<DddCase>> overdueMap = overdueList.stream()
+                .collect(Collectors.groupingBy(DddCase::getAssignedNm));
+        Map<String, List<DddCase>> comingDueMap = comingDueList.stream()
+                .collect(Collectors.groupingBy(DddCase::getAssignedNm));
+        for (String username : overdueMap.keySet()) {
+            log.info(username + " has overdue cases");
+            User user = adSearchService.findUser(username);
+            if (user != null) {
+                sendMail(user, generateEmailBody(user, overdueMap.get(username), comingDueMap.get(username)));
+            }
+        }
+        for (String username : comingDueMap.keySet()) {
+            log.info(username + " has coming due cases");
+            if (overdueMap.get(username) == null) {
+                User user = adSearchService.findUser(username);
+                if (user != null) {
+                    sendMail(user, generateEmailBody(user, overdueMap.get(username), comingDueMap.get(username)));
+                }
+            }
+        }
     }
 
-    // =========================================================================
-    // Line 117 — plural coming due branch
-    // "You have N cases coming due:" (size > 1)
-    // =========================================================================
+    public void sendMail(final User user, final String body) {
+        boolean isTest = user.getUsername().startsWith("T-SG") || user.getUsername().startsWith("V-");
 
-    @Test
-    @DisplayName("generateEmailBody - uses plural 'cases coming due' when more than one coming due (Line 117)")
-    void generateEmailBody_multipleComingDueCases_usesPlural() {
-        DddCase comingDue1 = buildCase(201, "ARR201", "jdoe");
-        DddCase comingDue2 = buildCase(202, "ARR202", "jdoe");
+        log.info("Sending mail to " + user.getEmail());
+        Session session = ((JavaMailSenderImpl) mailSender).getSession();
+        // session.setDebug(true);
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("DDD-Notification@nnnn.org");
+        message.setTo(user.getEmail());
+        message.setCc("IBMNNNN-DDD@wwpdl.vnet.ibm.com");
+        if (env.acceptsProfiles(Profiles.of("prod"))) {
+            message.setSubject("DDD Case Due Notification");
+        } else {
+            message.setSubject(
+                    "[NON-PROD][" + env.getActiveProfiles()[0].toUpperCase() + "] DDD Case Due Notification");
+        }
+        message.setText(body);
+        mailSender.send(message);
 
-        // No overdue — user is in coming due map only, triggering the
-        // second loop in sendOverdueEmail() which calls generateEmailBody()
-        // with overdueCases=null and comingDueCases=[comingDue1, comingDue2]
-        when(caseRepository.findByDueDtBeforeAndStatus_IdNotAndAssignedNmNotNull(any(), anyInt()))
-                .thenReturn(Collections.emptyList());
-        when(caseRepository.findByDueDtBetweenAndStatus_IdNotAndAssignedNmNotNull(any(), any(), anyInt()))
-                .thenReturn(Arrays.asList(comingDue1, comingDue2));
-        when(adSearchService.findUser("jdoe")).thenReturn(regularUser);
-
-        emailService.sendOverdueEmail();
-
-        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mailSender).send(captor.capture());
-
-        // Line 117: plural branch — "cases coming due" not "case coming due"
-        assertThat(captor.getValue().getText())
-                .contains("2 cases coming due");
     }
 
-    @Test
-    @DisplayName("generateEmailBody - both coming due case IDs appear in body when plural (Line 117)")
-    void generateEmailBody_multipleComingDueCases_bothCaseIdsInBody() {
-        DddCase comingDue1 = buildCase(201, "ARR201", "jdoe");
-        DddCase comingDue2 = buildCase(202, "ARR202", "jdoe");
-
-        when(caseRepository.findByDueDtBeforeAndStatus_IdNotAndAssignedNmNotNull(any(), anyInt()))
-                .thenReturn(Collections.emptyList());
-        when(caseRepository.findByDueDtBetweenAndStatus_IdNotAndAssignedNmNotNull(any(), any(), anyInt()))
-                .thenReturn(Arrays.asList(comingDue1, comingDue2));
-        when(adSearchService.findUser("jdoe")).thenReturn(regularUser);
-
-        emailService.sendOverdueEmail();
-
-        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mailSender).send(captor.capture());
-
-        String body = captor.getValue().getText();
-        assertThat(body).contains("Case ID: 201");
-        assertThat(body).contains("Case ID: 202");
+    public String generateEmailBody(final User user, List<DddCase> overdueCases, List<DddCase> comingDueCases) {
+        boolean isTest = user.getUsername().startsWith("T-SG") || user.getUsername().startsWith("V-");
+        StringBuilder body = new StringBuilder();
+        body.append(user.getRank() + " " + user.getLastName()).append("\n\n");
+        if (overdueCases != null) {
+            if (overdueCases.size() > 1) {
+                body.append("You have " + overdueCases.size() + " overdue cases:").append("\n\n");
+            } else {
+                body.append("You have " + overdueCases.size() + " overdue case:").append("\n\n");
+            }
+            for (DddCase overdue : overdueCases) {
+                appendCaseInfo(body, overdue);
+                body.append("\n");
+            }
+            body.append("\n");
+        }
+        if (comingDueCases != null) {
+            if (comingDueCases.size() > 1) {
+                body.append("You have " + comingDueCases.size() + " cases coming due:").append("\n\n");
+            } else {
+                body.append("You have " + comingDueCases.size() + " case coming due:").append("\n\n");
+            }
+            for (DddCase comingDue : comingDueCases) {
+                appendCaseInfo(body, comingDue);
+                body.append("\n");
+            }
+        }
+        return body.toString();
     }
 
-    // =========================================================================
-    // Lines 133/134 — ADA info block inside appendCaseInfo()
-    // if (caseInfo.getAda() != null) { body.append("ADA: ...") }
-    // =========================================================================
-
-    @Test
-    @DisplayName("appendCaseInfo - includes ADA info when case has ADA assigned (Lines 133/134)")
-    void appendCaseInfo_adaPresent_includesAdaInfo() {
-        AdaList ada = new AdaList();
-        ada.setJobTitleDesc("Assistant District Attorney");
-        ada.setFrstNm("Jane");
-        ada.setLastNm("Smith");
-
-        DddCase overdueCase = buildCase(300, "ARR300", "jdoe");
-        overdueCase.setDueDt(java.sql.Date.valueOf(LocalDate.now().minusDays(1)));
-        overdueCase.setAda(ada);                    // ADA is set — lines 133/134 fire
-
-        when(caseRepository.findByDueDtBeforeAndStatus_IdNotAndAssignedNmNotNull(any(), anyInt()))
-                .thenReturn(List.of(overdueCase));
-        when(caseRepository.findByDueDtBetweenAndStatus_IdNotAndAssignedNmNotNull(any(), any(), anyInt()))
-                .thenReturn(Collections.emptyList());
-        when(adSearchService.findUser("jdoe")).thenReturn(regularUser);
-
-        emailService.sendOverdueEmail();
-
-        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mailSender).send(captor.capture());
-
-        // Lines 133/134: "ADA: <jobTitleDesc> <frstNm> <lastNm>"
-        String body = captor.getValue().getText();
-        assertThat(body).contains("ADA: Assistant District Attorney Jane Smith");
-    }
-
-    @Test
-    @DisplayName("appendCaseInfo - ADA job title, first name and last name all appear in body (Lines 133/134)")
-    void appendCaseInfo_adaPresent_allAdaFieldsInBody() {
-        AdaList ada = new AdaList();
-        ada.setJobTitleDesc("ADA");
-        ada.setFrstNm("Robert");
-        ada.setLastNm("Jones");
-
-        DddCase overdueCase = buildCase(301, "ARR301", "jdoe");
-        overdueCase.setDueDt(java.sql.Date.valueOf(LocalDate.now().minusDays(1)));
-        overdueCase.setAda(ada);
-
-        when(caseRepository.findByDueDtBeforeAndStatus_IdNotAndAssignedNmNotNull(any(), anyInt()))
-                .thenReturn(List.of(overdueCase));
-        when(caseRepository.findByDueDtBetweenAndStatus_IdNotAndAssignedNmNotNull(any(), any(), anyInt()))
-                .thenReturn(Collections.emptyList());
-        when(adSearchService.findUser("jdoe")).thenReturn(regularUser);
-
-        emailService.sendOverdueEmail();
-
-        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mailSender).send(captor.capture());
-
-        String body = captor.getValue().getText();
-        assertThat(body).contains("ADA:");
-        assertThat(body).contains("Robert");
-        assertThat(body).contains("Jones");
-    }
-
-    @Test
-    @DisplayName("appendCaseInfo - no ADA line in body when ada is null (Lines 133/134 false branch)")
-    void appendCaseInfo_adaNull_noAdaLineInBody() {
-        DddCase overdueCase = buildCase(302, "ARR302", "jdoe");
-        overdueCase.setDueDt(java.sql.Date.valueOf(LocalDate.now().minusDays(1)));
-        overdueCase.setAda(null);                   // ADA is null — if block skipped
-
-        when(caseRepository.findByDueDtBeforeAndStatus_IdNotAndAssignedNmNotNull(any(), anyInt()))
-                .thenReturn(List.of(overdueCase));
-        when(caseRepository.findByDueDtBetweenAndStatus_IdNotAndAssignedNmNotNull(any(), any(), anyInt()))
-                .thenReturn(Collections.emptyList());
-        when(adSearchService.findUser("jdoe")).thenReturn(regularUser);
-
-        emailService.sendOverdueEmail();
-
-        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mailSender).send(captor.capture());
-
-        assertThat(captor.getValue().getText()).doesNotContain("ADA:");
+    public void appendCaseInfo(StringBuilder body, DddCase caseInfo) {
+        body.append("Case ID: " + caseInfo.getId()).append("\n");
+        body.append("Arrest ID: " + caseInfo.getArrId()).append("\n");
+        if (caseInfo.getAda() != null) {
+            body.append("ADA: " + caseInfo.getAda().getJobTitleDesc() + " " + caseInfo.getAda().getFrstNm()
+                    + " " + caseInfo.getAda().getLastNm()).append("\n");
+        }
+        body.append("Request Dt: " + caseInfo.getRequestDt()).append("\n");
+        body.append("Case Status: " + caseInfo.getStatus().getStatusDesc()).append("\n");
+        body.append("Due Dt: " + caseInfo.getDueDt()).append("\n");
     }
 }
