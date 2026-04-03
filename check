@@ -2,8 +2,10 @@ package org.nnnn.ddd.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,24 +24,34 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 /**
- * Calls generateEmailBody() and sendMail() and appendCaseInfo() DIRECTLY
- * so JaCoCo instruments the exact lines without going through sendOverdueEmail().
+ * Complete EmailService test coverage.
  *
- *   Line 89   — sendMail() non-prod subject else branch
+ * Strategy:
+ *   - sendOverdueEmail() and runScheduledTask() covered via integration-style
+ *     tests that stub the repository and verify mail is sent end-to-end.
+ *   - sendMail(), generateEmailBody(), appendCaseInfo() called DIRECTLY
+ *     so JaCoCo instruments each line without relying on call-chain attribution.
+ *
+ * Lines specifically targeted:
+ *   Line 45   — sendOverdueEmail() inside runScheduledTask()
+ *   Line 89   — sendMail() non-prod else branch
  *   Line 105  — generateEmailBody() singular overdue "1 overdue case:"
  *   Line 117  — generateEmailBody() singular coming due "1 case coming due:"
- *   Lines 133/134 — appendCaseInfo() ADA block when ada != null
+ *   Lines 133/134 — appendCaseInfo() ADA block
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-@DisplayName("EmailService Direct Method Coverage Tests")
-public class EmailServiceDirectCoverageTest {
+@DisplayName("EmailService Tests")
+public class EmailServiceTest {
 
     @Mock private CaseRepository     caseRepository;
     @Mock private ADSearchService    adSearchService;
@@ -52,6 +64,9 @@ public class EmailServiceDirectCoverageTest {
     private User       regularUser;
     private User       testUserTSG;
     private StatusList statusInProgress;
+
+    private static final String REAL_CC = "IBMNNNN-DDD@wwpdl.vnet.ibm.com";
+    private static final String FROM    = "DDD-Notification@nnnn.org";
 
     @BeforeEach
     void setUp() {
@@ -80,10 +95,21 @@ public class EmailServiceDirectCoverageTest {
     }
 
     // -------------------------------------------------------------------------
-    // Helper
+    // Helpers
     // -------------------------------------------------------------------------
 
-    private DddCase buildCase(int id, String arrId, String assignedNm) {
+    private DddCase buildOverdueCase(int id, String arrId, String assignedNm) {
+        DddCase c = new DddCase();
+        c.setId(id);
+        c.setArrId(arrId);
+        c.setAssignedNm(assignedNm);
+        c.setStatus(statusInProgress);
+        c.setRequestDt(java.sql.Date.valueOf(LocalDate.now().minusDays(30)));
+        c.setDueDt(java.sql.Date.valueOf(LocalDate.now().minusDays(1)));
+        return c;
+    }
+
+    private DddCase buildComingDueCase(int id, String arrId, String assignedNm) {
         DddCase c = new DddCase();
         c.setId(id);
         c.setArrId(arrId);
@@ -94,247 +120,406 @@ public class EmailServiceDirectCoverageTest {
         return c;
     }
 
-    // =========================================================================
-    // Line 89 — sendMail() non-prod else branch
-    // Calling sendMail() directly so JaCoCo sees line 89 execute
-    // =========================================================================
-
-    @Test
-    @DisplayName("sendMail - line 89 non-prod else branch sets [NON-PROD][DEV] subject (direct call)")
-    void sendMail_line89_nonProdSubject_directCall() {
-        when(env.acceptsProfiles(Profiles.of("prod"))).thenReturn(false);
-        when(env.getActiveProfiles()).thenReturn(new String[]{"dev"});
-
-        // Call sendMail() directly — JaCoCo instruments line 89 directly
-        emailService.sendMail(regularUser, "test body");
-
-        // Capture what was sent
-        org.mockito.ArgumentCaptor<SimpleMailMessage> captor =
-                org.mockito.ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mailSender).send(captor.capture());
-
-        // Line 89: "[NON-PROD][DEV] DDD Case Due Notification"
-        assertThat(captor.getValue().getSubject())
-                .contains("[NON-PROD]")
-                .contains("[DEV]")
-                .contains("DDD Case Due Notification");
+    private void stubRepoOverdueOnly(List<DddCase> overdue) {
+        when(caseRepository.findByDueDtBeforeAndStatus_IdNotAndAssignedNmNotNull(any(), anyInt()))
+                .thenReturn(overdue);
+        when(caseRepository.findByDueDtBetweenAndStatus_IdNotAndAssignedNmNotNull(any(), any(), anyInt()))
+                .thenReturn(Collections.emptyList());
     }
 
-    @Test
-    @DisplayName("sendMail - line 89 non-prod else branch with UAT profile (direct call)")
-    void sendMail_line89_nonProdSubjectUat_directCall() {
-        when(env.acceptsProfiles(Profiles.of("prod"))).thenReturn(false);
-        when(env.getActiveProfiles()).thenReturn(new String[]{"uat"});
-
-        emailService.sendMail(regularUser, "test body");
-
-        org.mockito.ArgumentCaptor<SimpleMailMessage> captor =
-                org.mockito.ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mailSender).send(captor.capture());
-
-        assertThat(captor.getValue().getSubject())
-                .contains("[NON-PROD]")
-                .contains("[UAT]");
+    private void stubRepoComingDueOnly(List<DddCase> comingDue) {
+        when(caseRepository.findByDueDtBeforeAndStatus_IdNotAndAssignedNmNotNull(any(), anyInt()))
+                .thenReturn(Collections.emptyList());
+        when(caseRepository.findByDueDtBetweenAndStatus_IdNotAndAssignedNmNotNull(any(), any(), anyInt()))
+                .thenReturn(comingDue);
     }
 
-    @Test
-    @DisplayName("sendMail - prod branch sets plain subject (direct call)")
-    void sendMail_prodSubject_directCall() {
-        when(env.acceptsProfiles(Profiles.of("prod"))).thenReturn(true);
-
-        emailService.sendMail(regularUser, "test body");
-
-        org.mockito.ArgumentCaptor<SimpleMailMessage> captor =
-                org.mockito.ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mailSender).send(captor.capture());
-
-        assertThat(captor.getValue().getSubject()).isEqualTo("DDD Case Due Notification");
-    }
-
-    @Test
-    @DisplayName("sendMail - sets correct from, to, and cc (direct call)")
-    void sendMail_fromToCc_directCall() {
-        emailService.sendMail(regularUser, "test body");
-
-        org.mockito.ArgumentCaptor<SimpleMailMessage> captor =
-                org.mockito.ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mailSender).send(captor.capture());
-
-        assertThat(captor.getValue().getFrom()).isEqualTo("DDD-Notification@nnnn.org");
-        assertThat(captor.getValue().getTo()).contains("jdoe@nnnn.org");
-        assertThat(captor.getValue().getCc()).contains("IBMNNNN-DDD@wwpdl.vnet.ibm.com");
-    }
-
-    @Test
-    @DisplayName("sendMail - T-SG user isTest flag computed but routing unchanged (direct call)")
-    void sendMail_testUserTSG_directCall() {
-        emailService.sendMail(testUserTSG, "test body");
-
-        org.mockito.ArgumentCaptor<SimpleMailMessage> captor =
-                org.mockito.ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mailSender).send(captor.capture());
-
-        assertThat(captor.getValue().getTo()).contains("testuser@nnnn.org");
+    private void stubRepoBoth(List<DddCase> overdue, List<DddCase> comingDue) {
+        when(caseRepository.findByDueDtBeforeAndStatus_IdNotAndAssignedNmNotNull(any(), anyInt()))
+                .thenReturn(overdue);
+        when(caseRepository.findByDueDtBetweenAndStatus_IdNotAndAssignedNmNotNull(any(), any(), anyInt()))
+                .thenReturn(comingDue);
     }
 
     // =========================================================================
-    // Line 105 — generateEmailBody() singular overdue "1 overdue case:"
-    // Calling generateEmailBody() directly so JaCoCo sees line 105 execute
+    // runScheduledTask() — Line 45
     // =========================================================================
 
-    @Test
-    @DisplayName("generateEmailBody - line 105 singular overdue 'case' not 'cases' (direct call)")
-    void generateEmailBody_line105_singleOverdue_directCall() {
-        DddCase overdueCase = buildCase(100, "ARR001", "jdoe");
+    @Nested
+    @DisplayName("runScheduledTask()")
+    class RunScheduledTaskTests {
 
-        // Direct call — exactly 1 overdue → size > 1 is false → line 105 fires
-        String body = emailService.generateEmailBody(
-                regularUser,
-                List.of(overdueCase),   // 1 overdue case → singular branch
-                null
-        );
+        @Test
+        @DisplayName("line 45 — delegates to sendOverdueEmail and sends mail when cases exist")
+        void runScheduledTask_line45_executesSendOverdueEmail() {
+            stubRepoOverdueOnly(List.of(buildOverdueCase(100, "ARR001", "jdoe")));
+            when(adSearchService.findUser("jdoe")).thenReturn(regularUser);
 
-        // Line 105: "You have 1 overdue case:" (singular)
-        assertThat(body).contains("1 overdue case:");
-        assertThat(body).doesNotContain("1 overdue cases:");
-    }
+            emailService.runScheduledTask();
 
-    @Test
-    @DisplayName("generateEmailBody - line 105 singular overdue body contains case details (direct call)")
-    void generateEmailBody_line105_singleOverdue_bodyDetails_directCall() {
-        DddCase overdueCase = buildCase(200, "ARR200", "jdoe");
+            verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
+        }
 
-        String body = emailService.generateEmailBody(
-                regularUser,
-                List.of(overdueCase),
-                null
-        );
+        @Test
+        @DisplayName("line 45 — delegates to sendOverdueEmail which queries both repos")
+        void runScheduledTask_line45_queriesBothRepos() {
+            stubRepoBoth(Collections.emptyList(), Collections.emptyList());
 
-        assertThat(body).contains("Case ID: 200");
-        assertThat(body).contains("Arrest ID: ARR200");
-        assertThat(body).contains("Detective Doe");
+            emailService.runScheduledTask();
+
+            verify(caseRepository).findByDueDtBeforeAndStatus_IdNotAndAssignedNmNotNull(any(), anyInt());
+            verify(caseRepository).findByDueDtBetweenAndStatus_IdNotAndAssignedNmNotNull(any(), any(), anyInt());
+        }
     }
 
     // =========================================================================
-    // Line 117 — generateEmailBody() singular coming due "1 case coming due:"
-    // Calling generateEmailBody() directly so JaCoCo sees line 117 execute
+    // sendOverdueEmail() — integration tests covering the full method body
     // =========================================================================
 
-    @Test
-    @DisplayName("generateEmailBody - line 117 singular coming due 'case' not 'cases' (direct call)")
-    void generateEmailBody_line117_singleComingDue_directCall() {
-        DddCase comingDueCase = buildCase(101, "ARR002", "jdoe");
+    @Nested
+    @DisplayName("sendOverdueEmail()")
+    class SendOverdueEmailTests {
 
-        // Direct call — exactly 1 coming due → size > 1 is false → line 117 fires
-        String body = emailService.generateEmailBody(
-                regularUser,
-                null,
-                List.of(comingDueCase)  // 1 coming due case → singular branch
-        );
+        @Test
+        @DisplayName("does nothing when no overdue or coming due cases")
+        void sendOverdueEmail_noCases_doesNotSendEmail() {
+            stubRepoBoth(Collections.emptyList(), Collections.emptyList());
 
-        // Line 117: "You have 1 case coming due:" (singular)
-        assertThat(body).contains("1 case coming due:");
-        assertThat(body).doesNotContain("1 cases coming due:");
-    }
+            emailService.sendOverdueEmail();
 
-    @Test
-    @DisplayName("generateEmailBody - line 117 singular coming due body contains case details (direct call)")
-    void generateEmailBody_line117_singleComingDue_bodyDetails_directCall() {
-        DddCase comingDueCase = buildCase(300, "ARR300", "jdoe");
+            verify(mailSender, never()).send(any(SimpleMailMessage.class));
+            verifyNoInteractions(adSearchService);
+        }
 
-        String body = emailService.generateEmailBody(
-                regularUser,
-                null,
-                List.of(comingDueCase)
-        );
+        @Test
+        @DisplayName("sends email to user with overdue case")
+        void sendOverdueEmail_overdueCase_sendsEmail() {
+            stubRepoOverdueOnly(List.of(buildOverdueCase(100, "ARR001", "jdoe")));
+            when(adSearchService.findUser("jdoe")).thenReturn(regularUser);
 
-        assertThat(body).contains("Case ID: 300");
-        assertThat(body).contains("Arrest ID: ARR300");
-    }
+            emailService.sendOverdueEmail();
 
-    @Test
-    @DisplayName("generateEmailBody - plural coming due (size > 1) for completeness (direct call)")
-    void generateEmailBody_pluralComingDue_directCall() {
-        DddCase c1 = buildCase(101, "ARR002", "jdoe");
-        DddCase c2 = buildCase(102, "ARR003", "jdoe");
+            verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
+        }
 
-        String body = emailService.generateEmailBody(
-                regularUser,
-                null,
-                Arrays.asList(c1, c2)
-        );
+        @Test
+        @DisplayName("does not send email when user not found in AD")
+        void sendOverdueEmail_userNotFound_doesNotSendEmail() {
+            stubRepoOverdueOnly(List.of(buildOverdueCase(100, "ARR001", "jdoe")));
+            when(adSearchService.findUser("jdoe")).thenReturn(null);
 
-        assertThat(body).contains("2 cases coming due:");
+            emailService.sendOverdueEmail();
+
+            verify(mailSender, never()).send(any(SimpleMailMessage.class));
+        }
+
+        @Test
+        @DisplayName("sends email for coming due user not in overdue map")
+        void sendOverdueEmail_comingDueOnly_sendsEmail() {
+            stubRepoComingDueOnly(List.of(buildComingDueCase(101, "ARR002", "jdoe")));
+            when(adSearchService.findUser("jdoe")).thenReturn(regularUser);
+
+            emailService.sendOverdueEmail();
+
+            verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
+        }
+
+        @Test
+        @DisplayName("user in both maps gets only one email")
+        void sendOverdueEmail_userInBothMaps_sendsOnlyOneEmail() {
+            stubRepoBoth(
+                    List.of(buildOverdueCase(100, "ARR001", "jdoe")),
+                    List.of(buildComingDueCase(101, "ARR002", "jdoe"))
+            );
+            when(adSearchService.findUser("jdoe")).thenReturn(regularUser);
+
+            emailService.sendOverdueEmail();
+
+            verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
+        }
+
+        @Test
+        @DisplayName("multiple users each get their own email")
+        void sendOverdueEmail_multipleUsers_eachGetOwnEmail() {
+            DddCase case2 = buildOverdueCase(200, "ARR200", "asmith");
+            User asmith = new User();
+            asmith.setUsername("asmith");
+            asmith.setEmail("asmith@nnnn.org");
+            asmith.setRank("Sergeant");
+            asmith.setLastName("Smith");
+
+            stubRepoOverdueOnly(Arrays.asList(buildOverdueCase(100, "ARR001", "jdoe"), case2));
+            when(adSearchService.findUser("jdoe")).thenReturn(regularUser);
+            when(adSearchService.findUser("asmith")).thenReturn(asmith);
+
+            emailService.sendOverdueEmail();
+
+            verify(mailSender, times(2)).send(any(SimpleMailMessage.class));
+        }
     }
 
     // =========================================================================
-    // Lines 133/134 — appendCaseInfo() ADA block when ada != null
-    // Calling appendCaseInfo() directly so JaCoCo sees lines 133/134 execute
+    // sendMail() — called directly for precise line coverage
     // =========================================================================
 
-    @Test
-    @DisplayName("appendCaseInfo - lines 133/134 ADA block appended when ada is not null (direct call)")
-    void appendCaseInfo_lines133_134_adaNotNull_directCall() {
-        AdaList ada = new AdaList();
-        ada.setJobTitleDesc("Assistant District Attorney");
-        ada.setFrstNm("Jane");
-        ada.setLastNm("Smith");
+    @Nested
+    @DisplayName("sendMail()")
+    class SendMailTests {
 
-        DddCase caseWithAda = buildCase(400, "ARR400", "jdoe");
-        caseWithAda.setAda(ada);    // ada != null → lines 133/134 fire
+        @Test
+        @DisplayName("sets correct from address")
+        void sendMail_fromAddress() {
+            emailService.sendMail(regularUser, "body");
 
-        StringBuilder body = new StringBuilder();
-        // Direct call — JaCoCo instruments lines 133/134 directly
-        emailService.appendCaseInfo(body, caseWithAda);
+            ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+            verify(mailSender).send(captor.capture());
+            assertThat(captor.getValue().getFrom()).isEqualTo(FROM);
+        }
 
-        // Lines 133/134: "ADA: <jobTitleDesc> <frstNm> <lastNm>"
-        assertThat(body.toString()).contains("ADA: Assistant District Attorney Jane Smith");
+        @Test
+        @DisplayName("sets correct to address")
+        void sendMail_toAddress() {
+            emailService.sendMail(regularUser, "body");
+
+            ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+            verify(mailSender).send(captor.capture());
+            assertThat(captor.getValue().getTo()).contains("jdoe@nnnn.org");
+        }
+
+        @Test
+        @DisplayName("sets correct CC address")
+        void sendMail_ccAddress() {
+            emailService.sendMail(regularUser, "body");
+
+            ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+            verify(mailSender).send(captor.capture());
+            assertThat(captor.getValue().getCc()).contains(REAL_CC);
+        }
+
+        @Test
+        @DisplayName("prod profile sets plain subject")
+        void sendMail_prodProfile_plainSubject() {
+            when(env.acceptsProfiles(Profiles.of("prod"))).thenReturn(true);
+
+            emailService.sendMail(regularUser, "body");
+
+            ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+            verify(mailSender).send(captor.capture());
+            assertThat(captor.getValue().getSubject()).isEqualTo("DDD Case Due Notification");
+        }
+
+        @Test
+        @DisplayName("line 89 — non-prod else branch sets [NON-PROD][DEV] subject")
+        void sendMail_line89_nonProdDev_subject() {
+            when(env.acceptsProfiles(Profiles.of("prod"))).thenReturn(false);
+            when(env.getActiveProfiles()).thenReturn(new String[]{"dev"});
+
+            emailService.sendMail(regularUser, "body");
+
+            ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+            verify(mailSender).send(captor.capture());
+            assertThat(captor.getValue().getSubject())
+                    .contains("[NON-PROD]")
+                    .contains("[DEV]")
+                    .contains("DDD Case Due Notification");
+        }
+
+        @Test
+        @DisplayName("line 89 — non-prod else branch sets [NON-PROD][UAT] subject")
+        void sendMail_line89_nonProdUat_subject() {
+            when(env.acceptsProfiles(Profiles.of("prod"))).thenReturn(false);
+            when(env.getActiveProfiles()).thenReturn(new String[]{"uat"});
+
+            emailService.sendMail(regularUser, "body");
+
+            ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+            verify(mailSender).send(captor.capture());
+            assertThat(captor.getValue().getSubject())
+                    .contains("[NON-PROD]")
+                    .contains("[UAT]");
+        }
+
+        @Test
+        @DisplayName("T-SG user email sent to their address (no special routing)")
+        void sendMail_testUserTSG_sendsToUserEmail() {
+            emailService.sendMail(testUserTSG, "body");
+
+            ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+            verify(mailSender).send(captor.capture());
+            assertThat(captor.getValue().getTo()).contains("testuser@nnnn.org");
+        }
+
+        @Test
+        @DisplayName("sets body text correctly")
+        void sendMail_setsBodyText() {
+            emailService.sendMail(regularUser, "expected body content");
+
+            ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+            verify(mailSender).send(captor.capture());
+            assertThat(captor.getValue().getText()).isEqualTo("expected body content");
+        }
     }
 
-    @Test
-    @DisplayName("appendCaseInfo - lines 133/134 all three ADA fields present (direct call)")
-    void appendCaseInfo_lines133_134_allAdaFields_directCall() {
-        AdaList ada = new AdaList();
-        ada.setJobTitleDesc("ADA");
-        ada.setFrstNm("Robert");
-        ada.setLastNm("Jones");
+    // =========================================================================
+    // generateEmailBody() — called directly for precise line coverage
+    // =========================================================================
 
-        DddCase caseWithAda = buildCase(401, "ARR401", "jdoe");
-        caseWithAda.setAda(ada);
+    @Nested
+    @DisplayName("generateEmailBody()")
+    class GenerateEmailBodyTests {
 
-        StringBuilder body = new StringBuilder();
-        emailService.appendCaseInfo(body, caseWithAda);
+        @Test
+        @DisplayName("always starts with rank and last name")
+        void generateEmailBody_startsWithRankAndLastName() {
+            String body = emailService.generateEmailBody(regularUser, null, null);
+            assertThat(body).startsWith("Detective Doe");
+        }
 
-        assertThat(body.toString()).contains("ADA:");
-        assertThat(body.toString()).contains("Robert");
-        assertThat(body.toString()).contains("Jones");
+        @Test
+        @DisplayName("line 105 — singular overdue: 'You have 1 overdue case:'")
+        void generateEmailBody_line105_singleOverdue_singular() {
+            DddCase c = buildOverdueCase(100, "ARR001", "jdoe");
+
+            String body = emailService.generateEmailBody(regularUser, List.of(c), null);
+
+            assertThat(body).contains("1 overdue case:");
+            assertThat(body).doesNotContain("1 overdue cases:");
+        }
+
+        @Test
+        @DisplayName("plural overdue: 'You have N overdue cases:' when size > 1")
+        void generateEmailBody_pluralOverdue() {
+            DddCase c1 = buildOverdueCase(100, "ARR001", "jdoe");
+            DddCase c2 = buildOverdueCase(101, "ARR002", "jdoe");
+
+            String body = emailService.generateEmailBody(regularUser, Arrays.asList(c1, c2), null);
+
+            assertThat(body).contains("2 overdue cases:");
+        }
+
+        @Test
+        @DisplayName("line 117 — singular coming due: 'You have 1 case coming due:'")
+        void generateEmailBody_line117_singleComingDue_singular() {
+            DddCase c = buildComingDueCase(101, "ARR002", "jdoe");
+
+            String body = emailService.generateEmailBody(regularUser, null, List.of(c));
+
+            assertThat(body).contains("1 case coming due:");
+            assertThat(body).doesNotContain("1 cases coming due:");
+        }
+
+        @Test
+        @DisplayName("plural coming due: 'You have N cases coming due:' when size > 1")
+        void generateEmailBody_pluralComingDue() {
+            DddCase c1 = buildComingDueCase(101, "ARR002", "jdoe");
+            DddCase c2 = buildComingDueCase(102, "ARR003", "jdoe");
+
+            String body = emailService.generateEmailBody(regularUser, null, Arrays.asList(c1, c2));
+
+            assertThat(body).contains("2 cases coming due:");
+        }
+
+        @Test
+        @DisplayName("overdue null — overdue block skipped entirely")
+        void generateEmailBody_overdueNull_overdueBlockSkipped() {
+            DddCase c = buildComingDueCase(101, "ARR002", "jdoe");
+
+            String body = emailService.generateEmailBody(regularUser, null, List.of(c));
+
+            assertThat(body).doesNotContain("overdue");
+            assertThat(body).contains("coming due");
+        }
+
+        @Test
+        @DisplayName("coming due null — coming due block skipped entirely")
+        void generateEmailBody_comingDueNull_comingDueBlockSkipped() {
+            DddCase c = buildOverdueCase(100, "ARR001", "jdoe");
+
+            String body = emailService.generateEmailBody(regularUser, List.of(c), null);
+
+            assertThat(body).doesNotContain("coming due");
+            assertThat(body).contains("overdue");
+        }
+
+        @Test
+        @DisplayName("both null — body contains only greeting")
+        void generateEmailBody_bothNull_onlyGreeting() {
+            String body = emailService.generateEmailBody(regularUser, null, null);
+
+            assertThat(body).contains("Detective Doe");
+            assertThat(body).doesNotContain("overdue");
+            assertThat(body).doesNotContain("coming due");
+        }
     }
 
-    @Test
-    @DisplayName("appendCaseInfo - ada null skips lines 133/134 (direct call)")
-    void appendCaseInfo_adaNull_skipsAdaBlock_directCall() {
-        DddCase caseNoAda = buildCase(402, "ARR402", "jdoe");
-        caseNoAda.setAda(null);     // ada == null → if block skipped
+    // =========================================================================
+    // appendCaseInfo() — called directly for precise line coverage
+    // =========================================================================
 
-        StringBuilder body = new StringBuilder();
-        emailService.appendCaseInfo(body, caseNoAda);
+    @Nested
+    @DisplayName("appendCaseInfo()")
+    class AppendCaseInfoTests {
 
-        assertThat(body.toString()).doesNotContain("ADA:");
-    }
+        @Test
+        @DisplayName("always appends case ID, arrest ID, request dt, status, due dt")
+        void appendCaseInfo_standardFields() {
+            DddCase c = buildOverdueCase(100, "ARR001", "jdoe");
+            StringBuilder body = new StringBuilder();
 
-    @Test
-    @DisplayName("appendCaseInfo - always appends case ID, arrest ID, request dt, status, due dt (direct call)")
-    void appendCaseInfo_alwaysAppendsStandardFields_directCall() {
-        DddCase c = buildCase(403, "ARR403", "jdoe");
+            emailService.appendCaseInfo(body, c);
 
-        StringBuilder body = new StringBuilder();
-        emailService.appendCaseInfo(body, c);
+            String result = body.toString();
+            assertThat(result).contains("Case ID: 100");
+            assertThat(result).contains("Arrest ID: ARR001");
+            assertThat(result).contains("Request Dt:");
+            assertThat(result).contains("Case Status: In Progress");
+            assertThat(result).contains("Due Dt:");
+        }
 
-        String result = body.toString();
-        assertThat(result).contains("Case ID: 403");
-        assertThat(result).contains("Arrest ID: ARR403");
-        assertThat(result).contains("Request Dt:");
-        assertThat(result).contains("Case Status: In Progress");
-        assertThat(result).contains("Due Dt:");
+        @Test
+        @DisplayName("lines 133/134 — ADA block appended when ada is not null")
+        void appendCaseInfo_lines133_134_adaNotNull() {
+            AdaList ada = new AdaList();
+            ada.setJobTitleDesc("Assistant District Attorney");
+            ada.setFrstNm("Jane");
+            ada.setLastNm("Smith");
+
+            DddCase c = buildOverdueCase(100, "ARR001", "jdoe");
+            c.setAda(ada);
+
+            StringBuilder body = new StringBuilder();
+            emailService.appendCaseInfo(body, c);
+
+            assertThat(body.toString()).contains("ADA: Assistant District Attorney Jane Smith");
+        }
+
+        @Test
+        @DisplayName("lines 133/134 false branch — ADA block skipped when ada is null")
+        void appendCaseInfo_lines133_134_adaNull_skipped() {
+            DddCase c = buildOverdueCase(100, "ARR001", "jdoe");
+            c.setAda(null);
+
+            StringBuilder body = new StringBuilder();
+            emailService.appendCaseInfo(body, c);
+
+            assertThat(body.toString()).doesNotContain("ADA:");
+        }
+
+        @Test
+        @DisplayName("lines 133/134 — all three ADA fields appear in body")
+        void appendCaseInfo_lines133_134_allAdaFieldsPresent() {
+            AdaList ada = new AdaList();
+            ada.setJobTitleDesc("ADA");
+            ada.setFrstNm("Robert");
+            ada.setLastNm("Jones");
+
+            DddCase c = buildOverdueCase(100, "ARR001", "jdoe");
+            c.setAda(ada);
+
+            StringBuilder body = new StringBuilder();
+            emailService.appendCaseInfo(body, c);
+
+            assertThat(body.toString()).contains("ADA: ADA Robert Jones");
+        }
     }
 }
