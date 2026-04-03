@@ -1,4 +1,4 @@
-package org.nnnn.ddd.service;
+package org.nypd.dlu.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -10,24 +10,24 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.modelmapper.ModelMapper;
-import org.nnnn.ddd.entity.AdaList;
-import org.nnnn.ddd.entity.CategoryList;
-import org.nnnn.ddd.entity.ItemList;
-import org.nnnn.ddd.entity.TagList;
-import org.nnnn.ddd.model.ADA;
-import org.nnnn.ddd.model.Category;
-import org.nnnn.ddd.model.DDDOffice;
-import org.nnnn.ddd.model.Item;
-import org.nnnn.ddd.model.ReferenceCode;
-import org.nnnn.ddd.model.Status;
-import org.nnnn.ddd.model.Tag;
-import org.nnnn.ddd.repository.ADAListRepository;
-import org.nnnn.ddd.repository.CategoryListRepository;
-import org.nnnn.ddd.repository.CodeRefRepository;
-import org.nnnn.ddd.repository.DDDOfficeListRepository;
-import org.nnnn.ddd.repository.ItemListRepository;
-import org.nnnn.ddd.repository.StatusListRepository;
-import org.nnnn.ddd.repository.TagListRepository;
+import org.nypd.dlu.entity.AdaList;
+import org.nypd.dlu.entity.CategoryList;
+import org.nypd.dlu.entity.ItemList;
+import org.nypd.dlu.entity.TagList;
+import org.nypd.dlu.model.ADA;
+import org.nypd.dlu.model.Category;
+import org.nypd.dlu.model.DLUOffice;
+import org.nypd.dlu.model.Item;
+import org.nypd.dlu.model.ReferenceCode;
+import org.nypd.dlu.model.Status;
+import org.nypd.dlu.model.Tag;
+import org.nypd.dlu.repository.ADAListRepository;
+import org.nypd.dlu.repository.CategoryListRepository;
+import org.nypd.dlu.repository.CodeRefRepository;
+import org.nypd.dlu.repository.DLUOfficeListRepository;
+import org.nypd.dlu.repository.ItemListRepository;
+import org.nypd.dlu.repository.StatusListRepository;
+import org.nypd.dlu.repository.TagListRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -53,7 +53,7 @@ class ReferenceDataServiceTest {
     @Mock private TagListRepository       tagListRepository;
     @Mock private ItemListRepository      itemListRepository;
     @Mock private StatusListRepository    statusListRepository;
-    @Mock private DDDOfficeListRepository dddOfficeListRepository;
+    @Mock private DLUOfficeListRepository dluOfficeListRepository;
     @Mock private CodeRefRepository       codeRefRepository;
     @Mock private AuthenticationService   authenticationService;
     @Mock private CacheService            cacheService;
@@ -344,7 +344,8 @@ class ReferenceDataServiceTest {
 
             when(categoryListRepository.findById(1)).thenReturn(Optional.of(existing));
             when(categoryListRepository.findAllDTO()).thenReturn(List.of(category));
-            lenient().when(authenticationService.debug()).thenReturn(null);
+            // debug() returns void — use doNothing() not when().thenReturn()
+            lenient().doNothing().when(authenticationService).debug();
 
             service.updateCategories(List.of(category));
 
@@ -361,7 +362,8 @@ class ReferenceDataServiceTest {
             when(categoryListRepository.findById(99)).thenReturn(Optional.empty());
             when(modelMapper.map(category, CategoryList.class)).thenReturn(newEntity);
             when(categoryListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-            lenient().when(authenticationService.debug()).thenReturn(null);
+            // debug() returns void — use doNothing() not when().thenReturn()
+            lenient().doNothing().when(authenticationService).debug();
 
             service.updateCategories(List.of(category));
 
@@ -377,7 +379,8 @@ class ReferenceDataServiceTest {
 
             when(categoryListRepository.findById(1)).thenReturn(Optional.of(existing));
             when(categoryListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-            lenient().when(authenticationService.debug()).thenReturn(null);
+            // debug() returns void — use doNothing() not when().thenReturn()
+            lenient().doNothing().when(authenticationService).debug();
 
             service.updateCategories(List.of(category));
 
@@ -495,84 +498,84 @@ class ReferenceDataServiceTest {
     }
 
     // =========================================================================
-    // getDDDOffices()
+    // getDLUOffices()
     // =========================================================================
 
     @Nested
-    @DisplayName("getDDDOffices()")
-    class GetDDDOfficesTests {
+    @DisplayName("getDLUOffices()")
+    class GetDLUOfficesTests {
 
         @Test
-        @DisplayName("supervisor gets all DDD offices via findAllDTO")
-        void getDDDOffices_supervisor_returnsAllOffices() {
-            DDDOffice office = new DDDOffice();
+        @DisplayName("supervisor gets all DLU offices via findAllDTO")
+        void getDLUOffices_supervisor_returnsAllOffices() {
+            DLUOffice office = new DLUOffice();
             when(authenticationService.isSupervisor()).thenReturn(true);
-            when(dddOfficeListRepository.findAllDTO()).thenReturn(List.of(office));
+            when(dluOfficeListRepository.findAllDTO()).thenReturn(List.of(office));
 
-            List<DDDOffice> result = service.getDDDOffices("supervisor");
+            List<DLUOffice> result = service.getDLUOffices("supervisor");
 
             assertThat(result).hasSize(1).contains(office);
-            verify(dddOfficeListRepository).findAllDTO();
-            verify(dddOfficeListRepository, never()).findAllDTOForSG(any());
+            verify(dluOfficeListRepository).findAllDTO();
+            verify(dluOfficeListRepository, never()).findAllDTOForSG(any());
         }
 
         @Test
-        @DisplayName("non-supervisor with DDD role gets offices for that role")
-        void getDDDOffices_nonSupervisor_withDDDRole_returnsOfficesForRole() {
-            String authority = "ROLE_SG-DDD-ANALYST-BROOKLYN";
-            DDDOffice office = new DDDOffice();
+        @DisplayName("non-supervisor with DLU role gets offices for that role")
+        void getDLUOffices_nonSupervisor_withDLURole_returnsOfficesForRole() {
+            String authority = "ROLE_SG-DLU-ANALYST-BROOKLYN";
+            DLUOffice office = new DLUOffice();
 
             when(authenticationService.isSupervisor()).thenReturn(false);
             stubSecurityContext(List.of(new SimpleGrantedAuthority(authority)));
-            when(dddOfficeListRepository.findAllDTOForSG(authority)).thenReturn(List.of(office));
+            when(dluOfficeListRepository.findAllDTOForSG(authority)).thenReturn(List.of(office));
 
-            List<DDDOffice> result = service.getDDDOffices("jdoe");
+            List<DLUOffice> result = service.getDLUOffices("jdoe");
 
             assertThat(result).hasSize(1).contains(office);
-            verify(dddOfficeListRepository).findAllDTOForSG(authority);
+            verify(dluOfficeListRepository).findAllDTOForSG(authority);
             SecurityContextHolder.clearContext();
         }
 
         @Test
-        @DisplayName("non-supervisor with non-DDD role gets empty list")
-        void getDDDOffices_nonSupervisor_nonDDDRole_returnsEmptyList() {
+        @DisplayName("non-supervisor with non-DLU role gets empty list")
+        void getDLUOffices_nonSupervisor_nonDLURole_returnsEmptyList() {
             when(authenticationService.isSupervisor()).thenReturn(false);
             stubSecurityContext(List.of(new SimpleGrantedAuthority("ROLE_SG-SEALED-EVENT")));
 
-            List<DDDOffice> result = service.getDDDOffices("jdoe");
+            List<DLUOffice> result = service.getDLUOffices("jdoe");
 
             assertThat(result).isEmpty();
-            verify(dddOfficeListRepository, never()).findAllDTOForSG(any());
+            verify(dluOfficeListRepository, never()).findAllDTOForSG(any());
             SecurityContextHolder.clearContext();
         }
 
         @Test
         @DisplayName("non-supervisor with no authorities gets empty list")
-        void getDDDOffices_nonSupervisor_noAuthorities_returnsEmptyList() {
+        void getDLUOffices_nonSupervisor_noAuthorities_returnsEmptyList() {
             when(authenticationService.isSupervisor()).thenReturn(false);
             stubSecurityContext(Collections.emptyList());
 
-            assertThat(service.getDDDOffices("jdoe")).isEmpty();
+            assertThat(service.getDLUOffices("jdoe")).isEmpty();
             SecurityContextHolder.clearContext();
         }
 
         @Test
-        @DisplayName("non-supervisor with multiple DDD roles aggregates all offices")
-        void getDDDOffices_nonSupervisor_multipleDDDRoles_aggregatesOffices() {
-            String role1 = "ROLE_SG-DDD-ANALYST-BROOKLYN";
-            String role2 = "ROLE_SG-DDD-ANALYST-BRONX";
-            DDDOffice office1 = new DDDOffice();
-            DDDOffice office2 = new DDDOffice();
+        @DisplayName("non-supervisor with multiple DLU roles aggregates all offices")
+        void getDLUOffices_nonSupervisor_multipleDLURoles_aggregatesOffices() {
+            String role1 = "ROLE_SG-DLU-ANALYST-BROOKLYN";
+            String role2 = "ROLE_SG-DLU-ANALYST-BRONX";
+            DLUOffice office1 = new DLUOffice();
+            DLUOffice office2 = new DLUOffice();
 
             when(authenticationService.isSupervisor()).thenReturn(false);
             stubSecurityContext(List.of(
                     new SimpleGrantedAuthority(role1),
                     new SimpleGrantedAuthority(role2)
             ));
-            when(dddOfficeListRepository.findAllDTOForSG(role1)).thenReturn(List.of(office1));
-            when(dddOfficeListRepository.findAllDTOForSG(role2)).thenReturn(List.of(office2));
+            when(dluOfficeListRepository.findAllDTOForSG(role1)).thenReturn(List.of(office1));
+            when(dluOfficeListRepository.findAllDTOForSG(role2)).thenReturn(List.of(office2));
 
-            List<DDDOffice> result = service.getDDDOffices("jdoe");
+            List<DLUOffice> result = service.getDLUOffices("jdoe");
 
             assertThat(result).hasSize(2).contains(office1, office2);
             SecurityContextHolder.clearContext();
@@ -591,28 +594,28 @@ class ReferenceDataServiceTest {
     }
 
     // =========================================================================
-    // getAllDDDOffices()
+    // getAllDLUOffices()
     // =========================================================================
 
     @Nested
-    @DisplayName("getAllDDDOffices()")
-    class GetAllDDDOfficesTests {
+    @DisplayName("getAllDLUOffices()")
+    class GetAllDLUOfficesTests {
 
         @Test
         @DisplayName("delegates to repository and returns all office DTOs")
-        void getAllDDDOffices_returnsRepositoryResults() {
-            DDDOffice office = new DDDOffice();
-            when(dddOfficeListRepository.findAllDTO()).thenReturn(List.of(office));
+        void getAllDLUOffices_returnsRepositoryResults() {
+            DLUOffice office = new DLUOffice();
+            when(dluOfficeListRepository.findAllDTO()).thenReturn(List.of(office));
 
-            assertThat(service.getAllDDDOffices()).hasSize(1).contains(office);
-            verify(dddOfficeListRepository).findAllDTO();
+            assertThat(service.getAllDLUOffices()).hasSize(1).contains(office);
+            verify(dluOfficeListRepository).findAllDTO();
         }
 
         @Test
         @DisplayName("returns empty list when no offices found")
-        void getAllDDDOffices_noResults_returnsEmptyList() {
-            when(dddOfficeListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-            assertThat(service.getAllDDDOffices()).isEmpty();
+        void getAllDLUOffices_noResults_returnsEmptyList() {
+            when(dluOfficeListRepository.findAllDTO()).thenReturn(Collections.emptyList());
+            assertThat(service.getAllDLUOffices()).isEmpty();
         }
     }
 }
