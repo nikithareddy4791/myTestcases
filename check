@@ -1,157 +1,134 @@
-package org.nnnn.ddd;
+package org.nnnn.ddd.api;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.boot.actuate.jdbc.DataSourceHealthIndicator;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.ConfigurableApplicationContext;
-
-import javax.sql.DataSource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
-
-@ExtendWith(MockitoExtension.class)
-@DisplayName("ServletInitializer Tests")
-class ServletInitializerTest {
-
-    private ServletInitializer servletInitializer;
-
-    @Mock
-    private DataSource dataSource;
-
-    @BeforeEach
-    void setUp() {
-        servletInitializer = new ServletInitializer();
-    }
-
-    // =========================================================================
-    // main()
-    // Mocks SpringApplication.run() statically so the full app never starts.
-    // Requires mockito-inline / Mockito 5+ for static mocking support.
-    // =========================================================================
-
-    @Nested
-    @DisplayName("main()")
-    class MainTests {
-
-        @Test
-        @DisplayName("calls SpringApplication.run() with ServletInitializer class and args")
-        void main_callsSpringApplicationRun() {
-            String[] args = {};
-            ConfigurableApplicationContext mockCtx = mock(ConfigurableApplicationContext.class);
-
-            try (MockedStatic<SpringApplication> springApp =
-                         mockStatic(SpringApplication.class)) {
-
-                springApp.when(() -> SpringApplication.run(ServletInitializer.class, args))
-                        .thenReturn(mockCtx);
-
-                // Call the real static main — line is now covered by JaCoCo
-                ServletInitializer.main(args);
-
-                springApp.verify(() -> SpringApplication.run(ServletInitializer.class, args));
-            }
-        }
-
-        @Test
-        @DisplayName("passes command-line args through to SpringApplication.run()")
-        void main_passesArgsToSpringApplication() {
-            String[] args = {"--server.port=8081", "--spring.profiles.active=dev"};
-            ConfigurableApplicationContext mockCtx = mock(ConfigurableApplicationContext.class);
-
-            try (MockedStatic<SpringApplication> springApp =
-                         mockStatic(SpringApplication.class)) {
-
-                springApp.when(() -> SpringApplication.run(ServletInitializer.class, args))
-                        .thenReturn(mockCtx);
-
-                ServletInitializer.main(args);
-
-                springApp.verify(() -> SpringApplication.run(ServletInitializer.class, args));
-            }
-        }
-    }
-
-    // =========================================================================
-    // configure()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("configure()")
-    class ConfigureTests {
-
-        @Test
-        @DisplayName("returns the same SpringApplicationBuilder instance")
-        void configure_returnsSameBuilderInstance() {
-            SpringApplicationBuilder builder = mock(SpringApplicationBuilder.class);
-            when(builder.sources(any(Class.class))).thenReturn(builder);
-
-            SpringApplicationBuilder result = servletInitializer.configure(builder);
-
-            assertThat(result).isSameAs(builder);
-        }
-
-        @Test
-        @DisplayName("configures sources with Swagger2SpringBoot class")
-        void configure_setsSwagger2SpringBootAsSource() {
-            SpringApplicationBuilder builder = mock(SpringApplicationBuilder.class);
-            when(builder.sources(io.swagger.Swagger2SpringBoot.class)).thenReturn(builder);
-
-            servletInitializer.configure(builder);
-
-            verify(builder).sources(io.swagger.Swagger2SpringBoot.class);
-        }
-    }
-
-    // =========================================================================
-    // dbHealthIndicator()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("dbHealthIndicator()")
-    class DbHealthIndicatorTests {
-
-        @Test
-        @DisplayName("returns a non-null HealthIndicator bean")
-        void dbHealthIndicator_returnsNonNull() {
-            HealthIndicator indicator = servletInitializer.dbHealthIndicator(dataSource);
-
-            assertThat(indicator).isNotNull();
-        }
-
-        @Test
-        @DisplayName("returns a DataSourceHealthIndicator instance")
-        void dbHealthIndicator_returnsDataSourceHealthIndicator() {
-            HealthIndicator indicator = servletInitializer.dbHealthIndicator(dataSource);
-
-            assertThat(indicator).isInstanceOf(DataSourceHealthIndicator.class);
-        }
-
-        @Test
-        @DisplayName("uses the DB2 validation query SELECT 1 FROM SYSIBM.SYSDUMMY1")
-        void dbHealthIndicator_usesCorrectValidationQuery() {
-            DataSourceHealthIndicator indicator =
-                    (DataSourceHealthIndicator) servletInitializer.dbHealthIndicator(dataSource);
-
-            assertThat(indicator.getQuery()).isEqualTo("SELECT 1 FROM SYSIBM.SYSDUMMY1");
-        }
-
-        @Test
-        @DisplayName("creates a new indicator instance on each call")
-        void dbHealthIndicator_returnsNewInstanceOnEachCall() {
-            HealthIndicator first  = servletInitializer.dbHealthIndicator(dataSource);
-            HealthIndicator second = servletInitializer.dbHealthIndicator(dataSource);
-
-            assertThat(first).isNotSameAs(second);
-        }
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
+public class ApiException extends Exception {
+    private int code;
+    public ApiException (int code, String msg) {
+        super(msg);
+        this.code = code;
     }
 }
+
+================
+
+package org.nnnn.ddd.api;
+
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
+public class NotFoundException extends ApiException {
+    private int code;
+    public NotFoundException (int code, String msg) {
+        super(code, msg);
+        this.code = code;
+    }
+}
+
+
+=====================
+
+
+package org.nnnn.ddd.api;
+
+import java.io.IOException;
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletResponse;
+
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
+public class ApiOriginFilter implements jakarta.servlet.Filter {
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response,
+            FilterChain chain) throws IOException, ServletException {
+        HttpServletResponse res = (HttpServletResponse) response;
+        res.addHeader("Access-Control-Allow-Origin", "*");
+        res.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
+        res.addHeader("Access-Control-Allow-Headers", "Content-Type");
+        chain.doFilter(request, response);
+    }
+
+    @Override
+    public void destroy() {
+    }
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+    }
+}
+
+
+========================
+Sessionsddd-services > org.nnnn.ddd.api > ApiResponseMessage.java
+ApiResponseMessage.java
+package org.nnnn.ddd.api;
+
+import jakarta.xml.bind.annotation.XmlTransient;
+
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
+@jakarta.xml.bind.annotation.XmlRootElement
+public class ApiResponseMessage {
+    public static final int ERROR = 1;
+    public static final int WARNING = 2;
+    public static final int INFO = 3;
+    public static final int OK = 4;
+    public static final int TOO_BUSY = 5;
+
+    int code;
+    String type;
+    String message;
+
+    public ApiResponseMessage(){}
+
+    public ApiResponseMessage(int code, String message){
+        this.code = code;
+        switch(code){
+        case ERROR:
+            setType("error");
+            break;
+        case WARNING:
+            setType("warning");
+            break;
+        case INFO:
+            setType("info");
+            break;
+        case OK:
+            setType("ok");
+            break;
+        case TOO_BUSY:
+            setType("too busy");
+            break;
+        default:
+            setType("unknown");
+            break;
+        }
+        this.message = message;
+    }
+
+    @XmlTransient
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+}
+
+
+
+
+
