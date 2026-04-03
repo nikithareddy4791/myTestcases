@@ -6,10 +6,13 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.actuate.jdbc.DataSourceHealthIndicator;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import javax.sql.DataSource;
 
@@ -28,6 +31,54 @@ class ServletInitializerTest {
     @BeforeEach
     void setUp() {
         servletInitializer = new ServletInitializer();
+    }
+
+    // =========================================================================
+    // main()
+    // Mocks SpringApplication.run() statically so the full app never starts.
+    // Requires mockito-inline / Mockito 5+ for static mocking support.
+    // =========================================================================
+
+    @Nested
+    @DisplayName("main()")
+    class MainTests {
+
+        @Test
+        @DisplayName("calls SpringApplication.run() with ServletInitializer class and args")
+        void main_callsSpringApplicationRun() {
+            String[] args = {};
+            ConfigurableApplicationContext mockCtx = mock(ConfigurableApplicationContext.class);
+
+            try (MockedStatic<SpringApplication> springApp =
+                         mockStatic(SpringApplication.class)) {
+
+                springApp.when(() -> SpringApplication.run(ServletInitializer.class, args))
+                        .thenReturn(mockCtx);
+
+                // Call the real static main — line is now covered by JaCoCo
+                ServletInitializer.main(args);
+
+                springApp.verify(() -> SpringApplication.run(ServletInitializer.class, args));
+            }
+        }
+
+        @Test
+        @DisplayName("passes command-line args through to SpringApplication.run()")
+        void main_passesArgsToSpringApplication() {
+            String[] args = {"--server.port=8081", "--spring.profiles.active=dev"};
+            ConfigurableApplicationContext mockCtx = mock(ConfigurableApplicationContext.class);
+
+            try (MockedStatic<SpringApplication> springApp =
+                         mockStatic(SpringApplication.class)) {
+
+                springApp.when(() -> SpringApplication.run(ServletInitializer.class, args))
+                        .thenReturn(mockCtx);
+
+                ServletInitializer.main(args);
+
+                springApp.verify(() -> SpringApplication.run(ServletInitializer.class, args));
+            }
+        }
     }
 
     // =========================================================================
@@ -100,8 +151,6 @@ class ServletInitializerTest {
             HealthIndicator first  = servletInitializer.dbHealthIndicator(dataSource);
             HealthIndicator second = servletInitializer.dbHealthIndicator(dataSource);
 
-            // Each call to the @Bean method creates a fresh instance
-            // (Spring's proxy handles singleton scoping at runtime)
             assertThat(first).isNotSameAs(second);
         }
     }
