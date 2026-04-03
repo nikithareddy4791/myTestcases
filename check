@@ -1,12 +1,300 @@
-[ERROR] Errors: 
-[ERROR]   CacheServiceTest$ClearCacheTests.clearCache_onlyTargetCacheIsCleared » UnnecessaryStubbing 
-Unnecessary stubbings detected.
-Clean & maintainable test code requires zero unnecessary code.
-Following stubbings are unnecessary (click to navigate to relevant line of code):
-  1. -> at org.nypd.ddd.service.CacheServiceTest.mockCache(CacheServiceTest.java:34)
-Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class.
-[INFO] 
-[ERROR] Tests run: 1427, Failures: 0, Errors: 1, Skipped: 0
-[INFO] 
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
+package org.nnnn.ddd.service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("CacheService Tests")
+class CacheServiceTest {
+
+    @Mock private CacheManager cacheManager;
+
+    @InjectMocks
+    private CacheService cacheService;
+
+    // -------------------------------------------------------------------------
+    // Helper — builds a named Cache mock and stubs cacheManager.getCache(name)
+    // -------------------------------------------------------------------------
+    private Cache mockCache(String name) {
+        Cache cache = mock(Cache.class);
+        when(cacheManager.getCache(name)).thenReturn(cache);
+        return cache;
+    }
+
+    // =========================================================================
+    // setCacheManager()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("setCacheManager()")
+    class SetCacheManagerTests {
+
+        @Test
+        @DisplayName("replaces the cacheManager field with the supplied instance")
+        void setCacheManager_replacesField() {
+            CacheManager newManager = mock(CacheManager.class);
+            Cache cache = mock(Cache.class);
+            when(newManager.getCache("adaList")).thenReturn(cache);
+
+            // Use the package-private setter then call clearCache to prove the
+            // new manager is being used
+            cacheService.setCacheManager(newManager);
+            cacheService.clearCache("adaList");
+
+            verify(newManager).getCache("adaList");
+            verify(cache).clear();
+            // Original mock was never used
+            verifyNoInteractions(cacheManager);
+        }
+    }
+
+    // =========================================================================
+    // clearAllCache()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("clearAllCache()")
+    class ClearAllCacheTests {
+
+        @Test
+        @DisplayName("clears every cache returned by getCacheNames()")
+        void clearAllCache_clearsAllCaches() {
+            Cache c1 = mockCache("adaList");
+            Cache c2 = mockCache("statusList");
+            when(cacheManager.getCacheNames()).thenReturn(Arrays.asList("adaList", "statusList"));
+
+            cacheService.clearAllCache();
+
+            verify(c1).clear();
+            verify(c2).clear();
+        }
+
+        @Test
+        @DisplayName("does nothing when getCacheNames() returns empty collection")
+        void clearAllCache_noCaches_doesNothing() {
+            when(cacheManager.getCacheNames()).thenReturn(Collections.emptyList());
+
+            cacheService.clearAllCache();
+
+            verify(cacheManager).getCacheNames();
+            verify(cacheManager, never()).getCache(any());
+        }
+
+        @Test
+        @DisplayName("clears a single cache when only one name is registered")
+        void clearAllCache_singleCache_clearsIt() {
+            Cache cache = mockCache("tagList");
+            when(cacheManager.getCacheNames()).thenReturn(List.of("tagList"));
+
+            cacheService.clearAllCache();
+
+            verify(cache).clear();
+        }
+    }
+
+    // =========================================================================
+    // clearUserCache()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("clearUserCache()")
+    class ClearUserCacheTests {
+
+        @Test
+        @DisplayName("clears userList cache")
+        void clearUserCache_clearsUserList() {
+            Cache userListCache   = mockCache("userList");
+            Cache sealedUserCache = mockCache("sealedUserList");
+
+            cacheService.clearUserCache();
+
+            verify(userListCache).clear();
+        }
+
+        @Test
+        @DisplayName("clears sealedUserList cache")
+        void clearUserCache_clearsSealedUserList() {
+            Cache userListCache   = mockCache("userList");
+            Cache sealedUserCache = mockCache("sealedUserList");
+
+            cacheService.clearUserCache();
+
+            verify(sealedUserCache).clear();
+        }
+
+        @Test
+        @DisplayName("clears exactly userList and sealedUserList — nothing else")
+        void clearUserCache_clearsExactlyTwoCaches() {
+            Cache userListCache   = mockCache("userList");
+            Cache sealedUserCache = mockCache("sealedUserList");
+
+            cacheService.clearUserCache();
+
+            verify(cacheManager, times(2)).getCache(any());
+            verify(cacheManager).getCache("userList");
+            verify(cacheManager).getCache("sealedUserList");
+        }
+    }
+
+    // =========================================================================
+    // clearReferenceDataCache()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("clearReferenceDataCache()")
+    class ClearReferenceDataCacheTests {
+
+        @BeforeEach
+        void stubAllRefCaches() {
+            mockCache("adaList");
+            mockCache("statusList");
+            mockCache("dddOfficeList");
+            mockCache("userDddOfficeList");
+            mockCache("itemList");
+            mockCache("categoryList");
+            mockCache("tagList");
+            mockCache("dddCodeRef");
+            mockCache("userDddCodeRef");
+        }
+
+        @Test
+        @DisplayName("clears adaList cache")
+        void clearReferenceDataCache_clearsAdaList() {
+            Cache cache = cacheManager.getCache("adaList");
+            cacheService.clearReferenceDataCache();
+            verify(cache).clear();
+        }
+
+        @Test
+        @DisplayName("clears statusList cache")
+        void clearReferenceDataCache_clearsStatusList() {
+            Cache cache = cacheManager.getCache("statusList");
+            cacheService.clearReferenceDataCache();
+            verify(cache).clear();
+        }
+
+        @Test
+        @DisplayName("clears dddOfficeList cache")
+        void clearReferenceDataCache_clearsDddOfficeList() {
+            Cache cache = cacheManager.getCache("dddOfficeList");
+            cacheService.clearReferenceDataCache();
+            verify(cache).clear();
+        }
+
+        @Test
+        @DisplayName("clears userDddOfficeList cache")
+        void clearReferenceDataCache_clearsUserDddOfficeList() {
+            Cache cache = cacheManager.getCache("userDddOfficeList");
+            cacheService.clearReferenceDataCache();
+            verify(cache).clear();
+        }
+
+        @Test
+        @DisplayName("clears itemList cache")
+        void clearReferenceDataCache_clearsItemList() {
+            Cache cache = cacheManager.getCache("itemList");
+            cacheService.clearReferenceDataCache();
+            verify(cache).clear();
+        }
+
+        @Test
+        @DisplayName("clears categoryList cache")
+        void clearReferenceDataCache_clearsCategoryList() {
+            Cache cache = cacheManager.getCache("categoryList");
+            cacheService.clearReferenceDataCache();
+            verify(cache).clear();
+        }
+
+        @Test
+        @DisplayName("clears tagList cache")
+        void clearReferenceDataCache_clearsTagList() {
+            Cache cache = cacheManager.getCache("tagList");
+            cacheService.clearReferenceDataCache();
+            verify(cache).clear();
+        }
+
+        @Test
+        @DisplayName("clears dddCodeRef cache")
+        void clearReferenceDataCache_clearsDddCodeRef() {
+            Cache cache = cacheManager.getCache("dddCodeRef");
+            cacheService.clearReferenceDataCache();
+            verify(cache).clear();
+        }
+
+        @Test
+        @DisplayName("clears userDddCodeRef cache")
+        void clearReferenceDataCache_clearsUserDddCodeRef() {
+            Cache cache = cacheManager.getCache("userDddCodeRef");
+            cacheService.clearReferenceDataCache();
+            verify(cache).clear();
+        }
+
+        @Test
+        @DisplayName("clears exactly 9 caches — no more, no less")
+        void clearReferenceDataCache_clearsExactlyNineCaches() {
+            cacheService.clearReferenceDataCache();
+            // 9 distinct cache names
+            verify(cacheManager, times(9)).getCache(any());
+        }
+    }
+
+    // =========================================================================
+    // clearCache(String)
+    // =========================================================================
+
+    @Nested
+    @DisplayName("clearCache(String)")
+    class ClearCacheTests {
+
+        @Test
+        @DisplayName("retrieves the named cache and calls clear()")
+        void clearCache_retrievesAndClears() {
+            Cache cache = mockCache("tagList");
+
+            cacheService.clearCache("tagList");
+
+            verify(cacheManager).getCache("tagList");
+            verify(cache).clear();
+        }
+
+        @Test
+        @DisplayName("calls clear() on the correct cache when multiple are registered")
+        void clearCache_onlyTargetCacheIsCleared() {
+            Cache tagCache = mockCache("tagList");
+
+            // adaCache is never touched by clearCache("tagList") — stub leniently
+            // so Mockito does not raise UnnecessaryStubbingException
+            Cache adaCache = mock(Cache.class);
+            lenient().when(cacheManager.getCache("adaList")).thenReturn(adaCache);
+
+            cacheService.clearCache("tagList");
+
+            verify(tagCache).clear();
+            verify(adaCache, never()).clear();
+        }
+
+        @Test
+        @DisplayName("works for any arbitrary cache name")
+        void clearCache_arbitraryCacheName() {
+            Cache cache = mockCache("myCustomCache");
+
+            cacheService.clearCache("myCustomCache");
+
+            verify(cache).clear();
+        }
+    }
+}
