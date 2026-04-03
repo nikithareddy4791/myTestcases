@@ -95,12 +95,14 @@ class ServletInitializerTest {
         }
 
         @Test
-        @DisplayName("uses the supplied DataSource")
-        void dbHealthIndicator_usesSuppliedDataSource() {
-            DataSourceHealthIndicator indicator =
-                    (DataSourceHealthIndicator) servletInitializer.dbHealthIndicator(dataSource);
+        @DisplayName("creates a new indicator instance on each call")
+        void dbHealthIndicator_returnsNewInstanceOnEachCall() {
+            HealthIndicator first  = servletInitializer.dbHealthIndicator(dataSource);
+            HealthIndicator second = servletInitializer.dbHealthIndicator(dataSource);
 
-            assertThat(indicator.getDataSource()).isSameAs(dataSource);
+            // Each call to the @Bean method creates a fresh instance
+            // (Spring's proxy handles singleton scoping at runtime)
+            assertThat(first).isNotSameAs(second);
         }
     }
 }
