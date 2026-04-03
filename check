@@ -1,26 +1,5 @@
 package org.nnnn.ddd;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.boot.actuate.health.*;
-import org.springframework.boot.actuate.jdbc.DataSourceHealthIndicator;
-
-
-import javax.sql.DataSource;
-
-
-import io.swagger.Swagger2SpringBoot;
-
-@SpringBootApplication
-@EnableScheduling
-@EnableCachingpackage org.nnnn.ddd;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -124,23 +103,4 @@ class ServletInitializerTest {
             assertThat(indicator.getDataSource()).isSameAs(dataSource);
         }
     }
-}
-//@EnableAspectJAutoProxy
-public class ServletInitializer extends SpringBootServletInitializer {
-
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(Swagger2SpringBoot.class);
-    }
-    public static void main(String[] args) {
-        SpringApplication.run(ServletInitializer.class, args);
-    }
-
-    @Bean
-    public HealthIndicator dbHealthIndicator(DataSource dataSource) {
-        return new DataSourceHealthIndicator(dataSource, "SELECT 1 FROM SYSIBM.SYSDUMMY1");
-    
-    }
-
-
 }
