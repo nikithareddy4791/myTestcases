@@ -1,44 +1,42 @@
-<!-- Run this to see what version Spring Boot pulled in -->
-mvn dependency:tree | grep mockito
+dsquery group -name "SG-DDD-Analyst-Brooklyn"
 
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-test</artifactId>
-    <scope>test</scope>
-</dependency>
-==================================
+dsget group "CN=SG-DDD-Analyst-Brooklyn,OU=DDD,OU=Application Control,OU=NNNN Groups,DC=NNNN,DC=finest" -members
+```
 
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-test</artifactId>
-    <scope>test</scope>
-    <exclusions>
-        <exclusion>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-        </exclusion>
-    </exclusions>
-</dependency>
+- Returns member list → access works
+- `Access Denied` → no permission
+- `The directory object was not found` → wrong DN
 
-<dependency>
-    <groupId>org.mockito</groupId>
-    <artifactId>mockito-inline</artifactId>
-    <scope>test</scope>
-    <!-- No version needed — Spring Boot BOM manages it -->
-</dependency>
+---
 
-====================
+**Option 3 — Use Windows built-in `ADSI Edit` (GUI tool)**
 
-<plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-surefire-plugin</artifactId>
-    <configuration>
-        <argLine>
-            --add-opens java.base/java.lang=ALL-UNNAMED
-            --add-opens java.base/java.util=ALL-UNNAMED
-        </argLine>
-    </configuration>
-</plugin>
+1. Press `Win + R` → type `adsiedit.msc` → hit Enter
+2. Right-click `ADSI Edit` → `Connect to` → enter your domain `NNNN.finest`
+3. Navigate to `OU=NNNN Groups` → `OU=Application Control` → `OU=DDD`
+4. Look for `CN=SG-DDD-Analyst-Brooklyn`
+5. If you can see it and open it → read access is fine
+6. If it's missing → group doesn't exist at that path
 
-=================
+---
 
+**Option 4 — Use `Active Directory Users and Computers` (GUI)**
+
+1. Press `Win + R` → type `dsa.msc` → hit Enter
+2. In the search bar, search for `SG-DDD-Analyst-Brooklyn`
+3. If found and you can open it → access is fine
+
+---
+
+**Option 5 — Simplest: just run your app and check logs**
+
+Since your app already connects to LDAP, the quickest check is:
+
+1. Start your application pointing at the LDAP server
+2. Trigger the `findAllUsers()` method (e.g. via an API call)
+3. Check the logs for any of these errors:
+```
+NoPermissionException       → no AD access
+NameNotFoundException       → wrong DN
+AuthenticationException     → bad credentials
+CommunicationException      → can't reach LDAP server
