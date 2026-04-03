@@ -1,615 +1,133 @@
-package org.nnnn.ddd.service;
+package org.nnnn.ddd.model;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-import org.modelmapper.ModelMapper;
-import org.nnnn.ddd.entity.AdaList;
-import org.nnnn.ddd.entity.CategoryList;
-import org.nnnn.ddd.entity.ItemList;
-import org.nnnn.ddd.entity.TagList;
-import org.nnnn.ddd.model.ADA;
-import org.nnnn.ddd.model.Category;
-import org.nnnn.ddd.model.DDDOffice;
-import org.nnnn.ddd.model.Item;
-import org.nnnn.ddd.model.ReferenceCode;
-import org.nnnn.ddd.model.Status;
-import org.nnnn.ddd.model.Tag;
-import org.nnnn.ddd.repository.ADAListRepository;
-import org.nnnn.ddd.repository.CategoryListRepository;
-import org.nnnn.ddd.repository.CodeRefRepository;
-import org.nnnn.ddd.repository.DDDOfficeListRepository;
-import org.nnnn.ddd.repository.ItemListRepository;
-import org.nnnn.ddd.repository.StatusListRepository;
-import org.nnnn.ddd.repository.TagListRepository;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+/**
+ * Item
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-10T13:32:19.578-05:00")
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
-@DisplayName("ReferenceDataService Tests")
-class ReferenceDataServiceTest {
+public class Item   {
+  @JsonProperty("id")
+  private Integer id = null;
 
-    @Mock private ADAListRepository       adaListRepository;
-    @Mock private CategoryListRepository  categoryListRepository;
-    @Mock private TagListRepository       tagListRepository;
-    @Mock private ItemListRepository      itemListRepository;
-    @Mock private StatusListRepository    statusListRepository;
-    @Mock private DDDOfficeListRepository dddOfficeListRepository;
-    @Mock private CodeRefRepository       codeRefRepository;
-    @Mock private AuthenticationService   authenticationService;
-    @Mock private CacheService            cacheService;
-    @Mock private ModelMapper             modelMapper;
+  @JsonProperty("itemDesc")
+  private String itemDesc = null;
 
-    @InjectMocks
-    private ReferenceDataService service;
+  @JsonProperty("inactiveFlg")
+  private Integer inactiveFlg = null;
 
-    // =========================================================================
-    // getRefCodeByType()
-    // ReferenceCode only has a 4-arg constructor:
-    //   new ReferenceCode(Integer id, String codeType, String codeVal, String codeDesc)
-    // =========================================================================
+  public Item(Integer id, String itemDesc, Integer inactiveFlg) {
+    this.id = id;
+    this.itemDesc = itemDesc;
+    this.inactiveFlg = inactiveFlg;
+  }
 
-    @Nested
-    @DisplayName("getRefCodeByType()")
-    class GetRefCodeByTypeTests {
+  public Item id(Integer id) {
+    this.id = id;
+    return this;
+  }
 
-        @Test
-        @DisplayName("delegates to repository and returns results")
-        void getRefCodeByType_returnsRepositoryResults() {
-            ReferenceCode code = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            when(codeRefRepository.findDTOByCodeTypeOrderByIdAsc("CHARGE_TYPE"))
-                    .thenReturn(List.of(code));
+  /**
+   * Get id
+   * @return id
+   **/
+  @Schema(example = "10", description = "")
+  
+    public Integer getId() {
+    return id;
+  }
 
-            List<ReferenceCode> result = service.getRefCodeByType("CHARGE_TYPE");
+  public void setId(Integer id) {
+    this.id = id;
+  }
 
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).getId()).isEqualTo(1);
-            assertThat(result.get(0).getCodeType()).isEqualTo("CHARGE_TYPE");
-            assertThat(result.get(0).getCodeVal()).isEqualTo("F");
-            assertThat(result.get(0).getCodeDesc()).isEqualTo("Felony");
-            verify(codeRefRepository).findDTOByCodeTypeOrderByIdAsc("CHARGE_TYPE");
-        }
+  public Item itemDesc(String itemDesc) {
+    this.itemDesc = itemDesc;
+    return this;
+  }
 
-        @Test
-        @DisplayName("returns empty list when no codes found for type")
-        void getRefCodeByType_noResults_returnsEmptyList() {
-            when(codeRefRepository.findDTOByCodeTypeOrderByIdAsc("UNKNOWN"))
-                    .thenReturn(Collections.emptyList());
+  /**
+   * Get itemDesc
+   * @return itemDesc
+   **/
+  @Schema(example = "ECMS", description = "")
+  
+    public String getItemDesc() {
+    return itemDesc;
+  }
 
-            assertThat(service.getRefCodeByType("UNKNOWN")).isEmpty();
-        }
+  public void setItemDesc(String itemDesc) {
+    this.itemDesc = itemDesc;
+  }
 
-        @Test
-        @DisplayName("returns multiple codes for a given type")
-        void getRefCodeByType_multipleResults_returnsAll() {
-            ReferenceCode code1 = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
-            ReferenceCode code2 = new ReferenceCode(2, "CHARGE_TYPE", "M", "Misdemeanor");
-            when(codeRefRepository.findDTOByCodeTypeOrderByIdAsc("CHARGE_TYPE"))
-                    .thenReturn(List.of(code1, code2));
+  public Item inactiveFlg(Integer inactiveFlg) {
+    this.inactiveFlg = inactiveFlg;
+    return this;
+  }
 
-            List<ReferenceCode> result = service.getRefCodeByType("CHARGE_TYPE");
+  /**
+   * Get inactiveFlg
+   * @return inactiveFlg
+   **/
+  @Schema(description = "")
+  
+    public Integer getInactiveFlg() {
+    return inactiveFlg;
+  }
 
-            assertThat(result).hasSize(2);
-            assertThat(result.get(0).getCodeVal()).isEqualTo("F");
-            assertThat(result.get(1).getCodeVal()).isEqualTo("M");
-        }
+  public void setInactiveFlg(Integer inactiveFlg) {
+    this.inactiveFlg = inactiveFlg;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
     }
-
-    // =========================================================================
-    // getAllAdas()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("getAllAdas()")
-    class GetAllAdasTests {
-
-        @Test
-        @DisplayName("maps each AdaList entity to ADA model and returns list")
-        void getAllAdas_mapsEntitiesToModels() {
-            AdaList entity = new AdaList(); entity.setId(1);
-            ADA model = new ADA(); model.setId(1);
-
-            when(adaListRepository.findAll()).thenReturn(List.of(entity));
-            when(modelMapper.map(entity, ADA.class)).thenReturn(model);
-
-            List<ADA> result = service.getAllAdas();
-
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).getId()).isEqualTo(1);
-            verify(modelMapper).map(entity, ADA.class);
-        }
-
-        @Test
-        @DisplayName("returns empty list when no ADAs in repository")
-        void getAllAdas_noEntities_returnsEmptyList() {
-            when(adaListRepository.findAll()).thenReturn(Collections.emptyList());
-
-            assertThat(service.getAllAdas()).isEmpty();
-            verifyNoInteractions(modelMapper);
-        }
-
-        @Test
-        @DisplayName("maps multiple entities correctly")
-        void getAllAdas_multipleEntities_mapsAll() {
-            AdaList e1 = new AdaList(); e1.setId(1);
-            AdaList e2 = new AdaList(); e2.setId(2);
-            ADA m1 = new ADA(); m1.setId(1);
-            ADA m2 = new ADA(); m2.setId(2);
-
-            when(adaListRepository.findAll()).thenReturn(List.of(e1, e2));
-            when(modelMapper.map(e1, ADA.class)).thenReturn(m1);
-            when(modelMapper.map(e2, ADA.class)).thenReturn(m2);
-
-            assertThat(service.getAllAdas()).hasSize(2);
-            verify(modelMapper, times(2)).map(any(AdaList.class), eq(ADA.class));
-        }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
+    Item item = (Item) o;
+    return Objects.equals(this.id, item.id) &&
+        Objects.equals(this.itemDesc, item.itemDesc) &&
+        Objects.equals(this.inactiveFlg, item.inactiveFlg);
+  }
 
-    // =========================================================================
-    // updateAdas()
-    // =========================================================================
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, itemDesc, inactiveFlg);
+  }
 
-    @Nested
-    @DisplayName("updateAdas()")
-    class UpdateAdasTests {
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class Item {\n");
+    
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    itemDesc: ").append(toIndentedString(itemDesc)).append("\n");
+    sb.append("    inactiveFlg: ").append(toIndentedString(inactiveFlg)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
 
-        @Test
-        @DisplayName("updates existing ADA entity when found in repository")
-        void updateAdas_existingEntity_mapsToExisting() {
-            ADA ada = new ADA(); ada.setId(1);
-            AdaList existing = new AdaList(); existing.setId(1);
-            ADA mapped = new ADA(); mapped.setId(1);
-
-            when(adaListRepository.findById(1)).thenReturn(Optional.of(existing));
-            when(adaListRepository.findAll()).thenReturn(List.of(existing));
-            when(modelMapper.map(existing, ADA.class)).thenReturn(mapped);
-
-            service.updateAdas(List.of(ada));
-
-            verify(modelMapper).map(ada, existing);
-            verify(adaListRepository).save(existing);
-        }
-
-        @Test
-        @DisplayName("creates new AdaList entity when not found in repository")
-        void updateAdas_entityNotFound_createsNew() {
-            ADA ada = new ADA(); ada.setId(99);
-            AdaList newEntity = new AdaList();
-
-            when(adaListRepository.findById(99)).thenReturn(Optional.empty());
-            when(modelMapper.map(ada, AdaList.class)).thenReturn(newEntity);
-            when(adaListRepository.findAll()).thenReturn(Collections.emptyList());
-
-            service.updateAdas(List.of(ada));
-
-            verify(modelMapper).map(ada, AdaList.class);
-            verify(adaListRepository).save(newEntity);
-        }
-
-        @Test
-        @DisplayName("clears adaList cache after update")
-        void updateAdas_clearsCacheAfterUpdate() {
-            ADA ada = new ADA(); ada.setId(1);
-            AdaList existing = new AdaList();
-
-            when(adaListRepository.findById(1)).thenReturn(Optional.of(existing));
-            when(adaListRepository.findAll()).thenReturn(Collections.emptyList());
-
-            service.updateAdas(List.of(ada));
-
-            verify(cacheService).clearCache("adaList");
-        }
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
     }
-
-    // =========================================================================
-    // getAllTags()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("getAllTags()")
-    class GetAllTagsTests {
-
-        @Test
-        @DisplayName("delegates to repository and returns tag DTOs")
-        void getAllTags_returnsRepositoryResults() {
-            Tag tag = new Tag();
-            when(tagListRepository.findAllDTO()).thenReturn(List.of(tag));
-
-            assertThat(service.getAllTags()).hasSize(1).contains(tag);
-            verify(tagListRepository).findAllDTO();
-        }
-
-        @Test
-        @DisplayName("returns empty list when no tags found")
-        void getAllTags_noResults_returnsEmptyList() {
-            when(tagListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-            assertThat(service.getAllTags()).isEmpty();
-        }
-    }
-
-    // =========================================================================
-    // updateTags()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("updateTags()")
-    class UpdateTagsTests {
-
-        @Test
-        @DisplayName("updates existing tag entity when found")
-        void updateTags_existingEntity_mapsToExisting() {
-            Tag tag = new Tag(); tag.setId(1);
-            TagList existing = new TagList(); existing.setId(1);
-
-            when(tagListRepository.findById(1)).thenReturn(Optional.of(existing));
-            when(tagListRepository.findAllDTO()).thenReturn(List.of(tag));
-
-            service.updateTags(List.of(tag));
-
-            verify(modelMapper).map(tag, existing);
-            verify(tagListRepository).save(existing);
-        }
-
-        @Test
-        @DisplayName("creates new TagList entity when not found")
-        void updateTags_entityNotFound_createsNew() {
-            Tag tag = new Tag(); tag.setId(99);
-            TagList newEntity = new TagList();
-
-            when(tagListRepository.findById(99)).thenReturn(Optional.empty());
-            when(modelMapper.map(tag, TagList.class)).thenReturn(newEntity);
-            when(tagListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-
-            service.updateTags(List.of(tag));
-
-            verify(modelMapper).map(tag, TagList.class);
-            verify(tagListRepository).save(newEntity);
-        }
-
-        @Test
-        @DisplayName("clears tagList cache after update")
-        void updateTags_clearsCacheAfterUpdate() {
-            Tag tag = new Tag(); tag.setId(1);
-            TagList existing = new TagList();
-
-            when(tagListRepository.findById(1)).thenReturn(Optional.of(existing));
-            when(tagListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-
-            service.updateTags(List.of(tag));
-
-            verify(cacheService).clearCache("tagList");
-        }
-    }
-
-    // =========================================================================
-    // getAllCategories()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("getAllCategories()")
-    class GetAllCategoriesTests {
-
-        @Test
-        @DisplayName("calls authenticationService.debug() and returns categories")
-        void getAllCategories_callsDebugAndReturnsResults() {
-            Category cat = new Category();
-            when(categoryListRepository.findAllDTO()).thenReturn(List.of(cat));
-
-            List<Category> result = service.getAllCategories();
-
-            verify(authenticationService).debug();
-            assertThat(result).hasSize(1).contains(cat);
-        }
-
-        @Test
-        @DisplayName("returns empty list when no categories found")
-        void getAllCategories_noResults_returnsEmptyList() {
-            when(categoryListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-            assertThat(service.getAllCategories()).isEmpty();
-        }
-    }
-
-    // =========================================================================
-    // updateCategories()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("updateCategories()")
-    class UpdateCategoriesTests {
-
-        @Test
-        @DisplayName("updates existing category entity when found")
-        void updateCategories_existingEntity_mapsToExisting() {
-            Category category = new Category(); category.setId(1);
-            CategoryList existing = new CategoryList(); existing.setId(1);
-
-            when(categoryListRepository.findById(1)).thenReturn(Optional.of(existing));
-            when(categoryListRepository.findAllDTO()).thenReturn(List.of(category));
-            lenient().when(authenticationService.debug()).thenReturn(null);
-
-            service.updateCategories(List.of(category));
-
-            verify(modelMapper).map(category, existing);
-            verify(categoryListRepository).save(existing);
-        }
-
-        @Test
-        @DisplayName("creates new CategoryList entity when not found")
-        void updateCategories_entityNotFound_createsNew() {
-            Category category = new Category(); category.setId(99);
-            CategoryList newEntity = new CategoryList();
-
-            when(categoryListRepository.findById(99)).thenReturn(Optional.empty());
-            when(modelMapper.map(category, CategoryList.class)).thenReturn(newEntity);
-            when(categoryListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-            lenient().when(authenticationService.debug()).thenReturn(null);
-
-            service.updateCategories(List.of(category));
-
-            verify(modelMapper).map(category, CategoryList.class);
-            verify(categoryListRepository).save(newEntity);
-        }
-
-        @Test
-        @DisplayName("clears categoryList cache after update")
-        void updateCategories_clearsCacheAfterUpdate() {
-            Category category = new Category(); category.setId(1);
-            CategoryList existing = new CategoryList();
-
-            when(categoryListRepository.findById(1)).thenReturn(Optional.of(existing));
-            when(categoryListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-            lenient().when(authenticationService.debug()).thenReturn(null);
-
-            service.updateCategories(List.of(category));
-
-            verify(cacheService).clearCache("categoryList");
-        }
-    }
-
-    // =========================================================================
-    // getAllItems()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("getAllItems()")
-    class GetAllItemsTests {
-
-        @Test
-        @DisplayName("delegates to repository and returns item DTOs")
-        void getAllItems_returnsRepositoryResults() {
-            Item item = new Item();
-            when(itemListRepository.findAllDTO()).thenReturn(List.of(item));
-
-            assertThat(service.getAllItems()).hasSize(1).contains(item);
-            verify(itemListRepository).findAllDTO();
-        }
-
-        @Test
-        @DisplayName("returns empty list when no items found")
-        void getAllItems_noResults_returnsEmptyList() {
-            when(itemListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-            assertThat(service.getAllItems()).isEmpty();
-        }
-    }
-
-    // =========================================================================
-    // updateItems()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("updateItems()")
-    class UpdateItemsTests {
-
-        @Test
-        @DisplayName("updates existing item entity when found")
-        void updateItems_existingEntity_mapsToExisting() {
-            Item item = new Item(); item.setId(1);
-            ItemList existing = new ItemList(); existing.setId(1);
-
-            when(itemListRepository.findById(1)).thenReturn(Optional.of(existing));
-            when(itemListRepository.findAllDTO()).thenReturn(List.of(item));
-
-            service.updateItems(List.of(item));
-
-            verify(modelMapper).map(item, existing);
-            verify(itemListRepository).save(existing);
-        }
-
-        @Test
-        @DisplayName("creates new ItemList entity when not found")
-        void updateItems_entityNotFound_createsNew() {
-            Item item = new Item(); item.setId(99);
-            ItemList newEntity = new ItemList();
-
-            when(itemListRepository.findById(99)).thenReturn(Optional.empty());
-            when(modelMapper.map(item, ItemList.class)).thenReturn(newEntity);
-            when(itemListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-
-            service.updateItems(List.of(item));
-
-            verify(modelMapper).map(item, ItemList.class);
-            verify(itemListRepository).save(newEntity);
-        }
-
-        @Test
-        @DisplayName("clears itemList cache after update")
-        void updateItems_clearsCacheAfterUpdate() {
-            Item item = new Item(); item.setId(1);
-            ItemList existing = new ItemList();
-
-            when(itemListRepository.findById(1)).thenReturn(Optional.of(existing));
-            when(itemListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-
-            service.updateItems(List.of(item));
-
-            verify(cacheService).clearCache("itemList");
-        }
-    }
-
-    // =========================================================================
-    // getAllStatuses()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("getAllStatuses()")
-    class GetAllStatusesTests {
-
-        @Test
-        @DisplayName("delegates to repository and returns status DTOs")
-        void getAllStatuses_returnsRepositoryResults() {
-            Status status = new Status();
-            when(statusListRepository.findAllDTO()).thenReturn(List.of(status));
-
-            assertThat(service.getAllStatuses()).hasSize(1).contains(status);
-            verify(statusListRepository).findAllDTO();
-        }
-
-        @Test
-        @DisplayName("returns empty list when no statuses found")
-        void getAllStatuses_noResults_returnsEmptyList() {
-            when(statusListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-            assertThat(service.getAllStatuses()).isEmpty();
-        }
-    }
-
-    // =========================================================================
-    // getDDDOffices()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("getDDDOffices()")
-    class GetDDDOfficesTests {
-
-        @Test
-        @DisplayName("supervisor gets all DDD offices via findAllDTO")
-        void getDDDOffices_supervisor_returnsAllOffices() {
-            DDDOffice office = new DDDOffice();
-            when(authenticationService.isSupervisor()).thenReturn(true);
-            when(dddOfficeListRepository.findAllDTO()).thenReturn(List.of(office));
-
-            List<DDDOffice> result = service.getDDDOffices("supervisor");
-
-            assertThat(result).hasSize(1).contains(office);
-            verify(dddOfficeListRepository).findAllDTO();
-            verify(dddOfficeListRepository, never()).findAllDTOForSG(any());
-        }
-
-        @Test
-        @DisplayName("non-supervisor with DDD role gets offices for that role")
-        void getDDDOffices_nonSupervisor_withDDDRole_returnsOfficesForRole() {
-            String authority = "ROLE_SG-DDD-ANALYST-BROOKLYN";
-            DDDOffice office = new DDDOffice();
-
-            when(authenticationService.isSupervisor()).thenReturn(false);
-            stubSecurityContext(List.of(new SimpleGrantedAuthority(authority)));
-            when(dddOfficeListRepository.findAllDTOForSG(authority)).thenReturn(List.of(office));
-
-            List<DDDOffice> result = service.getDDDOffices("jdoe");
-
-            assertThat(result).hasSize(1).contains(office);
-            verify(dddOfficeListRepository).findAllDTOForSG(authority);
-            SecurityContextHolder.clearContext();
-        }
-
-        @Test
-        @DisplayName("non-supervisor with non-DDD role gets empty list")
-        void getDDDOffices_nonSupervisor_nonDDDRole_returnsEmptyList() {
-            when(authenticationService.isSupervisor()).thenReturn(false);
-            stubSecurityContext(List.of(new SimpleGrantedAuthority("ROLE_SG-SEALED-EVENT")));
-
-            List<DDDOffice> result = service.getDDDOffices("jdoe");
-
-            assertThat(result).isEmpty();
-            verify(dddOfficeListRepository, never()).findAllDTOForSG(any());
-            SecurityContextHolder.clearContext();
-        }
-
-        @Test
-        @DisplayName("non-supervisor with no authorities gets empty list")
-        void getDDDOffices_nonSupervisor_noAuthorities_returnsEmptyList() {
-            when(authenticationService.isSupervisor()).thenReturn(false);
-            stubSecurityContext(Collections.emptyList());
-
-            assertThat(service.getDDDOffices("jdoe")).isEmpty();
-            SecurityContextHolder.clearContext();
-        }
-
-        @Test
-        @DisplayName("non-supervisor with multiple DDD roles aggregates all offices")
-        void getDDDOffices_nonSupervisor_multipleDDDRoles_aggregatesOffices() {
-            String role1 = "ROLE_SG-DDD-ANALYST-BROOKLYN";
-            String role2 = "ROLE_SG-DDD-ANALYST-BRONX";
-            DDDOffice office1 = new DDDOffice();
-            DDDOffice office2 = new DDDOffice();
-
-            when(authenticationService.isSupervisor()).thenReturn(false);
-            stubSecurityContext(List.of(
-                    new SimpleGrantedAuthority(role1),
-                    new SimpleGrantedAuthority(role2)
-            ));
-            when(dddOfficeListRepository.findAllDTOForSG(role1)).thenReturn(List.of(office1));
-            when(dddOfficeListRepository.findAllDTOForSG(role2)).thenReturn(List.of(office2));
-
-            List<DDDOffice> result = service.getDDDOffices("jdoe");
-
-            assertThat(result).hasSize(2).contains(office1, office2);
-            SecurityContextHolder.clearContext();
-        }
-
-        // Helper — stubs SecurityContextHolder with the given authorities
-        @SuppressWarnings("unchecked")
-        private void stubSecurityContext(
-                java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> authorities) {
-            Authentication auth = mock(Authentication.class);
-            when(auth.getAuthorities()).thenReturn((Collection) authorities);
-            SecurityContext ctx = mock(SecurityContext.class);
-            when(ctx.getAuthentication()).thenReturn(auth);
-            SecurityContextHolder.setContext(ctx);
-        }
-    }
-
-    // =========================================================================
-    // getAllDDDOffices()
-    // =========================================================================
-
-    @Nested
-    @DisplayName("getAllDDDOffices()")
-    class GetAllDDDOfficesTests {
-
-        @Test
-        @DisplayName("delegates to repository and returns all office DTOs")
-        void getAllDDDOffices_returnsRepositoryResults() {
-            DDDOffice office = new DDDOffice();
-            when(dddOfficeListRepository.findAllDTO()).thenReturn(List.of(office));
-
-            assertThat(service.getAllDDDOffices()).hasSize(1).contains(office);
-            verify(dddOfficeListRepository).findAllDTO();
-        }
-
-        @Test
-        @DisplayName("returns empty list when no offices found")
-        void getAllDDDOffices_noResults_returnsEmptyList() {
-            when(dddOfficeListRepository.findAllDTO()).thenReturn(Collections.emptyList());
-            assertThat(service.getAllDDDOffices()).isEmpty();
-        }
-    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }
