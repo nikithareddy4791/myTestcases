@@ -1,5 +1,318 @@
-Compilation failure
-[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/SecurityConfigTest.java:[106,76] cannot find symbol
-[ERROR]   symbol:   class AuthenticationManagerBuilder
-[ERROR]   location: package org.springframework.security.authentication
-[ERROR]
+package org.nnnn.ddd;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.web.SecurityFilterChain;
+
+import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
+@DisplayName("SecurityConfig Tests")
+class SecurityConfigTest {
+
+    // =========================================================================
+    // securityFilterChain()
+    //
+    // We build a minimal Spring Security application context that contains:
+    //   - SecurityConfig (the class under test)
+    //   - A mock JwtDecoder bean (required by oauth2ResourceServer)
+    //   - @EnableWebSecurity to wire up HttpSecurity infrastructure
+    //
+    // This avoids @SpringBootTest/@WebMvcTest and all the infrastructure beans
+    // (DB, LDAP, CDW etc.) that make those fail in test environments.
+    // =========================================================================
+
+    @Nested
+    @DisplayName("securityFilterChain()")
+    class SecurityFilterChainTests {
+
+        private SecurityFilterChain chain;
+
+        /**
+         * Minimal Spring configuration that provides everything SecurityConfig
+         * needs — just a mock JwtDecoder and the config class itself.
+         */
+        @Configuration
+        @EnableWebSecurity
+        static class TestSecurityConfig {
+
+            @Bean
+            public SecurityConfig securityConfig() {
+                return new SecurityConfig();
+            }
+
+            @Bean
+            public JwtAuthenticationConverter jwtAuthenticationConverter(SecurityConfig cfg) {
+                return cfg.jwtAuthenticationConverter();
+            }
+
+            @Bean
+            public SecurityFilterChain securityFilterChain(
+                    HttpSecurity http,
+                    JwtAuthenticationConverter jwtAuthenticationConverter,
+                    SecurityConfig cfg) throws Exception {
+                return cfg.securityFilterChain(http, jwtAuthenticationConverter);
+            }
+
+            // oauth2ResourceServer requires a JwtDecoder — mock is sufficient
+            @Bean
+            public JwtDecoder jwtDecoder() {
+                return mock(JwtDecoder.class);
+            }
+        }
+
+        @BeforeEach
+        void setUp() {
+            AnnotationConfigApplicationContext ctx =
+                    new AnnotationConfigApplicationContext(TestSecurityConfig.class);
+            chain = ctx.getBean(SecurityFilterChain.class);
+        }
+
+        @Test
+        @DisplayName("securityFilterChain bean is created and non-null")
+        void securityFilterChain_beanIsNonNull() {
+            assertThat(chain).isNotNull();
+        }
+
+        @Test
+        @DisplayName("securityFilterChain contains at least one filter")
+        void securityFilterChain_containsFilters() {
+            assertThat(chain.getFilters()).isNotEmpty();
+        }
+
+        @Test
+        @DisplayName("/actuator/health request matches the filter chain")
+        void securityFilterChain_matchesActuatorHealthRequest() {
+            org.springframework.mock.web.MockHttpServletRequest request =
+                    new org.springframework.mock.web.MockHttpServletRequest("GET", "/actuator/health");
+            assertThat(chain.matches(request)).isTrue();
+        }
+
+        @Test
+        @DisplayName("protected endpoint request matches the filter chain")
+        void securityFilterChain_matchesProtectedRequest() {
+            org.springframework.mock.web.MockHttpServletRequest request =
+                    new org.springframework.mock.web.MockHttpServletRequest("GET", "/api/cases");
+            assertThat(chain.matches(request)).isTrue();
+        }
+    }
+
+    // =========================================================================
+    // jwtAuthenticationConverter() — pure unit test, no Spring context needed
+    // =========================================================================
+
+    @Nested
+    @DisplayName("jwtAuthenticationConverter()")
+    @ExtendWith(MockitoExtension.class)
+    class JwtAuthenticationConverterTests {
+
+        private SecurityConfig securityConfig;
+        private JwtAuthenticationConverter jwtAuthenticationConverter;
+
+        @BeforeEach
+        void setUp() {
+            securityConfig = new SecurityConfig();
+            jwtAuthenticationConverter = securityConfig.jwtAuthenticationConverter();
+        }
+
+        @Test
+        @DisplayName("returns non-null JwtAuthenticationConverter bean")
+        void jwtAuthenticationConverter_returnsNonNull() {
+            assertThat(jwtAuthenticationConverter).isNotNull();
+        }
+
+        @Test
+        @DisplayName("single group maps to ROLE_ prefixed authority")
+        void convert_singleGroup_mapsToRoleAuthority() {
+            Jwt jwt = buildJwt(List.of("SG-DDD-ANALYST-MANHATTAN"));
+
+            Collection<GrantedAuthority> authorities = convertAndGetAuthorities(jwt);
+
+            assertThat(authorities)
+                    .extracting(GrantedAuthority::getAuthority)
+                    .contains("ROLE_SG-DDD-ANALYST-MANHATTAN");
+        }
+
+        @Test
+        @DisplayName("multiple groups map to multiple ROLE_ authorities")
+        void convert_multipleGroups_mapsAllToRoleAuthorities() {
+            Jwt jwt = buildJwt(List.of("SG-DDD-ANALYST-BROOKLYN", "SG-DDD-SUPERVISOR"));
+
+            Collection<GrantedAuthority> authorities = convertAndGetAuthorities(jwt);
+
+            assertThat(authorities)
+                    .extracting(GrantedAuthority::getAuthority)
+                    .contains("ROLE_SG-DDD-ANALYST-BROOKLYN", "ROLE_SG-DDD-SUPERVISOR");
+        }
+
+        @Test
+        @DisplayName("group with leading slash has slash removed")
+        void convert_groupWithLeadingSlash_removesSlash() {
+            Jwt jwt = buildJwt(List.of("/SG-DDD-ANALYST-BRONX"));
+
+            Collection<GrantedAuthority> authorities = convertAndGetAuthorities(jwt);
+
+            assertThat(authorities)
+                    .extracting(GrantedAuthority::getAuthority)
+                    .contains("ROLE_SG-DDD-ANALYST-BRONX");
+        }
+
+        @Test
+        @DisplayName("group is uppercased in authority")
+        void convert_lowercaseGroup_isUppercased() {
+            Jwt jwt = buildJwt(List.of("sg-ddd-analyst-queens"));
+
+            Collection<GrantedAuthority> authorities = convertAndGetAuthorities(jwt);
+
+            assertThat(authorities)
+                    .extracting(GrantedAuthority::getAuthority)
+                    .contains("ROLE_SG-DDD-ANALYST-QUEENS");
+        }
+
+        @Test
+        @DisplayName("null groups claim returns empty authorities")
+        void convert_nullGroupsClaim_returnsEmptyAuthorities() {
+            Jwt jwt = buildJwtNoGroups();
+
+            Collection<GrantedAuthority> authorities = convertAndGetAuthorities(jwt);
+
+            assertThat(authorities).isEmpty();
+        }
+
+        @Test
+        @DisplayName("empty groups list returns empty authorities")
+        void convert_emptyGroupsList_returnsEmptyAuthorities() {
+            Jwt jwt = buildJwt(List.of());
+
+            Collection<GrantedAuthority> authorities = convertAndGetAuthorities(jwt);
+
+            assertThat(authorities).isEmpty();
+        }
+
+        @Test
+        @DisplayName("supervisor group maps correctly")
+        void convert_supervisorGroup_mapsToSupervisorRole() {
+            Jwt jwt = buildJwt(List.of("SG-DDD-SUPERVISOR"));
+
+            Collection<GrantedAuthority> authorities = convertAndGetAuthorities(jwt);
+
+            assertThat(authorities)
+                    .extracting(GrantedAuthority::getAuthority)
+                    .contains("ROLE_SG-DDD-SUPERVISOR");
+        }
+
+        @Test
+        @DisplayName("sealed event group maps correctly")
+        void convert_sealedEventGroup_mapsToSealedRole() {
+            Jwt jwt = buildJwt(List.of("SG-SEALED-EVENT"));
+
+            Collection<GrantedAuthority> authorities = convertAndGetAuthorities(jwt);
+
+            assertThat(authorities)
+                    .extracting(GrantedAuthority::getAuthority)
+                    .contains("ROLE_SG-SEALED-EVENT");
+        }
+
+        @Test
+        @DisplayName("all borough analyst groups map correctly")
+        void convert_allBoroughGroups_mapCorrectly() {
+            Jwt jwt = buildJwt(List.of(
+                    "SG-DDD-ANALYST-BROOKLYN",
+                    "SG-DDD-ANALYST-BRONX",
+                    "SG-DDD-ANALYST-QUEENS",
+                    "SG-DDD-ANALYST-SI",
+                    "SG-DDD-ANALYST-MANHATTAN"
+            ));
+
+            Collection<GrantedAuthority> authorities = convertAndGetAuthorities(jwt);
+
+            assertThat(authorities)
+                    .extracting(GrantedAuthority::getAuthority)
+                    .contains(
+                            "ROLE_SG-DDD-ANALYST-BROOKLYN",
+                            "ROLE_SG-DDD-ANALYST-BRONX",
+                            "ROLE_SG-DDD-ANALYST-QUEENS",
+                            "ROLE_SG-DDD-ANALYST-SI",
+                            "ROLE_SG-DDD-ANALYST-MANHATTAN"
+                    );
+        }
+
+        @Test
+        @DisplayName("authority count matches group count")
+        void convert_authorityCountMatchesGroupCount() {
+            List<String> groups = List.of(
+                    "SG-DDD-SUPERVISOR",
+                    "SG-DDD-ANALYST-MANHATTAN",
+                    "SG-SEALED-EVENT"
+            );
+            Jwt jwt = buildJwt(groups);
+
+            Collection<GrantedAuthority> authorities = convertAndGetAuthorities(jwt);
+
+            assertThat(authorities).hasSize(3);
+        }
+
+        @Test
+        @DisplayName("mixed case group with slash is normalised correctly")
+        void convert_mixedCaseGroupWithSlash_normalisedCorrectly() {
+            Jwt jwt = buildJwt(List.of("/sg-Ddd-Analyst-Brooklyn"));
+
+            Collection<GrantedAuthority> authorities = convertAndGetAuthorities(jwt);
+
+            assertThat(authorities)
+                    .extracting(GrantedAuthority::getAuthority)
+                    .contains("ROLE_SG-DDD-ANALYST-BROOKLYN");
+        }
+
+        // ---------------------------------------------------------------------
+        // Helpers
+        // ---------------------------------------------------------------------
+
+        @SuppressWarnings("unchecked")
+        private Collection<GrantedAuthority> convertAndGetAuthorities(Jwt jwt) {
+            JwtAuthenticationToken token =
+                    (JwtAuthenticationToken) jwtAuthenticationConverter.convert(jwt);
+            assertThat(token).isNotNull();
+            return (Collection<GrantedAuthority>) token.getAuthorities();
+        }
+
+        private Jwt buildJwt(List<String> groups) {
+            return Jwt.withTokenValue("test-token")
+                    .header("alg", "RS256")
+                    .issuer("https://keycloak.test/auth")
+                    .subject("test-user")
+                    .issuedAt(Instant.now())
+                    .expiresAt(Instant.now().plusSeconds(3600))
+                    .claim("NNNN Groups", groups)
+                    .build();
+        }
+
+        private Jwt buildJwtNoGroups() {
+            return Jwt.withTokenValue("test-token")
+                    .header("alg", "RS256")
+                    .issuer("https://keycloak.test/auth")
+                    .subject("test-user")
+                    .issuedAt(Instant.now())
+                    .expiresAt(Instant.now().plusSeconds(3600))
+                    .build();
+        }
+    }
+}
