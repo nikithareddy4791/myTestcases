@@ -1,7 +1,131 @@
-<properties>
-    <sonar.coverage.exclusions>
-        **/AppConstants.java,
-        **/model/**,
-        **/entity/**
-    </sonar.coverage.exclusions>
-</properties>
+package org.nnnn.ddd.api;
+
+import jakarta.xml.bind.annotation.XmlTransient;
+
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
+@jakarta.xml.bind.annotation.XmlRootElement
+public class ApiResponseMessage {
+    public static final int ERROR = 1;
+    public static final int WARNING = 2;
+    public static final int INFO = 3;
+    public static final int OK = 4;
+    public static final int TOO_BUSY = 5;
+
+    int code;
+    String type;
+    String message;
+
+    public ApiResponseMessage(){}
+
+    public ApiResponseMessage(int code, String message){
+        this.code = code;
+        switch(code){
+        case ERROR:
+            setType("error");
+            break;
+        case WARNING:
+            setType("warning");
+            break;
+        case INFO:
+            setType("info");
+            break;
+        case OK:
+            setType("ok");
+            break;
+        case TOO_BUSY:
+            setType("too busy");
+            break;
+        default:
+            setType("unknown");
+            break;
+        }
+        this.message = message;
+    }
+
+    @XmlTransient
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+}
+
+===============
+
+package org.nnnn.ddd.api;
+
+import java.io.IOException;
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletResponse;
+
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
+public class ApiOriginFilter implements jakarta.servlet.Filter {
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response,
+            FilterChain chain) throws IOException, ServletException {
+        HttpServletResponse res = (HttpServletResponse) response;
+        res.addHeader("Access-Control-Allow-Origin", "*");
+        res.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
+        res.addHeader("Access-Control-Allow-Headers", "Content-Type");
+        chain.doFilter(request, response);
+    }
+
+    @Override
+    public void destroy() {
+    }
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+    }
+}
+
+=============
+
+package org.nnnn.ddd.api;
+
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
+public class NotFoundException extends ApiException {
+    private int code;
+    public NotFoundException (int code, String msg) {
+        super(code, msg);
+        this.code = code;
+    }
+}
+
+
+=======================
+
+package org.nnnn.ddd.api;
+
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
+public class ApiException extends Exception {
+    private int code;
+    public ApiException (int code, String msg) {
+        super(msg);
+        this.code = code;
+    }
+}
+
+====================
+
+
+
