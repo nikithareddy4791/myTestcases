@@ -1,237 +1,38 @@
-package org.nnnn.ddd.api;
+package org.nnnn.ddd;
 
-import org.nnnn.ddd.exceptions.CaseAccessException;
-import org.nnnn.ddd.exceptions.CaseNotFoundException;
-import org.nnnn.ddd.exceptions.InvalidArrestException;
-import org.nnnn.ddd.exceptions.SealedAccessException;
-import org.nnnn.ddd.model.CaseFilter;
-import org.nnnn.ddd.model.CaseListResponse;
-import org.nnnn.ddd.model.CreateCaseRequest;
-import org.nnnn.ddd.model.DDDCase;
-import org.nnnn.ddd.model.DDDCaseStats;
-import org.nnnn.ddd.model.DDDCaseSummary;
-import org.nnnn.ddd.model.Error;
-import org.nnnn.ddd.model.IntakeFilter;
-import org.nnnn.ddd.model.IntakeListResponse;
-import org.nnnn.ddd.service.AuthenticationService;
-import org.nnnn.ddd.service.CaseService;
+import org.nnnn.ddd.api.UserApiController;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-
-import jakarta.validation.constraints.*;
-import jakarta.validation.Valid;
-import jakarta.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
-@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-13T15:15:08.918-05:00")
-@RestController
-public class CaseApiController implements CaseApi {
-
-    private static final Logger log = LoggerFactory.getLogger(CaseApiController.class);
-
-    private final ObjectMapper objectMapper;
-
-    private final HttpServletRequest request;
-
-    @Autowired
-    private CaseService caseService;
-
-    @Autowired
-    private AuthenticationService authenticationService;
-
-    @org.springframework.beans.factory.annotation.Autowired
-    public CaseApiController(ObjectMapper objectMapper, HttpServletRequest request) {
-        this.objectMapper = objectMapper;
-        this.request = request;
-    }
-
-    public ResponseEntity<DDDCase> createCaseByArrest(@Parameter(in = ParameterIn.DEFAULT, description = "Object containing case creation criteria", schema=@Schema()) @Valid @RequestBody CreateCaseRequest body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                DDDCase json = caseService.createCase(body);
-                if (json.isNew()) {
-                    return new ResponseEntity<DDDCase>(json, HttpStatus.CREATED);
-                } else {
-                    return new ResponseEntity<DDDCase>(json, HttpStatus.OK);
-                }
-            } catch (SealedAccessException sae){
-                log.error(sae.getMessage());
-                throw sae;
-            } catch (InvalidArrestException iae){
-                log.error(iae.getMessage());
-                throw iae;
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<DDDCase>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<DDDCase>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<DDDCase> getCaseById(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<DDDCase>(caseService.loadCase(caseId), HttpStatus.OK);
-            } catch (SealedAccessException sae){
-                log.error(sae.getMessage());
-                throw sae;
-            } catch (CaseAccessException cae){
-                log.error(cae.getMessage());
-                throw cae;
-            } catch (CaseNotFoundException cnfe){
-                log.error(cnfe.getMessage());
-                throw cnfe;
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<DDDCase>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-        return new ResponseEntity<DDDCase>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<IntakeListResponse> getCaseIntakeList(@Parameter(in = ParameterIn.DEFAULT, description = "Object containing case intake filter criteria", required=true, schema=@Schema()) @Valid @RequestBody IntakeFilter body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<IntakeListResponse>(caseService.getIntakeArrests(body), HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<IntakeListResponse>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<IntakeListResponse>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<CaseListResponse> getCaseList(@Parameter(in = ParameterIn.DEFAULT, description = "Object containing case filter criteria", schema=@Schema()) @Valid @RequestBody CaseFilter body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<CaseListResponse>(caseService.findCases(body), HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<CaseListResponse>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<CaseListResponse>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<DDDCase> updateCase(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to update", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.DEFAULT, description = "Updated Case object", required=true, schema=@Schema()) @Valid @RequestBody DDDCase body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<DDDCase>(caseService.saveCase(body), HttpStatus.OK);
-            } catch (jakarta.persistence.OptimisticLockException | org.springframework.orm.ObjectOptimisticLockingFailureException e) {
-                throw e; // Let GlobalExceptionHandler return 409
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<DDDCase>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<DDDCase>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<DDDCase> createCaseNote(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to update", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.DEFAULT, description = "",schema=@Schema()) @RequestParam(value="noteDesc", required=false)  String noteDesc,@Parameter(in = ParameterIn.DEFAULT, description = "",schema=@Schema()) @RequestParam(value="fileNm", required=false)  String fileNm,@Parameter(description = "file detail") @Valid @RequestPart(value = "file", required = false) MultipartFile fileContent) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<DDDCase>(caseService.saveNote(caseId, noteDesc, fileNm, fileContent), HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<DDDCase>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<DDDCase>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<DDDCaseStats> getCaseStats() {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<DDDCaseStats>(caseService.getCaseStats(authenticationService.getUsername()), HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<DDDCaseStats>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<DDDCaseStats>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<Resource> getCaseUploadById(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the file to get", required=true, schema=@Schema()) @PathVariable("uploadId") Integer uploadId) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                Object[] fileNameAndResource = caseService.getFile(caseId, uploadId);
-                
-                // Set headers including Content-Disposition with the filename
-                HttpHeaders headers = new HttpHeaders();
-                // "attachment" forces download, "inline" tries to display in browser
-                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileNameAndResource[0] + "\"");
-                // Expose the Content-Disposition header to the client, especially important for Swagger UI
-                headers.add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
-
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .contentType(MediaType.APPLICATION_OCTET_STREAM) // Generic content type for files
-                        .body((Resource) fileNameAndResource[1]); 
-                //new ResponseEntity<Resource>((Resource)fileNameAndResource[1], HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<Resource>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<Resource>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<String> deleteCaseUploadById(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the file to get", required=true, schema=@Schema()) @PathVariable("uploadId") Integer uploadId) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                caseService.deleteFile(caseId, uploadId);
-                return new ResponseEntity<String>(objectMapper.readValue("\"Success: The operation completed successfully.\"", String.class), HttpStatus.OK);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<String>(HttpStatus.NOT_IMPLEMENTED);
-    }
+/**
+ * Minimal Spring Boot configuration for @WebMvcTest slice tests.
+ *
+ * PURPOSE:
+ *   Replaces ServletInitializer as the context class for controller tests.
+ *   ServletInitializer defines a dbHealthIndicator bean that requires a real
+ *   DataSource, which is not available in @WebMvcTest slice tests.
+ *
+ * USAGE:
+ *   Add to each @WebMvcTest test class:
+ *   @ContextConfiguration(classes = TestConfig.class)
+ */
+@Configuration
+@EnableAutoConfiguration(exclude = {
+    DataSourceAutoConfiguration.class,
+    DataSourceTransactionManagerAutoConfiguration.class,
+    HibernateJpaAutoConfiguration.class,
+    LdapAutoConfiguration.class,
+    JacksonAutoConfiguration.class,
+    CacheAutoConfiguration.class
+})
+@Import(UserApiController.class)
+public class TestConfig {
+    // Intentionally empty - just provides a clean context for WebMvcTest
 }
