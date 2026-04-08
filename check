@@ -1,198 +1,133 @@
-package org.nnnn.ddd.api;
+package org.nnnn.ddd.model;
 
-import org.nnnn.ddd.model.ADA;
-import org.nnnn.ddd.model.Item;
-import org.nnnn.ddd.model.Tag;
-import org.nnnn.ddd.service.AuthenticationService;
-import org.nnnn.ddd.service.ReferenceDataService;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+/**
+ * Item
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-10T13:32:19.578-05:00")
 
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+public class Item   {
+  @JsonProperty("id")
+  private Integer id = null;
 
-@ExtendWith(MockitoExtension.class)
-class ReferenceApiControllerSaveTest {
+  @JsonProperty("itemDesc")
+  private String itemDesc = null;
 
-    @Mock
-    private ReferenceDataService referenceDataService;
+  @JsonProperty("inactiveFlg")
+  private Integer inactiveFlg = null;
 
-    @Mock
-    private AuthenticationService authenticationService;
+  public Item(Integer id, String itemDesc, Integer inactiveFlg) {
+    this.id = id;
+    this.itemDesc = itemDesc;
+    this.inactiveFlg = inactiveFlg;
+  }
 
-    @Mock
-    private HttpServletRequest request;
+  public Item id(Integer id) {
+    this.id = id;
+    return this;
+  }
 
-    @Mock
-    private ObjectMapper objectMapper;
+  /**
+   * Get id
+   * @return id
+   **/
+  @Schema(example = "10", description = "")
+  
+    public Integer getId() {
+    return id;
+  }
 
-    @InjectMocks
-    private ReferenceApiController controller;
+  public void setId(Integer id) {
+    this.id = id;
+  }
 
-    // ─────────────────────────────────────────────────────────────
-    // saveADAList
-    // ─────────────────────────────────────────────────────────────
+  public Item itemDesc(String itemDesc) {
+    this.itemDesc = itemDesc;
+    return this;
+  }
 
-    @Test
-    void saveADAList_returnsOkWithUpdatedList_whenAcceptIsJson() throws Exception {
-        ADA ada = new ADA();
-        List<ADA> input = List.of(ada);
-        List<ADA> saved = List.of(ada);
+  /**
+   * Get itemDesc
+   * @return itemDesc
+   **/
+  @Schema(example = "ECMS", description = "")
+  
+    public String getItemDesc() {
+    return itemDesc;
+  }
 
-        when(request.getHeader("Accept")).thenReturn("application/json");
-        when(referenceDataService.updateAdas(input)).thenReturn(saved);
+  public void setItemDesc(String itemDesc) {
+    this.itemDesc = itemDesc;
+  }
 
-        ResponseEntity<List<ADA>> response = controller.saveADAList(input);
+  public Item inactiveFlg(Integer inactiveFlg) {
+    this.inactiveFlg = inactiveFlg;
+    return this;
+  }
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(saved, response.getBody());
-        verify(referenceDataService).updateAdas(input);
+  /**
+   * Get inactiveFlg
+   * @return inactiveFlg
+   **/
+  @Schema(description = "")
+  
+    public Integer getInactiveFlg() {
+    return inactiveFlg;
+  }
+
+  public void setInactiveFlg(Integer inactiveFlg) {
+    this.inactiveFlg = inactiveFlg;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
     }
-
-    @Test
-    void saveADAList_returnsInternalServerError_whenServiceThrows() throws Exception {
-        List<ADA> input = List.of(new ADA());
-
-        when(request.getHeader("Accept")).thenReturn("application/json");
-        when(referenceDataService.updateAdas(input)).thenThrow(new RuntimeException("DB error"));
-
-        ResponseEntity<List<ADA>> response = controller.saveADAList(input);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
+    Item item = (Item) o;
+    return Objects.equals(this.id, item.id) &&
+        Objects.equals(this.itemDesc, item.itemDesc) &&
+        Objects.equals(this.inactiveFlg, item.inactiveFlg);
+  }
 
-    @Test
-    void saveADAList_returnsNotImplemented_whenAcceptHeaderMissing() {
-        when(request.getHeader("Accept")).thenReturn(null);
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, itemDesc, inactiveFlg);
+  }
 
-        ResponseEntity<List<ADA>> response = controller.saveADAList(List.of(new ADA()));
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class Item {\n");
+    
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    itemDesc: ").append(toIndentedString(itemDesc)).append("\n");
+    sb.append("    inactiveFlg: ").append(toIndentedString(inactiveFlg)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
 
-        assertEquals(HttpStatus.NOT_IMPLEMENTED, response.getStatusCode());
-        verifyNoInteractions(referenceDataService);
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
     }
-
-    @Test
-    void saveADAList_returnsNotImplemented_whenAcceptIsNotJson() {
-        when(request.getHeader("Accept")).thenReturn("text/html");
-
-        ResponseEntity<List<ADA>> response = controller.saveADAList(List.of(new ADA()));
-
-        assertEquals(HttpStatus.NOT_IMPLEMENTED, response.getStatusCode());
-        verifyNoInteractions(referenceDataService);
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // saveItemList
-    // ─────────────────────────────────────────────────────────────
-
-    @Test
-    void saveItemList_returnsOkWithUpdatedList_whenAcceptIsJson() throws Exception {
-        Item item = new Item();
-        List<Item> input = List.of(item);
-        List<Item> saved = List.of(item);
-
-        when(request.getHeader("Accept")).thenReturn("application/json");
-        when(referenceDataService.updateItems(input)).thenReturn(saved);
-
-        ResponseEntity<List<Item>> response = controller.saveItemList(input);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(saved, response.getBody());
-        verify(referenceDataService).updateItems(input);
-    }
-
-    @Test
-    void saveItemList_returnsInternalServerError_whenServiceThrows() throws Exception {
-        List<Item> input = List.of(new Item());
-
-        when(request.getHeader("Accept")).thenReturn("application/json");
-        when(referenceDataService.updateItems(input)).thenThrow(new RuntimeException("DB error"));
-
-        ResponseEntity<List<Item>> response = controller.saveItemList(input);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    }
-
-    @Test
-    void saveItemList_returnsNotImplemented_whenAcceptHeaderMissing() {
-        when(request.getHeader("Accept")).thenReturn(null);
-
-        ResponseEntity<List<Item>> response = controller.saveItemList(List.of(new Item()));
-
-        assertEquals(HttpStatus.NOT_IMPLEMENTED, response.getStatusCode());
-        verifyNoInteractions(referenceDataService);
-    }
-
-    @Test
-    void saveItemList_returnsNotImplemented_whenAcceptIsNotJson() {
-        when(request.getHeader("Accept")).thenReturn("text/xml");
-
-        ResponseEntity<List<Item>> response = controller.saveItemList(List.of(new Item()));
-
-        assertEquals(HttpStatus.NOT_IMPLEMENTED, response.getStatusCode());
-        verifyNoInteractions(referenceDataService);
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // saveTagList
-    // ─────────────────────────────────────────────────────────────
-
-    @Test
-    void saveTagList_returnsOkWithUpdatedList_whenAcceptIsJson() throws Exception {
-        Tag tag = new Tag();
-        List<Tag> input = List.of(tag);
-        List<Tag> saved = List.of(tag);
-
-        when(request.getHeader("Accept")).thenReturn("application/json");
-        when(referenceDataService.updateTags(input)).thenReturn(saved);
-
-        ResponseEntity<List<Tag>> response = controller.saveTagList(input);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(saved, response.getBody());
-        verify(referenceDataService).updateTags(input);
-    }
-
-    @Test
-    void saveTagList_returnsInternalServerError_whenServiceThrows() throws Exception {
-        List<Tag> input = List.of(new Tag());
-
-        when(request.getHeader("Accept")).thenReturn("application/json");
-        when(referenceDataService.updateTags(input)).thenThrow(new RuntimeException("DB error"));
-
-        ResponseEntity<List<Tag>> response = controller.saveTagList(input);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    }
-
-    @Test
-    void saveTagList_returnsNotImplemented_whenAcceptHeaderMissing() {
-        when(request.getHeader("Accept")).thenReturn(null);
-
-        ResponseEntity<List<Tag>> response = controller.saveTagList(List.of(new Tag()));
-
-        assertEquals(HttpStatus.NOT_IMPLEMENTED, response.getStatusCode());
-        verifyNoInteractions(referenceDataService);
-    }
-
-    @Test
-    void saveTagList_returnsNotImplemented_whenAcceptIsNotJson() {
-        when(request.getHeader("Accept")).thenReturn("application/xml");
-
-        ResponseEntity<List<Tag>> response = controller.saveTagList(List.of(new Tag()));
-
-        assertEquals(HttpStatus.NOT_IMPLEMENTED, response.getStatusCode());
-        verifyNoInteractions(referenceDataService);
-    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }
