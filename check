@@ -1,451 +1,79 @@
-package org.nnnn.ddd.service;
+package org.nnnn.ddd.exceptions;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.nnnn.ddd.TestConfig;
-import org.nnnn.ddd.api.CaseApiController;
-import org.nnnn.ddd.exceptions.CaseAccessException;
-import org.nnnn.ddd.exceptions.CaseNotFoundException;
-import org.nnnn.ddd.exceptions.InvalidArrestException;
-import org.nnnn.ddd.exceptions.SealedAccessException;
-import org.nnnn.ddd.model.*;
-import org.nnnn.ddd.service.AuthenticationService;
-import org.nnnn.ddd.service.CaseService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.nnnn.ddd.AppConstants;
+import org.nnnn.ddd.ErrorCode;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.Collections;
-import java.util.List;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-@WebMvcTest(controllers = CaseApiController.class)
-@Import({TestConfig.class, CaseApiController.class})
-@DisplayName("CaseApiController Tests")
-public class CaseApiControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
-    private CaseService caseService;
-
-    @MockBean
-    private AuthenticationService authenticationService;
-
-    @MockBean
-    private AuditService auditService;
-
-    @MockBean
-    private javax.sql.DataSource dataSource;
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    /**
-     * Builds a CreateCaseRequest JSON with all fields populated.
-     * If your @Valid constraints require more fields, add them here.
-     * If you still get 400, share CreateCaseRequest.java so we can see @NotNull fields.
-     */
-    private String validCreateCaseRequestJson() throws Exception {
-        CreateCaseRequest req = new CreateCaseRequest();
-        req.setArrId("ARR001");
-        req.setDddOfficeId(1);
-        req.setProactiveFlg(0);
-        // If requestDt / dueDt are @NotNull, uncomment:
-        // req.setRequestDt(org.threeten.bp.LocalDate.now());
-        // req.setDueDt(org.threeten.bp.LocalDate.now().plusDays(30));
-        return objectMapper.writeValueAsString(req);
+@ControllerAdvice
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+    
+    @ExceptionHandler(SealedAccessException.class)
+    public ResponseEntity<org.nnnn.ddd.model.Error> handleSealedAccessException(SealedAccessException ex) {
+        org.nnnn.ddd.model.Error error = new org.nnnn.ddd.model.Error();
+        error.setMessage(ErrorCode.SEALED_ACCESS_PERM.getMessage());
+        error.setCode(String.valueOf(ErrorCode.SEALED_ACCESS_PERM.getCode()));
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
-    private String validIntakeFilterJson() throws Exception {
-        IntakeFilter filter = new IntakeFilter();
-        filter.setArrDtFrom("2024-01-01");
-        filter.setArrDtTo("2024-12-31");
-        return objectMapper.writeValueAsString(filter);
+    @ExceptionHandler(CaseAccessException.class)
+    public ResponseEntity<org.nnnn.ddd.model.Error> handleCaseAccessException(CaseAccessException ex) {
+        org.nnnn.ddd.model.Error error = new org.nnnn.ddd.model.Error();
+        error.setMessage(ErrorCode.CASE_ACCESS_PERM.getMessage());
+        error.setCode(String.valueOf(ErrorCode.CASE_ACCESS_PERM.getCode()));
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
-    // =========================================================================
-    // POST /case — createCaseByArrest()
-    // Lines 116 (CREATED), 117 (OK), 118 (SealedAccess/InvalidArrest rethrow)
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    @DisplayName("POST /case - new case returns 201 CREATED (line 116)")
-    void createCase_newCase_returns201() throws Exception {
-        DDDCase result = new DDDCase();
-        result.setId(1);
-        result.setNew(true);
-        when(caseService.createCase(any())).thenReturn(result);
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(validCreateCaseRequestJson()))
-                .andExpect(status().isCreated());
+    @ExceptionHandler(CaseNotFoundException.class)
+    public ResponseEntity<org.nnnn.ddd.model.Error> handleCaseNotFoundException(CaseNotFoundException ex) {
+        org.nnnn.ddd.model.Error error = new org.nnnn.ddd.model.Error();
+        error.setMessage(ErrorCode.CASE_NOT_FOUND.getMessage());
+        error.setCode(String.valueOf(ErrorCode.CASE_NOT_FOUND.getCode()));
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    @Test
-    @WithMockUser
-    @DisplayName("POST /case - existing case returns 200 OK (line 117)")
-    void createCase_existingCase_returns200() throws Exception {
-        DDDCase result = new DDDCase();
-        result.setId(1);
-        result.setNew(false);
-        when(caseService.createCase(any())).thenReturn(result);
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(validCreateCaseRequestJson()))
-                .andExpect(status().isOk());
+    @ExceptionHandler(InvalidArrestException.class)
+    public ResponseEntity<org.nnnn.ddd.model.Error> handleInvalidArrestException(InvalidArrestException ex) {
+        org.nnnn.ddd.model.Error error = new org.nnnn.ddd.model.Error();
+        error.setMessage(ErrorCode.ARR_NOT_FOUND.getMessage());
+        error.setCode(String.valueOf(ErrorCode.ARR_NOT_FOUND.getCode()));
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @Test
-    @WithMockUser
-    @DisplayName("POST /case - SealedAccessException rethrown (line 118) - covers catch block")
-    void createCase_sealedAccessException_coversCatchBlock() throws Exception {
-        when(caseService.createCase(any()))
-                .thenThrow(new SealedAccessException("no sealed access"));
-
-        // Controller rethrows — GlobalExceptionHandler determines final status.
-        // We accept any non-2xx to confirm the catch block was entered and rethrown.
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(validCreateCaseRequestJson()))
-                .andExpect(status().is(
-                        org.hamcrest.Matchers.not(
-                                org.hamcrest.Matchers.anyOf(
-                                        org.hamcrest.Matchers.is(200),
-                                        org.hamcrest.Matchers.is(201)))));
+    @ExceptionHandler(FileUploadException.class)
+    public ResponseEntity<org.nnnn.ddd.model.Error> handleFileUploadException(FileUploadException ex) {
+        org.nnnn.ddd.model.Error error = new org.nnnn.ddd.model.Error();
+        error.setMessage(ErrorCode.FILE_UPLOAD_ERR.getMessage());
+        error.setCode(String.valueOf(ErrorCode.FILE_UPLOAD_ERR.getCode()));
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @Test
-    @WithMockUser
-    @DisplayName("POST /case - InvalidArrestException rethrown (line 118) - covers catch block")
-    void createCase_invalidArrestException_coversCatchBlock() throws Exception {
-        when(caseService.createCase(any()))
-                .thenThrow(new InvalidArrestException("arrest not found"));
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(validCreateCaseRequestJson()))
-                .andExpect(status().is(
-                        org.hamcrest.Matchers.not(
-                                org.hamcrest.Matchers.anyOf(
-                                        org.hamcrest.Matchers.is(200),
-                                        org.hamcrest.Matchers.is(201)))));
+    @ExceptionHandler(FileDeleteException.class)
+    public ResponseEntity<org.nnnn.ddd.model.Error> handleFileDeleteException(FileDeleteException ex) {
+        org.nnnn.ddd.model.Error error = new org.nnnn.ddd.model.Error();
+        error.setMessage(ErrorCode.FILE_DELETE_ERR.getMessage());
+        error.setCode(String.valueOf(ErrorCode.FILE_DELETE_ERR.getCode()));
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @Test
-    @WithMockUser
-    @DisplayName("POST /case - generic exception returns 500 (catch Exception block)")
-    void createCase_genericException_returns500() throws Exception {
-        when(caseService.createCase(any()))
-                .thenThrow(new RuntimeException("unexpected error"));
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(validCreateCaseRequestJson()))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("POST /case - no Accept header returns 501 (NOT_IMPLEMENTED)")
-    void createCase_noAcceptHeader_returns501() throws Exception {
-        when(caseService.createCase(any())).thenReturn(new DDDCase());
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                // deliberately omit .accept() so Accept header is not application/json
-                .content(validCreateCaseRequestJson()))
-                .andExpect(status().isNotImplemented());
-    }
-
-    @Test
-    @DisplayName("POST /case - unauthenticated returns 401")
-    void createCase_noAuth_returns401() throws Exception {
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(validCreateCaseRequestJson()))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // GET /case/{caseId} — getCaseById()
-    // Lines 149 (SealedAccess), 157 (CaseAccess), 158 (CaseNotFound), 165 (generic)
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /case/{caseId} - returns 200 with case DTO")
-    void getCaseById_found_returns200() throws Exception {
-        DDDCase dto = new DDDCase();
-        dto.setId(100);
-        when(caseService.loadCase(100)).thenReturn(dto);
-
-        mockMvc.perform(get("/case/100")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /case/{caseId} - SealedAccessException rethrown (line 149)")
-    void getCaseById_sealedAccess_coversCatchBlock() throws Exception {
-        when(caseService.loadCase(100))
-                .thenThrow(new SealedAccessException("no sealed access"));
-
-        // Rethrown — GlobalExceptionHandler maps to 403; we just confirm not 200
-        mockMvc.perform(get("/case/100")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(
-                        org.hamcrest.Matchers.not(org.hamcrest.Matchers.is(200))));
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /case/{caseId} - CaseAccessException rethrown (line 157)")
-    void getCaseById_caseAccess_coversCatchBlock() throws Exception {
-        when(caseService.loadCase(100))
-                .thenThrow(new CaseAccessException("no access to case"));
-
-        mockMvc.perform(get("/case/100")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(
-                        org.hamcrest.Matchers.not(org.hamcrest.Matchers.is(200))));
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /case/{caseId} - CaseNotFoundException rethrown (line 158)")
-    void getCaseById_caseNotFound_coversCatchBlock() throws Exception {
-        when(caseService.loadCase(100))
-                .thenThrow(new CaseNotFoundException("case not found"));
-
-        mockMvc.perform(get("/case/100")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(
-                        org.hamcrest.Matchers.not(org.hamcrest.Matchers.is(200))));
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /case/{caseId} - generic exception returns 500 (line 165)")
-    void getCaseById_genericException_returns500() throws Exception {
-        when(caseService.loadCase(100))
-                .thenThrow(new RuntimeException("unexpected"));
-
-        mockMvc.perform(get("/case/100")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /case/{caseId} - no Accept header returns 501")
-    void getCaseById_noAcceptHeader_returns501() throws Exception {
-        when(caseService.loadCase(100)).thenReturn(new DDDCase());
-
-        mockMvc.perform(get("/case/100"))
-                .andExpect(status().isNotImplemented());
-    }
-
-    // =========================================================================
-    // POST /case/intake — getCaseIntakeList() — complete method (line 179)
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    @DisplayName("POST /case/intake - returns 200 with intake list")
-    void getCaseIntakeList_success_returns200() throws Exception {
-        IntakeListResponse response = new IntakeListResponse();
-        response.setIntakeArrests(List.of(new ArrestInfo()));
-        when(caseService.getIntakeArrests(any())).thenReturn(response);
-
-        mockMvc.perform(post("/case/intake")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(validIntakeFilterJson()))
-                .andExpect(status().isOk());
-
-        verify(caseService).getIntakeArrests(any());
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("POST /case/intake - exception returns 500")
-    void getCaseIntakeList_exception_returns500() throws Exception {
-        when(caseService.getIntakeArrests(any()))
-                .thenThrow(new RuntimeException("CDW error"));
-
-        mockMvc.perform(post("/case/intake")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(validIntakeFilterJson()))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("POST /case/intake - no Accept header returns 501")
-    void getCaseIntakeList_noAcceptHeader_returns501() throws Exception {
-        mockMvc.perform(post("/case/intake")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(validIntakeFilterJson()))
-                .andExpect(status().isNotImplemented());
-
-        verify(caseService, never()).getIntakeArrests(any());
-    }
-
-    @Test
-    @DisplayName("POST /case/intake - unauthenticated returns 401")
-    void getCaseIntakeList_noAuth_returns401() throws Exception {
-        mockMvc.perform(post("/case/intake")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(validIntakeFilterJson()))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // GET /case/{caseId}/file/{uploadId} — getCaseUploadById()
-    // Correct URL from CaseApi interface: /case/{caseId}/file/{uploadId}
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /case/{caseId}/file/{uploadId} - returns file with Content-Disposition header")
-    void getCaseUploadById_found_returnsFile() throws Exception {
-        ByteArrayResource resource = new ByteArrayResource("file content".getBytes());
-        when(caseService.getFile(100, 1))
-                .thenReturn(new Object[]{"document.pdf", resource});
-
-        mockMvc.perform(get("/case/100/file/1")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition",
-                        containsString("document.pdf")));
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /case/{caseId}/file/{uploadId} - exception returns 500")
-    void getCaseUploadById_exception_returns500() throws Exception {
-        when(caseService.getFile(100, 1))
-                .thenThrow(new RuntimeException("S3 error"));
-
-        mockMvc.perform(get("/case/100/file/1")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /case/{caseId}/file/{uploadId} - no Accept header returns 501")
-    void getCaseUploadById_noAcceptHeader_returns501() throws Exception {
-        when(caseService.getFile(100, 1))
-                .thenReturn(new Object[]{"doc.pdf", new ByteArrayResource(new byte[0])});
-
-        mockMvc.perform(get("/case/100/file/1"))
-                .andExpect(status().isNotImplemented());
-
-        verify(caseService, never()).getFile(anyInt(), anyInt());
-    }
-
-    // =========================================================================
-    // DELETE /case/{caseId}/file/{uploadId} — deleteCaseUploadById()
-    // Correct URL from CaseApi interface: /case/{caseId}/file/{uploadId}
-    // Complete method (line 193)
-    // =========================================================================
-
-    // =========================================================================
-    // DELETE /case/{caseId}/file/{uploadId} — deleteCaseUploadById()
-    // NOTE: CaseService.deleteFile() ALWAYS throws FileDeleteException.
-    // GlobalExceptionHandler catches it and returns an HTTP response,
-    // so MockMvc does NOT throw — we just verify deleteFile() was called.
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    @DisplayName("DELETE /case/{caseId}/file/{uploadId} - deleteFile is called (line 193)")
-    void deleteCaseUploadById_success_returns200() throws Exception {
-        doThrow(new org.nnnn.ddd.exceptions.FileDeleteException("Failed to delete file 1"))
-                .when(caseService).deleteFile(100, 1);
-
-        mockMvc.perform(delete("/case/100/file/1")
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(org.hamcrest.Matchers.anything()));
-
-        verify(caseService).deleteFile(100, 1);
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("DELETE /case/{caseId}/file/{uploadId} - FileDeleteException handled by GlobalExceptionHandler")
-    void deleteCaseUploadById_exception_returns500() throws Exception {
-        doThrow(new org.nnnn.ddd.exceptions.FileDeleteException("Failed to delete file 1"))
-                .when(caseService).deleteFile(100, 1);
-
-        mockMvc.perform(delete("/case/100/file/1")
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(org.hamcrest.Matchers.anything()));
-
-        verify(caseService).deleteFile(100, 1);
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("DELETE /case/{caseId}/file/{uploadId} - no Accept header returns 501")
-    void deleteCaseUploadById_noAcceptHeader_returns501() throws Exception {
-        mockMvc.perform(delete("/case/100/file/1")
-                .with(csrf()))
-                .andExpect(status().isNotImplemented());
-
-        verify(caseService, never()).deleteFile(anyInt(), anyInt());
-    }
-
-    @Test
-    @DisplayName("DELETE /case/{caseId}/file/{uploadId} - unauthenticated returns 401")
-    void deleteCaseUploadById_noAuth_returns401() throws Exception {
-        mockMvc.perform(delete("/case/100/file/1")
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+    @ExceptionHandler({ ObjectOptimisticLockingFailureException.class,
+            jakarta.persistence.OptimisticLockException.class })
+    public ResponseEntity<org.nnnn.ddd.model.Error> handleOptimisticLock(Exception ex) {
+        org.nnnn.ddd.model.Error error = new org.nnnn.ddd.model.Error();
+        error.setMessage(ErrorCode.OPTIMISTIC_LOCK_ERR.getMessage());
+        error.setCode(String.valueOf(ErrorCode.OPTIMISTIC_LOCK_ERR.getCode()));
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 }
+
+
+
+
+=============================
+Lines 149, 165, 179, 193, 227-231 are not covered in caseapicontroller.java
+
