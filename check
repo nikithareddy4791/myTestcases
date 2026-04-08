@@ -1,357 +1,244 @@
+Methods saveADAList, saveItemList and saveTagList are not test covered.
+
 package org.nnnn.ddd.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-import org.nnnn.ddd.exceptions.CaseAccessException;
-import org.nnnn.ddd.exceptions.CaseNotFoundException;
-import org.nnnn.ddd.exceptions.FileDeleteException;
-import org.nnnn.ddd.exceptions.InvalidArrestException;
-import org.nnnn.ddd.exceptions.SealedAccessException;
-import org.nnnn.ddd.model.*;
+import org.nnnn.ddd.entity.AdaList;
+import org.nnnn.ddd.model.ADA;
+import org.nnnn.ddd.model.Category;
+import org.nnnn.ddd.model.DDDOffice;
+import org.nnnn.ddd.model.Error;
+import org.nnnn.ddd.model.Item;
+import org.nnnn.ddd.model.ReferenceCode;
+import org.nnnn.ddd.model.Status;
+import org.nnnn.ddd.model.Tag;
 import org.nnnn.ddd.service.AuthenticationService;
-import org.nnnn.ddd.service.CaseService;
+import org.nnnn.ddd.service.ReferenceDataService;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.validation.constraints.*;
+import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-09T09:34:34.284-05:00")
+@RestController
+public class ReferenceApiController implements ReferenceApi {
 
-/**
- * Direct unit tests for CaseApiController — bypasses MockMvc/Spring entirely.
- * Calls controller methods directly to guarantee JaCoCo line coverage on:
- * Line 149 (getCaseById SealedAccess rethrow)
- * Line 165 (getCaseById generic exception → 500)
- * Line 179 (getCaseIntakeList success → 200)
- * Line 193 (deleteCaseUploadById → deleteFile called)
- * Lines 227-231 (getCaseStats full method)
- */
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
-@DisplayName("CaseApiController Direct Unit Tests")
-public class CaseApiControllerDirectTest {
+    private static final Logger log = LoggerFactory.getLogger(ReferenceApiController.class);
 
-    @Mock
-    private CaseService caseService;
+    private final ObjectMapper objectMapper;
 
-    @Mock
+    private final HttpServletRequest request;
+
+    @Autowired
+    private ReferenceDataService referenceDataService;
+
+    @Autowired
     private AuthenticationService authenticationService;
 
-    @Mock
-    private HttpServletRequest request;
-
-    @Mock
-    private ObjectMapper objectMapper;
-
-    // CaseApiController constructor takes (ObjectMapper, HttpServletRequest).
-    // caseService and authenticationService are @Autowired fields — not in constructor.
-    // @InjectMocks won't set them. Inject manually in @BeforeEach.
-    private CaseApiController controller;
-
-    @BeforeEach
-    void setUp() throws Exception {
-        // Construct via the real constructor
-        controller = new CaseApiController(objectMapper, request);
-
-        // Inject @Autowired fields manually via reflection
-        java.lang.reflect.Field csField = CaseApiController.class.getDeclaredField("caseService");
-        csField.setAccessible(true);
-        csField.set(controller, caseService);
-
-        java.lang.reflect.Field asField = CaseApiController.class.getDeclaredField("authenticationService");
-        asField.setAccessible(true);
-        asField.set(controller, authenticationService);
-
-        // Make every request appear to accept application/json
-        when(request.getHeader("Accept")).thenReturn("application/json");
+    @org.springframework.beans.factory.annotation.Autowired
+    public ReferenceApiController(ObjectMapper objectMapper, HttpServletRequest request) {
+        this.objectMapper = objectMapper;
+        this.request = request;
     }
 
-    // =========================================================================
-    // getCaseById() — lines 149 (SealedAccess rethrow), 165 (generic → 500)
-    // =========================================================================
+    public ResponseEntity<List<ADA>> getADAList() {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                List<ADA> adas = this.referenceDataService.getAllAdas();
+                return new ResponseEntity<List<ADA>>(adas, HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<ADA>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
 
-    @Test
-    @DisplayName("getCaseById - SealedAccessException is rethrown (line 149)")
-    void getCaseById_sealedAccessException_isRethrown() {
-        when(caseService.loadCase(100))
-                .thenThrow(new SealedAccessException("no sealed access"));
-
-        assertThatThrownBy(() -> controller.getCaseById(100))
-                .isInstanceOf(SealedAccessException.class)
-                .hasMessageContaining("no sealed access");
+        return new ResponseEntity<List<ADA>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    @Test
-    @DisplayName("getCaseById - CaseAccessException is rethrown (line 157)")
-    void getCaseById_caseAccessException_isRethrown() {
-        when(caseService.loadCase(100))
-                .thenThrow(new CaseAccessException("no access"));
+    public ResponseEntity<List<Category>> getCategoryList() {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                List<Category> categories = this.referenceDataService.getAllCategories();
+                return new ResponseEntity<List<Category>>(categories, HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<Category>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
 
-        assertThatThrownBy(() -> controller.getCaseById(100))
-                .isInstanceOf(CaseAccessException.class);
+        return new ResponseEntity<List<Category>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    @Test
-    @DisplayName("getCaseById - CaseNotFoundException is rethrown (line 158)")
-    void getCaseById_caseNotFoundException_isRethrown() {
-        when(caseService.loadCase(100))
-                .thenThrow(new CaseNotFoundException("not found"));
+    public ResponseEntity<List<ReferenceCode>> getGeneralCodeList(@NotNull @Parameter(in = ParameterIn.QUERY, description = "code type to retrieve" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "codeType", required = true) String codeType) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                List<ReferenceCode> codes = this.referenceDataService.getRefCodeByType(codeType);
+                return new ResponseEntity<List<ReferenceCode>>(codes, HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<ReferenceCode>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
 
-        assertThatThrownBy(() -> controller.getCaseById(100))
-                .isInstanceOf(CaseNotFoundException.class);
+        return new ResponseEntity<List<ReferenceCode>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    @Test
-    @DisplayName("getCaseById - generic exception returns 500 (line 165)")
-    void getCaseById_genericException_returns500() {
-        when(caseService.loadCase(100))
-                .thenThrow(new RuntimeException("unexpected"));
+    public ResponseEntity<List<Item>> getItemList() {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                List<Item> items = this.referenceDataService.getAllItems();
+                return new ResponseEntity<List<Item>>(items, HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<Item>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
 
-        ResponseEntity<DDDCase> response = controller.getCaseById(100);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<List<Item>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    @Test
-    @DisplayName("getCaseById - success returns 200")
-    void getCaseById_success_returns200() {
-        DDDCase dto = new DDDCase();
-        dto.setId(100);
-        when(caseService.loadCase(100)).thenReturn(dto);
+    public ResponseEntity<List<Tag>> getTagList() {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                List<Tag> tags = this.referenceDataService.getAllTags();
+                return new ResponseEntity<List<Tag>>(tags, HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<Tag>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
 
-        ResponseEntity<DDDCase> response = controller.getCaseById(100);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody().getId()).isEqualTo(100);
+        return new ResponseEntity<List<Tag>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    @Test
-    @DisplayName("getCaseById - no Accept header returns 501")
-    void getCaseById_noAcceptHeader_returns501() {
-        when(request.getHeader("Accept")).thenReturn(null);
+    public ResponseEntity<List<Status>> getStatusList() {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<List<Status>>(this.referenceDataService.getAllStatuses(), HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<Status>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
 
-        ResponseEntity<DDDCase> response = controller.getCaseById(100);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_IMPLEMENTED);
-        verify(caseService, never()).loadCase(anyInt());
+        return new ResponseEntity<List<Status>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    // =========================================================================
-    // getCaseIntakeList() — line 179
-    // =========================================================================
+    public ResponseEntity<List<DDDOffice>> getDDDOfficeList() {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<List<DDDOffice>>(this.referenceDataService.getDDDOffices(authenticationService.getUsername()), HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<DDDOffice>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
 
-    @Test
-    @DisplayName("getCaseIntakeList - success returns 200 (line 179)")
-    void getCaseIntakeList_success_returns200() {
-        IntakeListResponse response = new IntakeListResponse();
-        response.setIntakeArrests(List.of(new ArrestInfo()));
-        when(caseService.getIntakeArrests(any())).thenReturn(response);
-
-        IntakeFilter filter = new IntakeFilter();
-        filter.setArrDtFrom("2024-01-01");
-        filter.setArrDtTo("2024-12-31");
-
-        ResponseEntity<IntakeListResponse> result = controller.getCaseIntakeList(filter);
-
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(result.getBody().getIntakeArrests()).hasSize(1);
-        verify(caseService).getIntakeArrests(filter);
+        return new ResponseEntity<List<DDDOffice>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    @Test
-    @DisplayName("getCaseIntakeList - exception returns 500")
-    void getCaseIntakeList_exception_returns500() {
-        when(caseService.getIntakeArrests(any()))
-                .thenThrow(new RuntimeException("CDW error"));
+    public ResponseEntity<List<DDDOffice>> getAllDDDOfficeList() {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<List<DDDOffice>>(this.referenceDataService.getAllDDDOffices(), HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<DDDOffice>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
 
-        IntakeFilter filter = new IntakeFilter();
-        filter.setArrDtFrom("2024-01-01");
-        filter.setArrDtTo("2024-12-31");
-
-        ResponseEntity<IntakeListResponse> result = controller.getCaseIntakeList(filter);
-
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<List<DDDOffice>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    @Test
-    @DisplayName("getCaseIntakeList - no Accept header returns 501")
-    void getCaseIntakeList_noAcceptHeader_returns501() {
-        when(request.getHeader("Accept")).thenReturn(null);
+    public ResponseEntity<List<ADA>> saveADAList(@Parameter(in = ParameterIn.DEFAULT, description = "", required=true, schema=@Schema()) @Valid @RequestBody List<ADA> body) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<List<ADA>>(referenceDataService.updateAdas(body), HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<ADA>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
 
-        IntakeFilter filter = new IntakeFilter();
-        ResponseEntity<IntakeListResponse> result = controller.getCaseIntakeList(filter);
-
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NOT_IMPLEMENTED);
-        verify(caseService, never()).getIntakeArrests(any());
+        return new ResponseEntity<List<ADA>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    // =========================================================================
-    // deleteCaseUploadById() — line 193
-    // =========================================================================
+    public ResponseEntity<List<Category>> saveCategoryList(@Parameter(in = ParameterIn.DEFAULT, description = "", required=true, schema=@Schema()) @Valid @RequestBody List<Category> body) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<List<Category>>(referenceDataService.updateCategories(body), HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<Category>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
 
-    @Test
-    @DisplayName("deleteCaseUploadById - deleteFile called (line 193)")
-    void deleteCaseUploadById_deleteFileCalled() {
-        doThrow(new FileDeleteException("Failed to delete file 1"))
-                .when(caseService).deleteFile(100, 1);
-
-        // FileDeleteException is RuntimeException — propagates past IOException catch
-        assertThatThrownBy(() -> controller.deleteCaseUploadById(100, 1))
-                .isInstanceOf(FileDeleteException.class);
-
-        verify(caseService).deleteFile(100, 1);
+        return new ResponseEntity<List<Category>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    @Test
-    @DisplayName("deleteCaseUploadById - no Accept header returns 501")
-    void deleteCaseUploadById_noAcceptHeader_returns501() throws Exception {
-        when(request.getHeader("Accept")).thenReturn(null);
+    public ResponseEntity<List<Item>> saveItemList(@Parameter(in = ParameterIn.DEFAULT, description = "", required=true, schema=@Schema()) @Valid @RequestBody List<Item> body) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<List<Item>>(referenceDataService.updateItems(body), HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<Item>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
 
-        ResponseEntity<String> result = controller.deleteCaseUploadById(100, 1);
-
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NOT_IMPLEMENTED);
-        verify(caseService, never()).deleteFile(anyInt(), anyInt());
+        return new ResponseEntity<List<Item>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    // =========================================================================
-    // getCaseStats() — lines 227-231
-    // =========================================================================
+    public ResponseEntity<List<Tag>> saveTagList(@Parameter(in = ParameterIn.DEFAULT, description = "", required=true, schema=@Schema()) @Valid @RequestBody List<Tag> body) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<List<Tag>>(referenceDataService.updateTags(body), HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<Tag>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
 
-    @Test
-    @DisplayName("getCaseStats - success returns 200 (lines 227-231)")
-    void getCaseStats_success_returns200() {
-        DDDCaseStats stats = new DDDCaseStats();
-        stats.setOverdueCount(3);
-        stats.setComingDueCount(2);
-
-        when(authenticationService.getUsername()).thenReturn("jdoe");
-        when(caseService.getCaseStats("jdoe")).thenReturn(stats);
-
-        ResponseEntity<DDDCaseStats> result = controller.getCaseStats();
-
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(result.getBody().getOverdueCount()).isEqualTo(3);
-        assertThat(result.getBody().getComingDueCount()).isEqualTo(2);
-        verify(caseService).getCaseStats("jdoe");
-    }
-
-    @Test
-    @DisplayName("getCaseStats - exception returns 500")
-    void getCaseStats_exception_returns500() {
-        when(authenticationService.getUsername()).thenReturn("jdoe");
-        when(caseService.getCaseStats("jdoe"))
-                .thenThrow(new RuntimeException("stats error"));
-
-        ResponseEntity<DDDCaseStats> result = controller.getCaseStats();
-
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @Test
-    @DisplayName("getCaseStats - no Accept header returns 501")
-    void getCaseStats_noAcceptHeader_returns501() {
-        when(request.getHeader("Accept")).thenReturn(null);
-
-        ResponseEntity<DDDCaseStats> result = controller.getCaseStats();
-
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NOT_IMPLEMENTED);
-        verify(caseService, never()).getCaseStats(anyString());
-    }
-
-    // =========================================================================
-    // createCaseByArrest() — lines 116, 117, 118
-    // =========================================================================
-
-    @Test
-    @DisplayName("createCaseByArrest - new case returns 201 (line 116)")
-    void createCase_newCase_returns201() {
-        DDDCase result = new DDDCase();
-        result.setId(1);
-        result.setNew(true);
-        when(caseService.createCase(any())).thenReturn(result);
-
-        CreateCaseRequest req = new CreateCaseRequest();
-        req.setArrId("ARR001");
-        req.setDddOfficeId(1);
-        req.setProactiveFlg(0);
-
-        ResponseEntity<DDDCase> response = controller.createCaseByArrest(req);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-    }
-
-    @Test
-    @DisplayName("createCaseByArrest - existing case returns 200 (line 117)")
-    void createCase_existingCase_returns200() {
-        DDDCase result = new DDDCase();
-        result.setId(1);
-        result.setNew(false);
-        when(caseService.createCase(any())).thenReturn(result);
-
-        CreateCaseRequest req = new CreateCaseRequest();
-        req.setArrId("ARR001");
-        req.setDddOfficeId(1);
-        req.setProactiveFlg(0);
-
-        ResponseEntity<DDDCase> response = controller.createCaseByArrest(req);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    }
-
-    @Test
-    @DisplayName("createCaseByArrest - SealedAccessException rethrown (line 118)")
-    void createCase_sealedAccessException_isRethrown() {
-        when(caseService.createCase(any()))
-                .thenThrow(new SealedAccessException("no sealed access"));
-
-        CreateCaseRequest req = new CreateCaseRequest();
-        req.setArrId("ARR001");
-        req.setDddOfficeId(1);
-        req.setProactiveFlg(0);
-
-        assertThatThrownBy(() -> controller.createCaseByArrest(req))
-                .isInstanceOf(SealedAccessException.class);
-    }
-
-    @Test
-    @DisplayName("createCaseByArrest - InvalidArrestException rethrown (line 118)")
-    void createCase_invalidArrestException_isRethrown() {
-        when(caseService.createCase(any()))
-                .thenThrow(new InvalidArrestException("not found"));
-
-        CreateCaseRequest req = new CreateCaseRequest();
-        req.setArrId("ARR001");
-        req.setDddOfficeId(1);
-        req.setProactiveFlg(0);
-
-        assertThatThrownBy(() -> controller.createCaseByArrest(req))
-                .isInstanceOf(InvalidArrestException.class);
-    }
-
-    @Test
-    @DisplayName("createCaseByArrest - generic exception returns 500")
-    void createCase_genericException_returns500() {
-        when(caseService.createCase(any()))
-                .thenThrow(new RuntimeException("unexpected"));
-
-        CreateCaseRequest req = new CreateCaseRequest();
-        req.setArrId("ARR001");
-        req.setDddOfficeId(1);
-        req.setProactiveFlg(0);
-
-        ResponseEntity<DDDCase> response = controller.createCaseByArrest(req);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<List<Tag>>(HttpStatus.NOT_IMPLEMENTED);
     }
 }
+
