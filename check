@@ -1,38 +1,73 @@
 package org.nnnn.ddd;
 
-import org.nnnn.ddd.api.UserApiController;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
-/**
- * Minimal Spring Boot configuration for @WebMvcTest slice tests.
- *
- * PURPOSE:
- *   Replaces ServletInitializer as the context class for controller tests.
- *   ServletInitializer defines a dbHealthIndicator bean that requires a real
- *   DataSource, which is not available in @WebMvcTest slice tests.
- *
- * USAGE:
- *   Add to each @WebMvcTest test class:
- *   @ContextConfiguration(classes = TestConfig.class)
- */
+import org.nnnn.ddd.security.KeycloakAuthorityConverter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+
 @Configuration
-@EnableAutoConfiguration(exclude = {
-    DataSourceAutoConfiguration.class,
-    DataSourceTransactionManagerAutoConfiguration.class,
-    HibernateJpaAutoConfiguration.class,
-    LdapAutoConfiguration.class,
-    JacksonAutoConfiguration.class,
-    CacheAutoConfiguration.class
-})
-@Import(UserApiController.class)
-public class TestConfig {
-    // Intentionally empty - just provides a clean context for WebMvcTest
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+            JwtAuthenticationConverter jwtAuthenticationConverter)
+            throws Exception {
+
+        http
+                .csrf(csrf -> csrf.disable())
+
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/testRole", "/testAuth").authenticated()
+                        .anyRequest().authenticated())
+
+                .oauth2ResourceServer(oauth -> oauth
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)));
+
+        return http.build();
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Collection<GrantedAuthority> authorities = new ArrayList<>();
+
+            // 1. Read your custom claim
+            List<String> groups = jwt.getClaimAsStringList("NNNN Groups");
+            if (groups != null) {
+                for (String g : groups) {
+                    // Normalize: remove leading slash, uppercase, prefix ROLE_
+                    String role = g.replace("/", "").toUpperCase();
+                    authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+                }
+            }
+
+            return authorities;
+        });
+
+        return converter;
+    }
+
 }
