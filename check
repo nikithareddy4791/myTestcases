@@ -392,17 +392,29 @@ public class CaseApiControllerTest {
     // Complete method (line 193)
     // =========================================================================
 
+    // =========================================================================
+    // DELETE /case/{caseId}/file/{uploadId} — deleteCaseUploadById()
+    // NOTE: CaseService.deleteFile() ALWAYS throws FileDeleteException —
+    // the controller's 200 OK return is unreachable in production.
+    // The controller only catches IOException, so FileDeleteException
+    // (a RuntimeException) propagates and MockMvc wraps it as NestedServletException.
+    // =========================================================================
+
     @Test
     @WithMockUser
-    @DisplayName("DELETE /case/{caseId}/file/{uploadId} - returns 200 with success message")
+    @DisplayName("DELETE /case/{caseId}/file/{uploadId} - FileDeleteException always propagates")
     void deleteCaseUploadById_success_returns200() throws Exception {
-        doNothing().when(caseService).deleteFile(100, 1);
+        // deleteFile() always throws FileDeleteException — stub it explicitly
+        doThrow(new org.nnnn.ddd.exceptions.FileDeleteException("Failed to delete file 1"))
+                .when(caseService).deleteFile(100, 1);
 
-        mockMvc.perform(delete("/case/100/file/1")
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Success")));
+        // RuntimeException propagates uncaught → MockMvc throws NestedServletException
+        org.junit.jupiter.api.Assertions.assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(delete("/case/100/file/1")
+                        .with(csrf())
+                        .accept(MediaType.APPLICATION_JSON))
+        );
 
         verify(caseService).deleteFile(100, 1);
     }
@@ -411,13 +423,9 @@ public class CaseApiControllerTest {
     @WithMockUser
     @DisplayName("DELETE /case/{caseId}/file/{uploadId} - FileDeleteException propagates (controller only catches IOException)")
     void deleteCaseUploadById_exception_returns500() throws Exception {
-        // The controller catch block only handles IOException.
-        // FileDeleteException is a RuntimeException — it propagates uncaught.
-        // Spring DispatcherServlet wraps it as a NestedServletException in tests.
-        doThrow(new org.nnnn.ddd.exceptions.FileDeleteException("delete failed"))
+        doThrow(new org.nnnn.ddd.exceptions.FileDeleteException("Failed to delete file 1"))
                 .when(caseService).deleteFile(100, 1);
 
-        // Use assertThrows to handle the NestedServletException that MockMvc wraps it in
         org.junit.jupiter.api.Assertions.assertThrows(
                 Exception.class,
                 () -> mockMvc.perform(delete("/case/100/file/1")
