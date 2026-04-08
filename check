@@ -1,275 +1,40 @@
-The following code is not covered :
-complete method getCaseIntakeList,
-complete method deleteCaseUploadById,
-Lines 116,117,118, 149, 157,158,165, 179,193,
-
-
-package org.nnnn.ddd.api;
-
-import org.nnnn.ddd.exceptions.CaseAccessException;
-import org.nnnn.ddd.exceptions.CaseNotFoundException;
-import org.nnnn.ddd.exceptions.InvalidArrestException;
-import org.nnnn.ddd.exceptions.SealedAccessException;
-import org.nnnn.ddd.model.CaseFilter;
-import org.nnnn.ddd.model.CaseListResponse;
-import org.nnnn.ddd.model.CreateCaseRequest;
-import org.nnnn.ddd.model.DDDCase;
-import org.nnnn.ddd.model.DDDCaseStats;
-import org.nnnn.ddd.model.DDDCaseSummary;
-import org.nnnn.ddd.model.Error;
-import org.nnnn.ddd.model.IntakeFilter;
-import org.nnnn.ddd.model.IntakeListResponse;
-import org.nnnn.ddd.service.AuthenticationService;
-import org.nnnn.ddd.service.CaseService;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-
-import jakarta.validation.constraints.*;
-import jakarta.validation.Valid;
-import jakarta.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
-@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-02-13T15:15:08.918-05:00")
-@RestController
-public class CaseApiController implements CaseApi {
-
-    private static final Logger log = LoggerFactory.getLogger(CaseApiController.class);
-
-    private final ObjectMapper objectMapper;
-
-    private final HttpServletRequest request;
-
-    @Autowired
-    private CaseService caseService;
-
-    @Autowired
-    private AuthenticationService authenticationService;
-
-    @org.springframework.beans.factory.annotation.Autowired
-    public CaseApiController(ObjectMapper objectMapper, HttpServletRequest request) {
-        this.objectMapper = objectMapper;
-        this.request = request;
-    }
-
-    public ResponseEntity<DDDCase> createCaseByArrest(@Parameter(in = ParameterIn.DEFAULT, description = "Object containing case creation criteria", schema=@Schema()) @Valid @RequestBody CreateCaseRequest body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                DDDCase json = caseService.createCase(body);
-                if (json.isNew()) {
-                    return new ResponseEntity<DDDCase>(json, HttpStatus.CREATED);
-                } else {
-                    return new ResponseEntity<DDDCase>(json, HttpStatus.OK);
-                }
-            } catch (SealedAccessException sae){
-                log.error(sae.getMessage());
-                throw sae;
-            } catch (InvalidArrestException iae){
-                log.error(iae.getMessage());
-                throw iae;
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<DDDCase>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<DDDCase>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<DDDCase> getCaseById(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<DDDCase>(caseService.loadCase(caseId), HttpStatus.OK);
-            } catch (SealedAccessException sae){
-                log.error(sae.getMessage());
-                throw sae;
-            } catch (CaseAccessException cae){
-                log.error(cae.getMessage());
-                throw cae;
-            } catch (CaseNotFoundException cnfe){
-                log.error(cnfe.getMessage());
-                throw cnfe;
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<DDDCase>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-        return new ResponseEntity<DDDCase>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<IntakeListResponse> getCaseIntakeList(@Parameter(in = ParameterIn.DEFAULT, description = "Object containing case intake filter criteria", required=true, schema=@Schema()) @Valid @RequestBody IntakeFilter body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<IntakeListResponse>(caseService.getIntakeArrests(body), HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<IntakeListResponse>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<IntakeListResponse>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<CaseListResponse> getCaseList(@Parameter(in = ParameterIn.DEFAULT, description = "Object containing case filter criteria", schema=@Schema()) @Valid @RequestBody CaseFilter body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<CaseListResponse>(caseService.findCases(body), HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<CaseListResponse>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<CaseListResponse>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<DDDCase> updateCase(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to update", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.DEFAULT, description = "Updated Case object", required=true, schema=@Schema()) @Valid @RequestBody DDDCase body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<DDDCase>(caseService.saveCase(body), HttpStatus.OK);
-            } catch (jakarta.persistence.OptimisticLockException | org.springframework.orm.ObjectOptimisticLockingFailureException e) {
-                throw e; // Let GlobalExceptionHandler return 409
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<DDDCase>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<DDDCase>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<DDDCase> createCaseNote(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to update", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.DEFAULT, description = "",schema=@Schema()) @RequestParam(value="noteDesc", required=false)  String noteDesc,@Parameter(in = ParameterIn.DEFAULT, description = "",schema=@Schema()) @RequestParam(value="fileNm", required=false)  String fileNm,@Parameter(description = "file detail") @Valid @RequestPart(value = "file", required = false) MultipartFile fileContent) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<DDDCase>(caseService.saveNote(caseId, noteDesc, fileNm, fileContent), HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<DDDCase>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<DDDCase>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<DDDCaseStats> getCaseStats() {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<DDDCaseStats>(caseService.getCaseStats(authenticationService.getUsername()), HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<DDDCaseStats>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<DDDCaseStats>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<Resource> getCaseUploadById(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the file to get", required=true, schema=@Schema()) @PathVariable("uploadId") Integer uploadId) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                Object[] fileNameAndResource = caseService.getFile(caseId, uploadId);
-                
-                // Set headers including Content-Disposition with the filename
-                HttpHeaders headers = new HttpHeaders();
-                // "attachment" forces download, "inline" tries to display in browser
-                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileNameAndResource[0] + "\"");
-                // Expose the Content-Disposition header to the client, especially important for Swagger UI
-                headers.add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
-
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .contentType(MediaType.APPLICATION_OCTET_STREAM) // Generic content type for files
-                        .body((Resource) fileNameAndResource[1]); 
-                //new ResponseEntity<Resource>((Resource)fileNameAndResource[1], HttpStatus.OK);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<Resource>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<Resource>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<String> deleteCaseUploadById(@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the case to get", required=true, schema=@Schema()) @PathVariable("caseId") Integer caseId,@Parameter(in = ParameterIn.PATH, description = "Numeric ID of the file to get", required=true, schema=@Schema()) @PathVariable("uploadId") Integer uploadId) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                caseService.deleteFile(caseId, uploadId);
-                return new ResponseEntity<String>(objectMapper.readValue("\"Success: The operation completed successfully.\"", String.class), HttpStatus.OK);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<String>(HttpStatus.NOT_IMPLEMENTED);
-    }
-}
-
-
-==========================
-
 package org.nnnn.ddd.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.nnnn.ddd.TestConfig;
-import org.nnnn.ddd.api.CacheApiController;
+import org.nnnn.ddd.api.CaseApiController;
+import org.nnnn.ddd.exceptions.CaseAccessException;
+import org.nnnn.ddd.exceptions.CaseNotFoundException;
+import org.nnnn.ddd.exceptions.InvalidArrestException;
+import org.nnnn.ddd.exceptions.SealedAccessException;
+import org.nnnn.ddd.model.*;
+import org.nnnn.ddd.service.AuthenticationService;
+import org.nnnn.ddd.service.CaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Collections;
+import java.util.List;
+
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = CacheApiController.class)
-@Import({TestConfig.class, CacheApiController.class})
-@DisplayName("CacheApiController Tests")
-public class CacheApiControllerTest {
+@WebMvcTest(controllers = CaseApiController.class)
+@Import({TestConfig.class, CaseApiController.class})
+@DisplayName("CaseApiController Tests")
+public class CaseApiControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -278,7 +43,7 @@ public class CacheApiControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private CacheService cacheService;
+    private CaseService caseService;
 
     @MockBean
     private AuthenticationService authenticationService;
@@ -290,117 +55,350 @@ public class CacheApiControllerTest {
     private javax.sql.DataSource dataSource;
 
     // =========================================================================
-    // GET /cache/clear
+    // POST /case — createCaseByArrest()
+    // Lines 116 (CREATED), 117 (OK), 118 (exception rethrow)
     // =========================================================================
 
     @Test
     @WithMockUser
-    @DisplayName("GET /cache/clear - returns 200 with success message")
-    void clearCache_success_returns200() throws Exception {
-        doNothing().when(cacheService).clearAllCache();
+    @DisplayName("POST /case - new case returns 201 CREATED (line 116)")
+    void createCase_newCase_returns201() throws Exception {
+        DDDCase result = new DDDCase();
+        result.setId(1);
+        result.setNew(true);
 
-        mockMvc.perform(get("/cache/clear")
+        when(caseService.createCase(any())).thenReturn(result);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new CreateCaseRequest())))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /case - existing case returns 200 OK (line 117)")
+    void createCase_existingCase_returns200() throws Exception {
+        DDDCase result = new DDDCase();
+        result.setId(1);
+        result.setNew(false);
+
+        when(caseService.createCase(any())).thenReturn(result);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new CreateCaseRequest())))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /case - SealedAccessException is rethrown (line 118)")
+    void createCase_sealedAccessException_isRethrown() throws Exception {
+        when(caseService.createCase(any()))
+                .thenThrow(new SealedAccessException("no sealed access"));
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new CreateCaseRequest())))
+                .andExpect(status().is5xxServerError());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /case - InvalidArrestException is rethrown (line 118)")
+    void createCase_invalidArrestException_isRethrown() throws Exception {
+        when(caseService.createCase(any()))
+                .thenThrow(new InvalidArrestException("arrest not found"));
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new CreateCaseRequest())))
+                .andExpect(status().is5xxServerError());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /case - generic exception returns 500")
+    void createCase_genericException_returns500() throws Exception {
+        when(caseService.createCase(any()))
+                .thenThrow(new RuntimeException("unexpected"));
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new CreateCaseRequest())))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /case - no Accept header returns 501")
+    void createCase_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new CreateCaseRequest())))
+                .andExpect(status().isNotImplemented());
+    }
+
+    // =========================================================================
+    // GET /case/{caseId} — getCaseById()
+    // Line 149 (SealedAccessException), 157 (CaseAccessException),
+    // 158 (CaseNotFoundException), 165 (generic exception)
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /case/{caseId} - returns 200 with case DTO")
+    void getCaseById_found_returns200() throws Exception {
+        DDDCase dto = new DDDCase();
+        dto.setId(100);
+        when(caseService.loadCase(100)).thenReturn(dto);
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /case/{caseId} - SealedAccessException is rethrown (line 149)")
+    void getCaseById_sealedAccess_isRethrown() throws Exception {
+        when(caseService.loadCase(100))
+                .thenThrow(new SealedAccessException("no sealed access"));
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is5xxServerError());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /case/{caseId} - CaseAccessException is rethrown (line 157)")
+    void getCaseById_caseAccess_isRethrown() throws Exception {
+        when(caseService.loadCase(100))
+                .thenThrow(new CaseAccessException("no access to case"));
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is5xxServerError());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /case/{caseId} - CaseNotFoundException is rethrown (line 158)")
+    void getCaseById_caseNotFound_isRethrown() throws Exception {
+        when(caseService.loadCase(100))
+                .thenThrow(new CaseNotFoundException("case not found"));
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is5xxServerError());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /case/{caseId} - generic exception returns 500 (line 165)")
+    void getCaseById_genericException_returns500() throws Exception {
+        when(caseService.loadCase(100))
+                .thenThrow(new RuntimeException("unexpected"));
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /case/{caseId} - no Accept header returns 501")
+    void getCaseById_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(get("/case/100"))
+                .andExpect(status().isNotImplemented());
+    }
+
+    // =========================================================================
+    // POST /case/intake — getCaseIntakeList() — complete method (line 179)
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /case/intake - returns 200 with intake list")
+    void getCaseIntakeList_success_returns200() throws Exception {
+        IntakeListResponse response = new IntakeListResponse();
+        response.setIntakeArrests(List.of(new ArrestInfo()));
+        when(caseService.getIntakeArrests(any())).thenReturn(response);
+
+        IntakeFilter filter = new IntakeFilter();
+        filter.setArrDtFrom("2024-01-01");
+        filter.setArrDtTo("2024-12-31");
+
+        mockMvc.perform(post("/case/intake")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(filter)))
+                .andExpect(status().isOk());
+
+        verify(caseService).getIntakeArrests(any());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /case/intake - returns empty list when no arrests found")
+    void getCaseIntakeList_noResults_returnsEmptyList() throws Exception {
+        IntakeListResponse response = new IntakeListResponse();
+        response.setIntakeArrests(Collections.emptyList());
+        when(caseService.getIntakeArrests(any())).thenReturn(response);
+
+        IntakeFilter filter = new IntakeFilter();
+        filter.setArrDtFrom("2024-01-01");
+        filter.setArrDtTo("2024-01-31");
+
+        mockMvc.perform(post("/case/intake")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(filter)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /case/intake - exception returns 500")
+    void getCaseIntakeList_exception_returns500() throws Exception {
+        when(caseService.getIntakeArrests(any()))
+                .thenThrow(new RuntimeException("CDW error"));
+
+        IntakeFilter filter = new IntakeFilter();
+        filter.setArrDtFrom("2024-01-01");
+        filter.setArrDtTo("2024-12-31");
+
+        mockMvc.perform(post("/case/intake")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(filter)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /case/intake - no Accept header returns 501")
+    void getCaseIntakeList_noAcceptHeader_returns501() throws Exception {
+        IntakeFilter filter = new IntakeFilter();
+        filter.setArrDtFrom("2024-01-01");
+        filter.setArrDtTo("2024-12-31");
+
+        mockMvc.perform(post("/case/intake")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(filter)))
+                .andExpect(status().isNotImplemented());
+
+        verify(caseService, never()).getIntakeArrests(any());
+    }
+
+    // =========================================================================
+    // DELETE /case/{caseId}/upload/{uploadId} — deleteCaseUploadById()
+    // Complete method (line 193)
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    @DisplayName("DELETE /case/{caseId}/upload/{uploadId} - returns 200 with success message")
+    void deleteCaseUploadById_success_returns200() throws Exception {
+        doNothing().when(caseService).deleteFile(100, 1);
+
+        mockMvc.perform(delete("/case/100/upload/1")
                 .with(csrf())
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                // FIX: controller uses objectMapper.readValue() which strips quotes
-                // actual body is: Success: The operation completed successfully.
                 .andExpect(content().string(containsString("Success")));
 
-        verify(cacheService, times(1)).clearAllCache();
+        verify(caseService).deleteFile(100, 1);
     }
 
     @Test
     @WithMockUser
-    @DisplayName("GET /cache/clear - response body contains full success message")
-    void clearCache_success_responseBodyContainsFullMessage() throws Exception {
-        doNothing().when(cacheService).clearAllCache();
+    @DisplayName("DELETE /case/{caseId}/upload/{uploadId} - IOException returns 500")
+    void deleteCaseUploadById_ioException_returns500() throws Exception {
+        doThrow(new RuntimeException("delete failed"))
+                .when(caseService).deleteFile(100, 1);
 
-        mockMvc.perform(get("/cache/clear")
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("The operation completed successfully")));
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /cache/clear - returns 500 when CacheService throws exception")
-    void clearCache_serviceThrowsException_returns500() throws Exception {
-        doThrow(new RuntimeException("Cache eviction failed"))
-                .when(cacheService).clearAllCache();
-
-        mockMvc.perform(get("/cache/clear")
+        mockMvc.perform(delete("/case/100/upload/1")
                 .with(csrf())
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
-
-        verify(cacheService, times(1)).clearAllCache();
     }
 
     @Test
     @WithMockUser
-    @DisplayName("GET /cache/clear - returns 501 when Accept header is missing")
-    void clearCache_noAcceptHeader_returns501() throws Exception {
-        mockMvc.perform(get("/cache/clear")
+    @DisplayName("DELETE /case/{caseId}/upload/{uploadId} - no Accept header returns 501")
+    void deleteCaseUploadById_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(delete("/case/100/upload/1")
                 .with(csrf()))
                 .andExpect(status().isNotImplemented());
 
-        verify(cacheService, never()).clearAllCache();
+        verify(caseService, never()).deleteFile(anyInt(), anyInt());
     }
 
     @Test
-    @WithMockUser
-    @DisplayName("GET /cache/clear - returns 501 when Accept is text/plain only")
-    void clearCache_textPlainAccept_returns501() throws Exception {
-        mockMvc.perform(get("/cache/clear")
-                .with(csrf())
-                .accept(MediaType.TEXT_PLAIN))
-                .andExpect(status().isNotImplemented());
-
-        verify(cacheService, never()).clearAllCache();
-    }
-
-    @Test
-    @DisplayName("GET /cache/clear - returns 401 when user is not authenticated")
-    void clearCache_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/cache/clear")
+    @DisplayName("DELETE /case/{caseId}/upload/{uploadId} - unauthenticated returns 401")
+    void deleteCaseUploadById_noAuth_returns401() throws Exception {
+        mockMvc.perform(delete("/case/100/upload/1")
                 .with(csrf())
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
-
-        verify(cacheService, never()).clearAllCache();
     }
 
+    // =========================================================================
+    // GET /case/{caseId}/upload/{uploadId} — getCaseUploadById() (line 193 area)
+    // =========================================================================
+
     @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /cache/clear - admin user can clear cache successfully")
-    void clearCache_adminUser_returns200() throws Exception {
-        doNothing().when(cacheService).clearAllCache();
+    @WithMockUser
+    @DisplayName("GET /case/{caseId}/upload/{uploadId} - returns file with headers")
+    void getCaseUploadById_found_returnsFile() throws Exception {
+        ByteArrayResource resource = new ByteArrayResource("file content".getBytes());
+        when(caseService.getFile(100, 1))
+                .thenReturn(new Object[]{"document.pdf", resource});
 
-        mockMvc.perform(get("/cache/clear")
-                .with(csrf())
+        mockMvc.perform(get("/case/100/upload/1")
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        verify(cacheService, times(1)).clearAllCache();
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition",
+                        containsString("document.pdf")));
     }
 
     @Test
     @WithMockUser
-    @DisplayName("GET /cache/clear - cacheService.clearAllCache is called exactly once per request")
-    void clearCache_calledExactlyOnce() throws Exception {
-        doNothing().when(cacheService).clearAllCache();
+    @DisplayName("GET /case/{caseId}/upload/{uploadId} - exception returns 500")
+    void getCaseUploadById_exception_returns500() throws Exception {
+        when(caseService.getFile(100, 1))
+                .thenThrow(new RuntimeException("S3 error"));
 
-        mockMvc.perform(get("/cache/clear")
-                .with(csrf())
+        mockMvc.perform(get("/case/100/upload/1")
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isInternalServerError());
+    }
 
-        verify(cacheService, times(1)).clearAllCache();
-        verifyNoMoreInteractions(cacheService);
+    @Test
+    @WithMockUser
+    @DisplayName("GET /case/{caseId}/upload/{uploadId} - no Accept header returns 501")
+    void getCaseUploadById_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(get("/case/100/upload/1"))
+                .andExpect(status().isNotImplemented());
+
+        verify(caseService, never()).getFile(anyInt(), anyInt());
     }
 }
-
-
-===========
