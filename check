@@ -1,17 +1,5 @@
-@Test
-void saveItemList_returnsOkWithUpdatedList_whenAcceptIsJson() throws Exception {
-    System.out.println("referenceDataService is: " + referenceDataService);
-    System.out.println("controller is: " + controller);
-
-    Item item = new Item(1, "ECMS", 0);
-    List<Item> saved = List.of(item);
-
-    when(request.getHeader("Accept")).thenReturn("application/json");
-    when(referenceDataService.updateItems(any())).thenReturn(saved);
-
-    ResponseEntity<List<Item>> response = controller.saveItemList(List.of(item));
-
-    System.out.println("Response status: " + response.getStatusCode());
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-}
+ git pull
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
