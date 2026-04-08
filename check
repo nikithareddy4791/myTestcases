@@ -1,14 +1,8 @@
-// Line 114 — was:
-DDDCaseStats stats = caseService.getCaseStats();
-// Fix:
-DDDCaseStats stats = caseService.getCaseStats((String) null);
-
-// Line 128 — was:
-DDDCaseStats stats = caseService.getCaseStats();
-// Fix:
-DDDCaseStats stats = caseService.getCaseStats((String) null);
-
-// Line 145 — was:
-DDDCaseStats stats = caseService.getCaseStats(officeIds);
-// Fix:
-DDDCaseStats stats = caseService.getCaseStats(officeIds, "jdoe");
+[ERROR] Failures: 
+[ERROR]   CaseServiceTest.findCases_supervisorWithOfficeIds_getsOfficeStats:907 
+expected: 2
+ but was: 0
+[ERROR] Errors: 
+[ERROR]   CaseServiceTest.findCases_arrIdWithSpaces_trimMatchesMapKey:1584 NullPointer Cannot invoke "org.nnnn.ddd.model.ArrestInfo.getDeftFrstNm()" because the return value of "org.nnnn.ddd.model.dddCaseSummary.getArrest()" is null
+[INFO] 
+[ERROR] 
