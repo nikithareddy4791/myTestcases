@@ -1,54 +1,6 @@
-775b82c (HEAD -> feature/backend-unit-tests, origin/feature/backend) HEAD@{0}: pull: Fast-forward
-17a3f15 (origin/main) HEAD@{1}: reset: moving to origin/main
-b2a5fcb HEAD@{2}: reset: moving to HEAD
-b2a5fcb HEAD@{3}: reset: moving to HEAD
-b2a5fcb HEAD@{4}: pull: Merge made by the 'recursive' strategy.
-8a87204 (origin/feature/backend-unit-tests) HEAD@{5}: commit: modifying the cc email in emailService
-93ac350 HEAD@{6}: commit: adding junits for Entities and exceptions
-f4cb5a0 HEAD@{7}: pull: Merge made by the 'recursive' strategy.
-1af4151 HEAD@{8}: reset: moving to HEAD
-1af4151 HEAD@{9}: pull: Merge made by the 'recursive' strategy.
-367965c HEAD@{10}: commit: adding junits to model and config classes
-16c2add HEAD@{11}: commit: adding junits to services
-5ff815e HEAD@{12}: pull: Merge made by the 'recursive' strategy.
-4396a3d HEAD@{13}: commit: Added Service and Config class unit tests
-3c7aa65 HEAD@{14}: commit: modify caseService class
-730636a HEAD@{15}: pull: Merge made by the 'recursive' strategy.
-d277303 HEAD@{16}: commit: modify caseService class
-f01f8ab HEAD@{17}: pull: Merge made by the 'recursive' strategy.
-1bb2beb HEAD@{18}: commit: Add unit tests for caseService and cacheService classes
-488b8c1 HEAD@{19}: reset: moving to HEAD
-488b8c1 HEAD@{20}: pull: Merge made by the 'recursive' strategy.
-7692b5a HEAD@{21}: pull: Merge made by the 'recursive' strategy.
-875a3c4 HEAD@{22}: commit: Added Jacoco xml report path for SonarQube coverage report
-0daef90 HEAD@{23}: reset: moving to HEAD
-0daef90 HEAD@{24}: pull: Merge made by the 'recursive' strategy.
-a1944e2 HEAD@{25}: reset: moving to HEAD
-a1944e2 HEAD@{26}: checkout: moving from feature/backend-unit-tests to feature/backend-unit-tests
-a1944e2 HEAD@{27}: commit (amend): Added Junits for Ddd CreateCase and DrillDown
-2401a57 HEAD@{28}: commit: Added Junits for Ddd CreateCase and DrillDown
-6f78717 HEAD@{29}: pull: Merge made by the 'recursive' strategy.
-cd9c7f7 HEAD@{30}: reset: moving to HEAD
-cd9c7f7 HEAD@{31}: pull origin feature/backend-unit-tests: Fast-forward
-f8346f2 HEAD@{32}: checkout: moving from feature/backend-unit-tests to feature/backend-unit-tests
-f8346f2 HEAD@{33}: commit: adding unit tests for actuator and exception classes
-7f00109 HEAD@{34}: commit: updating caseservice n referenceController classes
-f1ced23 HEAD@{35}: pull: Fast-forward
-ce99083 HEAD@{36}: reset: moving to HEAD
-ce99083 HEAD@{37}: commit: updating the dddoffice calls
-451ac9c HEAD@{38}: pull: Fast-forward
-d9d6d1a HEAD@{39}: reset: moving to HEAD
-d9d6d1a HEAD@{40}: commit: updating the calls dddoffice calls
-3c575bd HEAD@{41}: reset: moving to HEAD
-3c575bd HEAD@{42}: pull: Fast-forward
-36b1f2a HEAD@{43}: pull: Merge made by the 'recursive' strategy.
-b593967 HEAD@{44}: commit: Remove compiled classes from tracking and update .gitignore
-15bd010 HEAD@{45}: commit: added unit tests
-b7c89b9 HEAD@{46}: checkout: moving from feature/backend_withUnitTesting to feature/backend-unit-tests
-fc34c7b (feature/backend) HEAD@{47}: checkout: moving from feature/backend-unit-tests to feature/backend_withUnitTesting
-b7c89b9 HEAD@{48}: checkout: moving from feature/backend_withUnitTesting to feature/backend-unit-tests
-fc34c7b (feature/backend) HEAD@{49}: reset: moving to HEAD
-fc34c7b (feature/backend) HEAD@{50}: checkout: moving from feature/backend_withUnitTesting to feature/backend_withUnitTesting
-fc34c7b (feature/backend) HEAD@{51}: checkout: moving from feature/backend to feature/backend_withUnitTesting
-fc34c7b (feature/backend) HEAD@{52}: checkout: moving from feature/backend to feature/backend
-fc34c7b (feature/backend) HEAD@{53}: checkout: moving from feature/backend to feature/backend
+On branch feature/backend-unit-tests
+Your branch and 'origin/feature/backend' have diverged,
+and have 20 and 17 different commits each, respectively.
+  (use "git pull" to merge the remote branch into yours)
+
+nothing to commit, working tree clean
