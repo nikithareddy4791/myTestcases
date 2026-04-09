@@ -1,1 +1,48 @@
-git diff src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
+diff --cc src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
+index a0954ee,d08c1af..0000000
+--- a/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
++++ b/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
+@@@ -44,578 -42,281 +44,590 @@@ import static org.mockito.ArgumentMatch
+  import static org.mockito.Mockito.*;
+
+  @ExtendWith(MockitoExtension.class)
+ +@MockitoSettings(strictness = Strictness.LENIENT)
+ +@DisplayName("ReferenceDataService Tests")
+  public class ReferenceDataServiceTest {
+
+ -    @Mock
+ -    private ADAListRepository adaListRepository;
+ -
+ -    @Mock
+ -    private CategoryListRepository categoryListRepository;
+ +    @Mock private ADAListRepository       adaListRepository;
+ +    @Mock private CategoryListRepository  categoryListRepository;
+ +    @Mock private TagListRepository       tagListRepository;
+ +    @Mock private ItemListRepository      itemListRepository;
+ +    @Mock private StatusListRepository    statusListRepository;
+ +    @Mock private DLUOfficeListRepository dddOfficeListRepository;
+ +    @Mock private CodeRefRepository       codeRefRepository;
+ +    @Mock private AuthenticationService   authenticationService;
+ +    @Mock private CacheService            cacheService;
+ +    @Mock private ModelMapper             modelMapper;
+
+ -    @Mock
+ -    private TagListRepository tagListRepository;
+ +    @InjectMocks
+ +    private ReferenceDataService service;
+ +
+ +    // =========================================================================
+ +    // getRefCodeByType()
+ +    // ReferenceCode only has a 4-arg constructor:
+ +    //   new ReferenceCode(Integer id, String codeType, String codeVal, String codeDesc)
+ +    // =========================================================================
+ +
+ +    @Nested
+ +    @DisplayName("getRefCodeByType()")
+ +    class GetRefCodeByTypeTests {
+ +
+ +        @Test
+ +        @DisplayName("delegates to repository and returns results")
+ +        void getRefCodeByType_returnsRepositoryResults() {
+ +            ReferenceCode code = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
+ +            when(codeRefRepository.findDTOByCodeTypeOrderByIdAsc("CHARGE_TYPE")
