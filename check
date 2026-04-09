@@ -1,3 +1,56 @@
-CONFLICT (content): Merge conflict in src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
-Auto-merging src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java
-Automatic merge failed; fix conflicts and then commit the result.
+On branch feature/backend-unit-tests
+Your branch and 'origin/feature/backend' have diverged,
+and have 20 and 17 different commits each, respectively.
+  (use "git pull" to merge the remote branch into yours)
+
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Changes to be committed:
+
+        modified:   src/main/java/org/nnnn/ddd/MapperConfig.java
+        modified:   src/main/java/org/nnnn/ddd/ServletInitializer.java
+        modified:   src/main/java/org/nnnn/ddd/api/CaseApi.java
+        modified:   src/main/java/org/nnnn/ddd/api/CaseApiController.java
+        modified:   src/main/java/org/nnnn/ddd/api/ReferenceApi.java
+        modified:   src/main/java/org/nnnn/ddd/api/ReferenceApiController.java
+        modified:   src/main/java/org/nnnn/ddd/audit/entity/CustomRevisionEntity.java
+        modified:   src/main/java/org/nnnn/ddd/entity/AdaList.java
+        modified:   src/main/java/org/nnnn/ddd/entity/CaseItem.java
+        modified:   src/main/java/org/nnnn/ddd/entity/CaseNote.java
+        modified:   src/main/java/org/nnnn/ddd/entity/CaseTag.java
+        modified:   src/main/java/org/nnnn/ddd/entity/CaseUpload.java
+        modified:   src/main/java/org/nnnn/ddd/entity/CategoryList.java
+        modified:   src/main/java/org/nnnn/ddd/entity/DluAudit.java
+        modified:   src/main/java/org/nnnn/ddd/entity/DluCase.java
+        modified:   src/main/java/org/nnnn/ddd/entity/DluCodeRef.java
+        modified:   src/main/java/org/nnnn/ddd/entity/DluOfficeList.java
+        modified:   src/main/java/org/nnnn/ddd/entity/ItemList.java
+        modified:   src/main/java/org/nnnn/ddd/entity/StatusList.java
+        modified:   src/main/java/org/nnnn/ddd/entity/TagList.java
+        modified:   src/main/java/org/nnnn/ddd/model/ADA.java
+        modified:   src/main/java/org/nnnn/ddd/model/ArrestInfo.java
+        modified:   src/main/java/org/nnnn/ddd/repository/ADAListRepository.java
+        modified:   src/main/java/org/nnnn/ddd/repository/CDWRepository.java
+        modified:   src/main/java/org/nnnn/ddd/repository/CaseRepository.java
+        modified:   src/main/java/org/nnnn/ddd/repository/specs/CaseSpecifications.java
+        modified:   src/main/java/org/nnnn/ddd/service/AuthenticationService.java
+        modified:   src/main/java/org/nnnn/ddd/service/CaseService.java
+        modified:   src/main/java/org/nnnn/ddd/service/EmailService.java
+        modified:   src/main/java/org/nnnn/ddd/service/EmailServiceLocal.java
+        modified:   src/main/java/org/nnnn/ddd/service/ReferenceDataService.java
+        new file:   src/main/java/org/nnnn/ddd/util/PrinthubUtil.java
+        modified:   src/main/resources/application-dev.properties
+        modified:   src/main/resources/application-local.properties
+        modified:   src/main/resources/application-prod.properties
+        modified:   src/main/resources/application-uat.properties
+        modified:   src/main/resources/application.properties
+        modified:   src/main/resources/swagger.yaml
+        modified:   src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java
+        modified:   src/test/java/org/nnnn/ddd/service/ReferenceControllerTest.java
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+
+        both modified:   src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
