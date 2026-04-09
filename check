@@ -1,6 +1,3 @@
-On branch feature/backend-unit-tests
-Your branch and 'origin/feature/backend' have diverged,
-and have 20 and 17 different commits each, respectively.
-  (use "git pull" to merge the remote branch into yours)
-
-nothing to commit, working tree clean
+CONFLICT (content): Merge conflict in src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
+Auto-merging src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java
+Automatic merge failed; fix conflicts and then commit the result.
