@@ -1,1 +1,10 @@
-http://sps2-wisegw01d:9000/code?id=org.nnnn%3Addd-services&selected=org.nnnn%3Addd-services%3Asrc%2Fmain%2Fjava%2Forg%2Fnnnn%2Fddd
+sonar:
+  stage: sonar
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - mvn sonar:sonar -B
+      -Dsonar.projectKey=org.nnnn:ddd-services
+      -Dsonar.host.url=http://sps2-wisegw01d:9000
+  only:
+    - feature/backend-unit-tests
+    - main
