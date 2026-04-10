@@ -1,48 +1,344 @@
-diff --cc src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
-index a0954ee,d08c1af..0000000
---- a/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
-+++ b/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
-@@@ -44,578 -42,281 +44,590 @@@ import static org.mockito.ArgumentMatch
-  import static org.mockito.Mockito.*;
+package org.nnnn.ddd.service;
 
-  @ExtendWith(MockitoExtension.class)
- +@MockitoSettings(strictness = Strictness.LENIENT)
- +@DisplayName("ReferenceDataService Tests")
-  public class ReferenceDataServiceTest {
+import java.util.ArrayList;
+import java.util.List;
 
- -    @Mock
- -    private ADAListRepository adaListRepository;
- -
- -    @Mock
- -    private CategoryListRepository categoryListRepository;
- +    @Mock private ADAListRepository       adaListRepository;
- +    @Mock private CategoryListRepository  categoryListRepository;
- +    @Mock private TagListRepository       tagListRepository;
- +    @Mock private ItemListRepository      itemListRepository;
- +    @Mock private StatusListRepository    statusListRepository;
- +    @Mock private DLUOfficeListRepository dddOfficeListRepository;
- +    @Mock private CodeRefRepository       codeRefRepository;
- +    @Mock private AuthenticationService   authenticationService;
- +    @Mock private CacheService            cacheService;
- +    @Mock private ModelMapper             modelMapper;
+import org.modelmapper.ModelMapper;
+import org.nnnn.ddd.entity.AdaList;
+import org.nnnn.ddd.entity.TagList;
+import org.nnnn.ddd.entity.CategoryList;
+import org.nnnn.ddd.entity.DddCodeRef;
+import org.nnnn.ddd.entity.DddOfficeList;
+import org.nnnn.ddd.entity.ItemList;
+import org.nnnn.ddd.entity.DddCodeRef;
+import org.nnnn.ddd.model.ReferenceCode;
+import org.nnnn.ddd.model.Status;
+import org.nnnn.ddd.model.ADA;
+import org.nnnn.ddd.model.Category;
+import org.nnnn.ddd.model.DDDCase;
+import org.nnnn.ddd.model.DDDOffice;
+import org.nnnn.ddd.model.Item;
+import org.nnnn.ddd.model.Tag;
+import org.nnnn.ddd.repository.ADAListRepository;
+import org.nnnn.ddd.repository.CategoryListRepository;
+import org.nnnn.ddd.repository.CodeRefRepository;
+import org.nnnn.ddd.repository.DDDOfficeListRepository;
+import org.nnnn.ddd.repository.ItemListRepository;
+import org.nnnn.ddd.repository.StatusListRepository;
+import org.nnnn.ddd.repository.TagListRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.stereotype.Service;
 
- -    @Mock
- -    private TagListRepository tagListRepository;
- +    @InjectMocks
- +    private ReferenceDataService service;
- +
- +    // =========================================================================
- +    // getRefCodeByType()
- +    // ReferenceCode only has a 4-arg constructor:
- +    //   new ReferenceCode(Integer id, String codeType, String codeVal, String codeDesc)
- +    // =========================================================================
- +
- +    @Nested
- +    @DisplayName("getRefCodeByType()")
- +    class GetRefCodeByTypeTests {
- +
- +        @Test
- +        @DisplayName("delegates to repository and returns results")
- +        void getRefCodeByType_returnsRepositoryResults() {
- +            ReferenceCode code = new ReferenceCode(1, "CHARGE_TYPE", "F", "Felony");
- +            when(codeRefRepository.findDTOByCodeTypeOrderByIdAsc("CHARGE_TYPE")
+@Service
+public class ReferenceDataService {
+    @Autowired
+    private ADAListRepository adaListRepository;
+
+    @Autowired
+    private CategoryListRepository categoryListRepository;
+
+    @Autowired
+    private TagListRepository tagListRepository;
+
+    @Autowired
+    private ItemListRepository itemListRepository;
+
+    @Autowired
+    private StatusListRepository statusListRepository;
+
+    @Autowired
+    private DDDOfficeListRepository dddOfficeListRepository;
+
+    @Autowired
+    private CodeRefRepository codeRefRepository;
+
+    @Autowired
+    private AuthenticationService authenticationService;
+
+    @Autowired
+    private CacheService cacheService;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    private static final Logger log = LoggerFactory.getLogger(ReferenceDataService.class);
+
+    @Cacheable("dddCodeRef")
+    public List<ReferenceCode> getRefCodeByType(final String codeType) {
+        return codeRefRepository.findDTOByCodeTypeOrderByIdAsc(codeType);
+    }
+
+    @Cacheable("adaList")
+    public List<ADA> getAllAdas(Integer dddOfficeId) {
+        List<AdaList> adaList = new ArrayList<AdaList>();
+        if (dddOfficeId != null) {
+            adaList = adaListRepository.findByDdd_Id(dddOfficeId);
+        } else {
+            adaList = adaListRepository.findAll();
+        }
+        List<ADA> ret = new ArrayList<ADA>();
+        for (AdaList ada : adaList) {
+            ret.add(modelMapper.map(ada, ADA.class));
+        }
+        return ret;
+    }
+
+    public List<ADA> updateAdas(final List<ADA> adas) {
+        for (ADA ada : adas) {
+            AdaList adaEntity = adaListRepository.findById(ada.getId()).orElse(null);
+            if (adaEntity != null) {
+                modelMapper.map(ada, adaEntity);
+                if (ada.getDdd() != null) {
+                    DddOfficeList ddd = dddOfficeListRepository.findById(ada.getDdd().getId()).orElse(null);
+                    if (ddd != null && (adaEntity.getDdd() == null || adaEntity.getDdd().getId() != ddd.getId())) {
+                        adaEntity.setDdd(ddd);
+                    }
+                }
+            } else {
+                adaEntity = new AdaList();
+                adaEntity = modelMapper.map(ada, AdaList.class);
+                if (ada.getDdd() != null && ada.getDdd().getId() > 0) {
+                    DddOfficeList ddd = dddOfficeListRepository.findById(ada.getDdd().getId()).orElse(null);
+                    if (ddd != null) {
+                        adaEntity.setDdd(ddd);
+                    }
+                }
+            }
+            adaListRepository.save(adaEntity);
+        }
+        cacheService.clearCache("adaList");
+        return getAllAdas(null);
+    }
+
+    @Cacheable("tagList")
+    public List<Tag> getAllTags() {
+        return tagListRepository.findAllDTO();
+    }
+
+    public List<Tag> updateTags(final List<Tag> tags) {
+        for (Tag tag : tags) {
+            TagList tagEntity = tagListRepository.findById(tag.getId()).orElse(null);
+            if(tagEntity!=null){
+                modelMapper.map(tag, tagEntity);
+            } else {
+                tagEntity = new TagList();
+                tagEntity = modelMapper.map(tag, TagList.class);
+            }
+            tagListRepository.save(tagEntity);
+        }
+        cacheService.clearCache("tagList");
+        return getAllTags();
+    }
+
+    @Cacheable("categoryList")
+    public List<Category> getAllCategories() {
+        authenticationService.debug();
+        return categoryListRepository.findAllDTO();
+    }
+
+    public List<Category> updateCategories(final List<Category> categories) {
+        for (Category category : categories) {
+            CategoryList categoryEntity = categoryListRepository.findById(category.getId()).orElse(null);
+            if(categoryEntity!=null){
+                modelMapper.map(category, categoryEntity);
+            } else {
+                categoryEntity = new CategoryList();
+                categoryEntity = modelMapper.map(category, CategoryList.class);
+            }
+            categoryListRepository.save(categoryEntity);
+        }
+        cacheService.clearCache("categoryList");
+        return getAllCategories();
+    }
+
+    @Cacheable("itemList")
+    public List<Item> getAllItems() {
+        return itemListRepository.findAllDTO();
+    }
+
+    public List<Item> updateItems(final List<Item> items) {
+        for (Item item : items) {
+            ItemList itemEntity = itemListRepository.findById(item.getId()).orElse(null);
+            if(itemEntity!=null){
+                modelMapper.map(item, itemEntity);
+            } else {
+                itemEntity = new ItemList();
+                itemEntity = modelMapper.map(item, ItemList.class);
+            }
+            itemListRepository.save(itemEntity);
+        }
+        cacheService.clearCache("itemList");
+        return getAllItems();
+    }
+
+    @Cacheable("statusList")
+    public List<Status> getAllStatuses() {
+        return statusListRepository.findAllDTO();
+    }
+
+    @Cacheable("userDddOfficeList")
+    public List<DDDOffice> getDDDOffices(final String username) {
+        if (authenticationService.isSupervisor()) {
+            return dddOfficeListRepository.findAllDTO();
+        } else {
+            List<DDDOffice> results = new ArrayList<>();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            auth.getAuthorities().forEach(authority -> {
+                if (authority.getAuthority().startsWith("ROLE_SG-DDD")) {
+                    results.addAll(dddOfficeListRepository.findAllDTOForSG(authority.getAuthority()));
+                }
+            });
+            return results;
+        }
+    }
+
+    @Cacheable("dddOfficeList")
+    public List<DDDOffice> getAllDDDOffices() {
+        return dddOfficeListRepository.findAllDTO();
+    }
+}
+
+
+
+
+
+=========================
+
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[151,31] no suitable constructor found for ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,char,boolean)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.String,boolean) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[165,31] no suitable constructor found for ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,char,boolean)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.String,boolean) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[179,31] no suitable constructor found for ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,char,boolean)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.String,boolean) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[192,31] no suitable constructor found for ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,<nulltype>,boolean)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.String,boolean) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[114,41] no suitable method found for getCaseStats(no arguments)
+    method org.nnnn.ddd.service.CaseService.getCaseStats(java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    method org.nnnn.ddd.service.CaseService.getCaseStats(java.util.Collection<java.lang.Integer>,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[128,41] no suitable method found for getCaseStats(no arguments)
+    method org.nnnn.ddd.service.CaseService.getCaseStats(java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    method org.nnnn.ddd.service.CaseService.getCaseStats(java.util.Collection<java.lang.Integer>,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[145,55] incompatible types: java.util.List<java.lang.Integer> cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[134,39] method getAllAdas in class org.nnnn.ddd.service.ReferenceDataService cannot be applied to given types;
+  required: java.lang.Integer
+  found:    no arguments
+  reason: actual and formal argument lists differ in length
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[146,31] method getAllAdas in class org.nnnn.ddd.service.ReferenceDataService cannot be applied to given types;
+  required: java.lang.Integer
+  found:    no arguments
+  reason: actual and formal argument lists differ in length
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[162,31] method getAllAdas in class org.nnnn.ddd.service.ReferenceDataService cannot be applied to given types;
+  required: java.lang.Integer
+  found:    no arguments
+  reason: actual and formal argument lists differ in length
+[INFO] 10 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  11.883 s
+[INFO] Finished at: 2026-04-10T06:48:43-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:testCompile (default-testCompile) on project ddd-services: Compilation failure: Compilation failure: 
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[151,31] no suitable constructor found for ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,char,boolean)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.String,boolean) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[165,31] no suitable constructor found for ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,char,boolean)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.String,boolean) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[179,31] no suitable constructor found for ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,char,boolean)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.String,boolean) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[192,31] no suitable constructor found for ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,<nulltype>,boolean)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.String,boolean) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[114,41] no suitable method found for getCaseStats(no arguments)
+[ERROR]     method org.nnnn.ddd.service.CaseService.getCaseStats(java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     method org.nnnn.ddd.service.CaseService.getCaseStats(java.util.Collection<java.lang.Integer>,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[128,41] no suitable method found for getCaseStats(no arguments)
+[ERROR]     method org.nnnn.ddd.service.CaseService.getCaseStats(java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     method org.nnnn.ddd.service.CaseService.getCaseStats(java.util.Collection<java.lang.Integer>,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[145,55] incompatible types: java.util.List<java.lang.Integer> cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[134,39] method getAllAdas in class org.nnnn.ddd.service.ReferenceDataService cannot be applied to given types;
+[ERROR]   required: java.lang.Integer
+[ERROR]   found:    no arguments
+[ERROR]   reason: actual and formal argument lists differ in length
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[146,31] method getAllAdas in class org.nnnn.ddd.service.ReferenceDataService cannot be applied to given types;
+[ERROR]   required: java.lang.Integer
+[ERROR]   found:    no arguments
+[ERROR]   reason: actual and formal argument lists differ in length
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[162,31] method getAllAdas in class org.nnnn.ddd.service.ReferenceDataService cannot be applied to given types;
+[ERROR]   required: java.lang.Integer
+[ERROR]   found:    no arguments
+[ERROR]   reason: actual and formal argument lists differ in length
+[ERROR] -> [Help 1]
