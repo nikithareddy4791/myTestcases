@@ -1,14 +1,385 @@
- 
-[ERROR] Errors: 
-[ERROR]   CDWRepositoryTest$GetArrestInfoSingleTests.getArrestInfo_callsCreateNativeQuery:81 » NullPointer Cannot invoke "org.nnnn.ddd.util.PrinthubUtil.getReportUrl(String)" because "this.printhubUtil" is null
-[ERROR]   CDWRepositoryTest$GetArrestInfoSingleTests.getArrestInfo_returnsSingleResult:108 » NullPointer Cannot invoke "org.nnnn.ddd.util.PrinthubUtil.getReportUrl(String)" because "this.printhubUtil" is null
-[ERROR]   CDWRepositoryTest$GetArrestInfoSingleTests.getArrestInfo_setsArrIdParameter:95 » NullPointer Cannot invoke "org.nnnn.ddd.util.PrinthubUtil.getReportUrl(String)" because "this.printhubUtil" is null
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_mapsArrIdAndTopCharge:190 » ArrayIndexOutOfBounds Index 7 out of bounds for length 7
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_mapsSealedFlagN:274 » ArrayIndexOutOfBounds Index 7 out of bounds for length 7
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_mapsSealedFlagY:258 » ArrayIndexOutOfBounds Index 7 out of bounds for length 7
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_multipleRows_mapsAll:226 » ArrayIndexOutOfBounds Index 7 out of bounds for length 7
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_notMasked_nameVisible:208 » ArrayIndexOutOfBounds Index 7 out of bounds for length 7
-[ERROR]   CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_mapsArrId:312 » ArrayIndexOutOfBounds Index 7 out of bounds for length 7
-[ERROR]   CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_masked_nameIsMasked:329 » ArrayIndexOutOfBounds Index 7 out of bounds for length 7
-[ERROR]   CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_multipleRows_mapsAll:349 » ArrayIndexOutOfBounds Index 7 out of bounds for length 7
-[INFO] 
+package org.nnnn.ddd.repository;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.nnnn.ddd.model.ArrestInfo;
+
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("CDWRepository Tests")
+public class CDWRepositoryTest {
+
+    @Mock
+    private EntityManager entityManager;
+
+    @Mock
+    private PrinthubUtil printhubUtil;
+
+    @Mock
+    private Query query;
+
+    @InjectMocks
+    private CDWRepository cdwRepository;
+
+    private static final String ARR_ID = "ARR001";
+    private static final Date ARR_DATE = Date.valueOf(LocalDate.of(2024, 1, 15));
+
+    // =========================================================================
+    // Helper — builds raw result list the same way JPA native query returns it
+    // =========================================================================
+
+    /**
+     * Wraps Object[] rows into a raw List that simulates JPA getResultList().
+     * JPA returns List<Object[]> — but the generic type is erased at runtime.
+     * Using raw List avoids the ClassCastException when Mockito returns it.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private List buildRawResultList(Object[]... rows) {
+        List list = new ArrayList();
+        for (Object[] row : rows) {
+            list.add(row);
+        }
+        return list;
+    }
+
+    private Object[] buildRow(String arrId, String topCharge, Date arrDt,
+                               String frstNm, String lastNm,
+                               String nysid, Character sealedFlg) {
+        return new Object[]{arrId, topCharge, arrDt, frstNm, lastNm, nysid, sealedFlg};
+    }
+
+    // =========================================================================
+    // getArrestInfo(String arrId)
+    // =========================================================================
+
+    @Nested
+    @DisplayName("getArrestInfo(String)")
+    class GetArrestInfoSingleTests {
+
+        @Test
+        @DisplayName("calls createNativeQuery with ArrestInfo class")
+        void getArrestInfo_callsCreateNativeQuery() {
+            ArrestInfo expected = new ArrestInfo();
+            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class))).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(expected);
+
+            ArrestInfo result = cdwRepository.getArrestInfo(ARR_ID);
+
+            verify(entityManager).createNativeQuery(anyString(), eq(ArrestInfo.class));
+            assertThat(result).isEqualTo(expected);
+        }
+
+        @Test
+        @DisplayName("sets parameter 1 to arrId")
+        void getArrestInfo_setsArrIdParameter() {
+            ArrestInfo expected = new ArrestInfo();
+            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class))).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(expected);
+
+            cdwRepository.getArrestInfo(ARR_ID);
+
+            verify(query).setParameter(1, ARR_ID);
+        }
+
+        @Test
+        @DisplayName("returns result from getSingleResult")
+        void getArrestInfo_returnsSingleResult() {
+            ArrestInfo expected = new ArrestInfo();
+            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class))).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(expected);
+
+            assertThat(cdwRepository.getArrestInfo(ARR_ID)).isSameAs(expected);
+        }
+    }
+
+    // =========================================================================
+    // getArrestInfoSummary(String arrId)
+    // =========================================================================
+
+    @Nested
+    @DisplayName("getArrestInfoSummary(String)")
+    class GetArrestInfoSummaryStringTests {
+
+        @Test
+        @DisplayName("calls createNativeQuery with ArrestInfo class")
+        void getArrestInfoSummary_string_callsCreateNativeQuery() {
+            ArrestInfo expected = new ArrestInfo();
+            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class))).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(expected);
+
+            cdwRepository.getArrestInfoSummary(ARR_ID);
+
+            verify(entityManager).createNativeQuery(anyString(), eq(ArrestInfo.class));
+        }
+
+        @Test
+        @DisplayName("sets parameter 1 to arrId")
+        void getArrestInfoSummary_string_setsParameter() {
+            ArrestInfo expected = new ArrestInfo();
+            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class))).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(expected);
+
+            cdwRepository.getArrestInfoSummary(ARR_ID);
+
+            verify(query).setParameter(1, ARR_ID);
+        }
+
+        @Test
+        @DisplayName("returns single result")
+        void getArrestInfoSummary_string_returnsSingleResult() {
+            ArrestInfo expected = new ArrestInfo();
+            when(entityManager.createNativeQuery(anyString(), eq(ArrestInfo.class))).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(expected);
+
+            assertThat(cdwRepository.getArrestInfoSummary(ARR_ID)).isSameAs(expected);
+        }
+    }
+
+    // =========================================================================
+    // getArrestInfoSummary(List<String>) — real mapping logic: masked=false
+    // =========================================================================
+
+    @Nested
+    @DisplayName("getArrestInfoSummary(List<String>)")
+    class GetArrestInfoSummaryListTests {
+
+        @Test
+        @DisplayName("returns empty list when no results")
+        @SuppressWarnings("rawtypes")
+        void getArrestInfoSummary_list_emptyResults_returnsEmptyList() {
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(Collections.emptyList());
+
+            List<ArrestInfo> result = cdwRepository.getArrestInfoSummary(List.of(ARR_ID));
+
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("maps Object[] result to ArrestInfo - arrId and topCharge")
+        @SuppressWarnings("rawtypes")
+        void getArrestInfoSummary_list_mapsArrIdAndTopCharge() {
+            Object[] row = buildRow(ARR_ID, "Assault", ARR_DATE, "John", "Doe", "NYSID123", 'N');
+            List rawList = buildRawResultList(row);
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(rawList);
+
+            List<ArrestInfo> result = cdwRepository.getArrestInfoSummary(List.of(ARR_ID));
+
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).getArrId()).isEqualTo(ARR_ID);
+            assertThat(result.get(0).getTopCharge()).isEqualTo("Assault");
+        }
+
+        @Test
+        @DisplayName("masked=false so defendant name is NOT masked")
+        @SuppressWarnings("rawtypes")
+        void getArrestInfoSummary_list_notMasked_nameVisible() {
+            Object[] row = buildRow(ARR_ID, "Assault", ARR_DATE, "John", "Doe", "NYSID123", 'N');
+            List rawList = buildRawResultList(row);
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(rawList);
+
+            List<ArrestInfo> result = cdwRepository.getArrestInfoSummary(List.of(ARR_ID));
+
+            assertThat(result.get(0).getDeftFrstNm()).isEqualTo("John");
+            assertThat(result.get(0).getDeftLastNm()).isEqualTo("Doe");
+        }
+
+        @Test
+        @DisplayName("maps multiple rows to multiple ArrestInfo objects")
+        @SuppressWarnings("rawtypes")
+        void getArrestInfoSummary_list_multipleRows_mapsAll() {
+            Object[] row1 = buildRow("ARR001", "Assault", ARR_DATE, "John", "Doe", "NYSID1", 'N');
+            Object[] row2 = buildRow("ARR002", "Robbery", ARR_DATE, "Jane", "Smith", "NYSID2", 'N');
+            List rawList = buildRawResultList(row1, row2);
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(rawList);
+
+            List<ArrestInfo> result = cdwRepository.getArrestInfoSummary(List.of("ARR001", "ARR002"));
+
+            assertThat(result).hasSize(2);
+            assertThat(result.get(0).getArrId()).isEqualTo("ARR001");
+            assertThat(result.get(1).getArrId()).isEqualTo("ARR002");
+        }
+
+        @Test
+        @DisplayName("sets parameter 1 to arrIds list")
+        @SuppressWarnings("rawtypes")
+        void getArrestInfoSummary_list_setsParameter() {
+            List<String> arrIds = List.of("ARR001", "ARR002");
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(Collections.emptyList());
+
+            cdwRepository.getArrestInfoSummary(arrIds);
+
+            verify(query).setParameter(1, arrIds);
+        }
+
+        @Test
+        @DisplayName("maps sealed flag Y from result row")
+        @SuppressWarnings("rawtypes")
+        void getArrestInfoSummary_list_mapsSealedFlagY() {
+            Object[] row = buildRow(ARR_ID, "Assault", ARR_DATE, "John", "Doe", "NYSID123", 'Y');
+            List rawList = buildRawResultList(row);
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(rawList);
+
+            List<ArrestInfo> result = cdwRepository.getArrestInfoSummary(List.of(ARR_ID));
+
+            assertThat(result.get(0).getArrSealedFlg()).isEqualTo("Y");
+        }
+
+        @Test
+        @DisplayName("maps sealed flag N from result row")
+        @SuppressWarnings("rawtypes")
+        void getArrestInfoSummary_list_mapsSealedFlagN() {
+            Object[] row = buildRow(ARR_ID, "Assault", ARR_DATE, "John", "Doe", "NYSID123", 'N');
+            List rawList = buildRawResultList(row);
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(rawList);
+
+            List<ArrestInfo> result = cdwRepository.getArrestInfoSummary(List.of(ARR_ID));
+
+            assertThat(result.get(0).getArrSealedFlg()).isEqualTo("N");
+        }
+    }
+
+    // =========================================================================
+    // getMaskedArrestInfoSummary(List<String>) — same query but masked=true
+    // =========================================================================
+
+    @Nested
+    @DisplayName("getMaskedArrestInfoSummary(List<String>)")
+    class GetMaskedArrestInfoSummaryTests {
+
+        @Test
+        @DisplayName("returns empty list when no results")
+        @SuppressWarnings("rawtypes")
+        void getMaskedArrestInfoSummary_emptyResults_returnsEmptyList() {
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(Collections.emptyList());
+
+            List<ArrestInfo> result = cdwRepository.getMaskedArrestInfoSummary(List.of(ARR_ID));
+
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("maps Object[] result to ArrestInfo - arrId correct")
+        @SuppressWarnings("rawtypes")
+        void getMaskedArrestInfoSummary_mapsArrId() {
+            Object[] row = buildRow(ARR_ID, "Assault", ARR_DATE, "John", "Doe", "NYSID123", 'Y');
+            List rawList = buildRawResultList(row);
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(rawList);
+
+            List<ArrestInfo> result = cdwRepository.getMaskedArrestInfoSummary(List.of(ARR_ID));
+
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).getArrId()).isEqualTo(ARR_ID);
+        }
+
+        @Test
+        @DisplayName("masked=true so defendant name IS masked")
+        @SuppressWarnings("rawtypes")
+        void getMaskedArrestInfoSummary_masked_nameIsMasked() {
+            Object[] row = buildRow(ARR_ID, "Assault", ARR_DATE, "John", "Doe", "NYSID123", 'Y');
+            List rawList = buildRawResultList(row);
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(rawList);
+
+            List<ArrestInfo> result = cdwRepository.getMaskedArrestInfoSummary(List.of(ARR_ID));
+
+            ArrestInfo info = result.get(0);
+            // masked=true — name should NOT be the original value
+            assertThat(info.getDeftFrstNm()).isNotEqualTo("John");
+            assertThat(info.getDeftLastNm()).isNotEqualTo("Doe");
+        }
+
+        @Test
+        @DisplayName("maps multiple rows correctly")
+        @SuppressWarnings("rawtypes")
+        void getMaskedArrestInfoSummary_multipleRows_mapsAll() {
+            Object[] row1 = buildRow("ARR001", "Assault", ARR_DATE, "John", "Doe", "NYSID1", 'Y');
+            Object[] row2 = buildRow("ARR002", "Robbery", ARR_DATE, "Jane", "Smith", "NYSID2", 'Y');
+            List rawList = buildRawResultList(row1, row2);
+
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(rawList);
+
+            List<ArrestInfo> result = cdwRepository.getMaskedArrestInfoSummary(List.of("ARR001", "ARR002"));
+
+            assertThat(result).hasSize(2);
+        }
+
+        @Test
+        @DisplayName("sets parameter 1 to arrIds list")
+        @SuppressWarnings("rawtypes")
+        void getMaskedArrestInfoSummary_setsParameter() {
+            List<String> arrIds = List.of("ARR001");
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(Collections.emptyList());
+
+            cdwRepository.getMaskedArrestInfoSummary(arrIds);
+
+            verify(query).setParameter(1, arrIds);
+        }
+
+        @Test
+        @DisplayName("calls getResultList not getSingleResult")
+        @SuppressWarnings("rawtypes")
+        void getMaskedArrestInfoSummary_callsGetResultList() {
+            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+            when(query.setParameter(eq(1), any())).thenReturn(query);
+            when(query.getResultList()).thenReturn(Collections.emptyList());
+
+            cdwRepository.getMaskedArrestInfoSummary(List.of(ARR_ID));
+
+            verify(query).getResultList();
+            verify(query, never()).getSingleResult();
+        }
+    }
+}
