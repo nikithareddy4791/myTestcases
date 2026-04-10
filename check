@@ -1,75 +1,10 @@
-variables:
-  BASE_IMAGE: "gitlab.nnnn.org:8443/devops/cr/maven"
-  IMAGE_TAG: "3.9-eclipse-temurin-21-alpine-2026-01"
-  MAVEN_OPTS: >-
-    -Dhttps.protocols=TLSv1.2
-    -Dmaven.repo.local=.m2/repository
-    -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN
-    -Dorg.slf4j.simpleLogger.showDateTime=true
-    -Djava.awt.headless=true
-  MAVEN_CLI_X_OPTS: >-
-    --batch-mode
-    --errors
-    --fail-at-end
-    --show-version
-    -s /maven-config/unsecure_settings.xml
-  SONAR_TOKEN: "sqa_36b3200a5cb78b4c130314af86baf56d2e95d3fa"
-
-stages:
-  - build
-  - verify
-
-build:
-  stage: build
-  image: "$BASE_IMAGE:$IMAGE_TAG"
-  tags:
-    - podman
-  script:
-    - mvn $MAVEN_CLI_X_OPTS clean install -DskipTests
-  cache:
-    key: "maven-$CI_COMMIT_REF_SLUG"
-    paths:
-      - .sonar/cache
-      - "**/target/"
-  artifacts:
-    paths:
-      - "**/target/*.jar"
-      - "**/target/surefire-reports/"
-    reports:
-      junit:
-        - "**/target/surefire-reports/TEST-*.xml"
-    expire_in: 2 weeks
-  rules:
-    - when: always
-
-sonarqube-check:
-  stage: verify
-  image: "$BASE_IMAGE:$IMAGE_TAG"
-  tags:
-    - podman
-  needs:
-    - job: build
-      artifacts: true
-  cache:
-    key: "maven-$CI_COMMIT_REF_SLUG"
-    paths:
-      - .sonar/cache
-  script:
-    - mvn $MAVEN_CLI_X_OPTS verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.0.0.4389:sonar
-      -Dsonar.qualitygate.wait=true
-      -Dsonar.host.url=http://sps2-wisegw01d:9000
-      -Dsonar.token=${SONAR_TOKEN}
-      -Dsonar.junit.reportPaths=target/surefire-reports
-      -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-  artifacts:
-    paths:
-      - "**/target/surefire-reports/"
-      - "**/target/site/jacoco/"
-    reports:
-      junit:
-        - "**/target/surefire-reports/TEST-*.xml"
-    expire_in: 2 weeks
-    when: always
-  allow_failure: true
-  rules:
-    - when: always
+Running with gitlab-runner 17.3.1 (66269445)
+  on podman-runner X7RMz9Yo7, system ID: s_b07194d87341
+Resolving secrets
+Preparing the "docker" executor
+00:03
+Using Docker executor with image gitlab.nypd.org:8443/devops/cr/maven:3.9-eclipse-temurin-21-alpine-2026-01 ...
+Authenticating with credentials from job payload (GitLab Registry)
+Pulling docker image gitlab.nypd.org:8443/devops/cr/maven:3.9-eclipse-temurin-21-alpine-2026-01 ...
+WARNING: Failed to pull image with policy "always": Error response from daemon: {"message":"denied: requested access to the resource is denied"} (manager.go:251:0s)
+ERROR: Job failed: failed to pull image "gitlab.nypd.org:8443/devops/cr/maven:3.9-eclipse-temurin-21-alpine-2026-01" with specified policies [always]: Error response from daemon: {"message":"denied: requested access to the resource is denied"} (manager.go:251:0s)
