@@ -1,12 +1,42 @@
-import org.junit.jupiter.api.BeforeEach;
+stages:
+  - build
+  - test
+  - sonar
 
-@BeforeEach
-void setUp() {
-    lenient().when(printhubUtil.getReportUrl(any())).thenReturn("http://mock-url");
-}
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
 
-private Object[] buildRow(String arrId, String topCharge, Date arrDt,
-                           String frstNm, String lastNm,
-                           String nysid, Character sealedFlg) {
-    return new Object[]{arrId, topCharge, arrDt, frstNm, lastNm, nysid, sealedFlg, null}; // null cmplntId
-}
+cache:
+  paths:
+    - .m2/repository/
+
+build:
+  stage: build
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - mvn compile -B
+
+test:
+  stage: test
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - mvn test -B
+  artifacts:
+    when: always
+    reports:
+      junit: target/surefire-reports/TEST-*.xml
+    paths:
+      - target/surefire-reports/
+      - target/site/jacoco/
+
+sonar:
+  stage: sonar
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - mvn sonar:sonar -B
+      -Dsonar.projectKey=your-project-key
+      -Dsonar.host.url=$SONAR_HOST_URL
+      -Dsonar.login=$SONAR_TOKEN
+  only:
+    - feature/backend-unit-tests
+    - main
