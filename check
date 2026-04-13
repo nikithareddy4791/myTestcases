@@ -1,35 +1,25 @@
-replace these 3 tests with single paramaterized one
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import java.util.stream.Stream;
 
-@Test
-    @WithMockUser
-    void getCaseById_userNotAssigned_notSealed_inOffice_returnsOkReadOnly() throws Exception {
-Replace these 3 tests with a single Parameterized one.
-        DDDCase mockCase = new DDDCase();
-        mockCase.setId(100);
-        when(caseService.loadCase(100)).thenReturn(mockCase);
-        mockMvc.perform(get("/case/100")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+@ParameterizedTest(name = "{0}")
+@MethodSource("loadCaseSuccessScenarios")
+@WithMockUser
+void getCaseById_successScenarios_returnsOk(String scenarioName) throws Exception {
+    DDDCase mockCase = new DDDCase();
+    mockCase.setId(100);
+    when(caseService.loadCase(100)).thenReturn(mockCase);
 
+    mockMvc.perform(get("/case/100")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+}
 
- @Test
-    @WithMockUser
-    void 
-getCaseById_caseSealed_userIsSupervisor_returnsOk() throws Exception {
-        DDDCase mockCase = new DDDCase();
-        mockCase.setId(100);
-        when(caseService.loadCase(100)).thenReturn(mockCase);
-        mockMvc.perform(get("/case/100")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
- @Test
-    @WithMockUser
-    void 
-getCaseById_caseSealed_notSupervisor_userInSealedGroup_returnsOkReadOnly() throws Exception {
-        DDDCase mockCase = new DDDCase();
-        mockCase.setId(100);
-        when(caseService.loadCase(100)).thenReturn(mockCase);
+static Stream<Arguments> loadCaseSuccessScenarios() {
+    return Stream.of(
+        Arguments.of("userNotAssigned_notSealed_inOffice_returnsOkReadOnly"),
+        Arguments.of("caseSealed_userIsSupervisor_returnsOk"),
+        Arguments.of("caseSealed_notSupervisor_userInSealedGroup_returnsOkReadOnly")
+    );
 }
