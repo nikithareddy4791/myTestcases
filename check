@@ -1,22 +1,1211 @@
-[ERROR] Failures: 
-[ERROR]   CaseFlowChartTest.createCase_caseExists_caseIsClosed_createsChildCase_returns201:136 Status expected:<201> but was:<400>
-[ERROR]   CaseFlowChartTest.createCase_caseExists_notClosed_userAssigned_returns200:158 Status expected:<200> but was:<400>
-[ERROR]   CaseFlowChartTest.createCase_caseExists_notClosed_userNotAssigned_isSupervisor_returns200:180 Status expected:<200> but was:<400>
-[ERROR]   CaseFlowChartTest.createCase_caseExists_notClosed_userNotAssigned_notSupervisor_inOffice_returns200:202 Status expected:<200> but was:<400>
-[ERROR]   CaseFlowChartTest.createCase_caseExists_notClosed_userNotAssigned_notSupervisor_notInOffice_returns403:221 Status expected:<403> but was:<400>
-[ERROR]   CaseFlowChartTest.createCase_invalidArrestId_returns500:239 Status expected:<500> but was:<400>
-[ERROR]   CaseFlowChartTest.createCase_newArrest_caseDoesNotExist_returns201:114 Status expected:<201> but was:<400>
-[ERROR]   CaseFlowChartTest.createCase_sealedArrest_userNotInSealedGroup_returns403:93 Status expected:<403> but was:<400>
-[ERROR]   CaseFlowChartTest.getCaseById_noAcceptHeader_returns501:406 Status expected:<501> but was:<400>
-[ERROR]   CaseServiceControllerTest.createCaseByArrest_existingCase_returns200:186 Status expected:<200> but was:<400>
-[ERROR]   CaseServiceControllerTest.createCaseByArrest_invalidArrestException_returns500:490 Status expected:<500> but was:<400>
-[ERROR]   CaseServiceControllerTest.createCaseByArrest_newCase_returns201:163 Status expected:<201> but was:<400>
-[ERROR]   CaseServiceControllerTest.createCaseByArrest_noAcceptHeader_returns501:505 Status expected:<501> but was:<400>
-[ERROR]   CaseServiceControllerTest.createCaseByArrest_sealedAccessException_returns403:533 Status expected:<403> but was:<400>
-[ERROR]   CaseServiceControllerTest.createCaseByArrest_sealedAccessException_throws:206 Status expected:<403> but was:<400>
-[ERROR]   CaseServiceControllerTest.createCaseByArrest_serviceThrowsException_returns500:225 Status expected:<500> but was:<400>
-[ERROR] Errors: 
-[ERROR]   CaseServiceTest.createCase_newCase_returnsNewCaseDto:178 » InvalidCategory CATEGORY_NOT_FOUND
-[ERROR]   CaseServiceTest.createCase_withDates_setsDatesOnEntity:274 » InvalidCategory CATEGORY_NOT_FOUND
-[INFO] 
-[ERROR] 
+package org.nnnn.ddd.model;
+
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.threeten.bp.LocalDate;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
+/**
+ * CreateCaseRequest
+ */
+@Validated
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2026-04-10T12:49:17.401-04:00")
+
+
+public class CreateCaseRequest   {
+  @JsonProperty("arrId")
+  private String arrId = null;
+
+  @JsonProperty("parentId")
+  private Integer parentId = null;
+
+  @JsonProperty("proactiveFlg")
+  private Integer proactiveFlg = null;
+
+  @JsonProperty("dddOfficeId")
+  private Integer dddOfficeId = null;
+
+  @JsonProperty("requestDt")
+  private LocalDate requestDt = null;
+
+  @JsonProperty("dueDt")
+  private LocalDate dueDt = null;
+
+  @JsonProperty("categoryId")
+  private Integer categoryId = null;
+
+  public CreateCaseRequest arrId(String arrId) {
+    this.arrId = arrId;
+    return this;
+  }
+
+  /**
+   * Get arrId
+   * @return arrId
+   **/
+  @Schema(required = true, description = "")
+      @NotNull
+
+    public String getArrId() {
+    return arrId;
+  }
+
+  public void setArrId(String arrId) {
+    this.arrId = arrId;
+  }
+
+  public CreateCaseRequest parentId(Integer parentId) {
+    this.parentId = parentId;
+    return this;
+  }
+
+  /**
+   * Get parentId
+   * @return parentId
+   **/
+  @Schema(description = "")
+  
+    public Integer getParentId() {
+    return parentId;
+  }
+
+  public void setParentId(Integer parentId) {
+    this.parentId = parentId;
+  }
+
+  public CreateCaseRequest proactiveFlg(Integer proactiveFlg) {
+    this.proactiveFlg = proactiveFlg;
+    return this;
+  }
+
+  /**
+   * Get proactiveFlg
+   * @return proactiveFlg
+   **/
+  @Schema(required = true, description = "")
+      @NotNull
+
+    public Integer getProactiveFlg() {
+    return proactiveFlg;
+  }
+
+  public void setProactiveFlg(Integer proactiveFlg) {
+    this.proactiveFlg = proactiveFlg;
+  }
+
+  public CreateCaseRequest dddOfficeId(Integer dddOfficeId) {
+    this.dddOfficeId = dddOfficeId;
+    return this;
+  }
+
+  /**
+   * Get dddOfficeId
+   * @return dddOfficeId
+   **/
+  @Schema(required = true, description = "")
+      @NotNull
+
+    public Integer getDddOfficeId() {
+    return dddOfficeId;
+  }
+
+  public void setDddOfficeId(Integer dddOfficeId) {
+    this.dddOfficeId = dddOfficeId;
+  }
+
+  public CreateCaseRequest requestDt(LocalDate requestDt) {
+    this.requestDt = requestDt;
+    return this;
+  }
+
+  /**
+   * Get requestDt
+   * @return requestDt
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public LocalDate getRequestDt() {
+    return requestDt;
+  }
+
+  public void setRequestDt(LocalDate requestDt) {
+    this.requestDt = requestDt;
+  }
+
+  public CreateCaseRequest dueDt(LocalDate dueDt) {
+    this.dueDt = dueDt;
+    return this;
+  }
+
+  /**
+   * Get dueDt
+   * @return dueDt
+   **/
+  @Schema(description = "")
+  
+    @Valid
+    public LocalDate getDueDt() {
+    return dueDt;
+  }
+
+  public void setDueDt(LocalDate dueDt) {
+    this.dueDt = dueDt;
+  }
+
+  public CreateCaseRequest categoryId(Integer categoryId) {
+    this.categoryId = categoryId;
+    return this;
+  }
+
+  /**
+   * Get categoryId
+   * @return categoryId
+   **/
+  @Schema(required = true, description = "")
+      @NotNull
+
+    public Integer getCategoryId() {
+    return categoryId;
+  }
+
+  public void setCategoryId(Integer categoryId) {
+    this.categoryId = categoryId;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    CreateCaseRequest createCaseRequest = (CreateCaseRequest) o;
+    return Objects.equals(this.arrId, createCaseRequest.arrId) &&
+        Objects.equals(this.parentId, createCaseRequest.parentId) &&
+        Objects.equals(this.proactiveFlg, createCaseRequest.proactiveFlg) &&
+        Objects.equals(this.dddOfficeId, createCaseRequest.dddOfficeId) &&
+        Objects.equals(this.requestDt, createCaseRequest.requestDt) &&
+        Objects.equals(this.dueDt, createCaseRequest.dueDt) &&
+        Objects.equals(this.categoryId, createCaseRequest.categoryId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(arrId, parentId, proactiveFlg, dddOfficeId, requestDt, dueDt, categoryId);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class CreateCaseRequest {\n");
+    
+    sb.append("    arrId: ").append(toIndentedString(arrId)).append("\n");
+    sb.append("    parentId: ").append(toIndentedString(parentId)).append("\n");
+    sb.append("    proactiveFlg: ").append(toIndentedString(proactiveFlg)).append("\n");
+    sb.append("    dddOfficeId: ").append(toIndentedString(dddOfficeId)).append("\n");
+    sb.append("    requestDt: ").append(toIndentedString(requestDt)).append("\n");
+    sb.append("    dueDt: ").append(toIndentedString(dueDt)).append("\n");
+    sb.append("    categoryId: ").append(toIndentedString(categoryId)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
+}
+
+
+=========================
+package org.nnnn.ddd.service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.modelmapper.ModelMapper;
+import org.nnnn.ddd.TestConfig;
+import org.nnnn.ddd.api.CaseApiController;
+import org.nnnn.ddd.exceptions.CaseAccessException;
+import org.nnnn.ddd.exceptions.InvalidArrestException;
+import org.nnnn.ddd.exceptions.SealedAccessException;
+import org.nnnn.ddd.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.util.stream.Stream;
+
+/**
+ * Tests based on:
+ * 1. ddd_Create_Case_Flowchart — POST /case (createCaseByArrest)
+ * 2. ddd_Case_Drilldown_Flowchart — GET /case/{caseId} (getCaseById)
+ */
+@WebMvcTest(controllers = CaseApiController.class)
+@Import({TestConfig.class, CaseApiController.class})
+public class CaseFlowChartTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @SpyBean
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private javax.sql.DataSource dataSource;
+
+    @MockBean
+    private ModelMapper modelMapper;
+
+    @MockBean
+    private CaseService caseService;
+
+    @MockBean
+    private AuthenticationService authenticationService;
+
+    @MockBean
+    private AuditService auditService;
+
+    private CreateCaseRequest createRequest;
+
+    @BeforeEach
+    void setUp() {
+        createRequest = new CreateCaseRequest();
+        createRequest.setArrId("ARR001");
+        createRequest.setDddOfficeId(1);
+        createRequest.setProactiveFlg(0);
+    }
+
+    // =========================================================================
+    // CREATE CASE FLOWCHART — POST /case
+    // =========================================================================
+
+    /**
+     * FLOW: Arrest is SEALED + user NOT in SEALED-SG
+     * → HTTP 403 FORBIDDEN with error code 1002 SEALED_ACCESS_PERM
+     */
+    @Test
+    @WithMockUser
+    void createCase_sealedArrest_userNotInSealedGroup_returns403() throws Exception {
+        when(caseService.createCase(any(CreateCaseRequest.class)))
+                .thenThrow(new SealedAccessException("SEALED_ACCESS_PERM"));
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isForbidden());
+    }
+
+    /**
+     * FLOW: Arrest not sealed + case with arrest ID does NOT exist
+     * → Create new case → HTTP 201 CREATED with id
+     */
+    @Test
+    @WithMockUser
+    void createCase_newArrest_caseDoesNotExist_returns201() throws Exception {
+        DDDCase newCase = new DDDCase();
+        newCase.setId(101);
+        newCase.setNew(true);
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(newCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(101));
+    }
+
+    /**
+     * FLOW: Case exists + case IS closed
+     * → Create child case → HTTP 201 CREATED with id and parentId
+     */
+    @Test
+    @WithMockUser
+    void createCase_caseExists_caseIsClosed_createsChildCase_returns201() throws Exception {
+        DDDCase childCase = new DDDCase();
+        childCase.setId(102);
+        childCase.setNew(true); // child case is new
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(childCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(102));
+    }
+
+    /**
+     * FLOW: Case exists + case NOT closed + user IS assigned to case
+     * → Read/Write case edit screen → HTTP 200 OK with id
+     */
+    @Test 
+    @WithMockUser
+    void createCase_caseExists_notClosed_userAssigned_returns200() throws Exception {
+        DDDCase existingCase = new DDDCase();
+        existingCase.setId(100);
+        existingCase.setNew(false);
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(existingCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100));
+    }
+
+    /**
+     * FLOW: Case exists + case NOT closed + user NOT assigned + user IS supervisor
+     * → Read/Write case edit screen → HTTP 200 OK with id
+     */
+    @Test
+    @WithMockUser
+    void createCase_caseExists_notClosed_userNotAssigned_isSupervisor_returns200() throws Exception {
+        DDDCase existingCase = new DDDCase();
+        existingCase.setId(100);
+        existingCase.setNew(false);
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(existingCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100));
+    }
+
+    /**
+     * FLOW: Case exists + case NOT closed + user NOT assigned + NOT supervisor
+     *       + user IS in case's office → Read-Only case screen → HTTP 200 OK
+     */
+    @Test
+    @WithMockUser
+    void createCase_caseExists_notClosed_userNotAssigned_notSupervisor_inOffice_returns200() throws Exception {
+        DDDCase existingCase = new DDDCase();
+        existingCase.setId(100);
+        existingCase.setNew(false);
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(existingCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * FLOW: Case exists + case NOT closed + user NOT assigned + NOT supervisor
+     *       + user NOT in case's office
+     * → HTTP 403 FORBIDDEN with error code 1004 CASE_ACCESS_PERM
+     */
+    @Test
+    @WithMockUser
+    void createCase_caseExists_notClosed_userNotAssigned_notSupervisor_notInOffice_returns403() throws Exception {
+        when(caseService.createCase(any(CreateCaseRequest.class)))
+                .thenThrow(new SealedAccessException("CASE_ACCESS_PERM"));
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isForbidden());
+    }
+
+    /**
+     * FLOW: Invalid arrest ID
+     * → HTTP 500 with error code ARR_NOT_FOUND
+     */
+    @Test
+    @WithMockUser
+    void createCase_invalidArrestId_returns500() throws Exception {
+        when(caseService.createCase(any(CreateCaseRequest.class)))
+                .thenThrow(new InvalidArrestException("ARR_NOT_FOUND"));
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    /**
+     * FLOW: Unauthenticated user tries to create case
+     * → HTTP 401 UNAUTHORIZED
+     */
+    @Test
+    void createCase_noAuth_returns401() throws Exception {
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // CASE DRILLDOWN FLOWCHART — GET /case/{caseId}
+    // =========================================================================
+
+    /**
+     * FLOW: User IS assigned to case
+     * → Open Case Information screen in Read/Write mode → HTTP 200 OK
+     */
+    @Test
+    @WithMockUser
+    void getCaseById_userAssigned_returnsOkReadWrite() throws Exception {
+        DDDCase mockCase = new DDDCase();
+        mockCase.setId(100);
+        mockCase.setArrId("ARR001");
+
+        when(caseService.loadCase(100)).thenReturn(mockCase);
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100));
+    }
+
+//     /**
+//      * FLOW: User NOT assigned + case NOT sealed + user IS in case's office
+//      * → Open Case Information screen in Read-Only mode → HTTP 200 OK
+//      */
+//     @Test
+//     @WithMockUser
+//     void getCaseById_userNotAssigned_notSealed_inOffice_returnsOkReadOnly() throws Exception {
+//         DDDCase mockCase = new DDDCase();
+//         mockCase.setId(100);
+
+//         when(caseService.loadCase(100)).thenReturn(mockCase);
+
+//         mockMvc.perform(get("/case/100")
+//                 .accept(MediaType.APPLICATION_JSON))
+//                 .andExpect(status().isOk());
+//     }
+
+    /**
+     * FLOW: User NOT assigned + case NOT sealed + user NOT in case's office
+     * → HTTP 403 FORBIDDEN with error 1004 CASE_ACCESS_PERM
+     */
+    @Test
+    @WithMockUser
+    void getCaseById_userNotAssigned_notSealed_notInOffice_returns403() throws Exception {
+        when(caseService.loadCase(100))
+                .thenThrow(new CaseAccessException("CASE_ACCESS_PERM")); 
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+//    /**
+//     * FLOW: Case IS sealed + user IS supervisor
+//     * → Open Case Information screen in Read/Write mode → HTTP 200 OK
+//     */
+//     @Test
+//     @WithMockUser
+//     void getCaseById_caseSealed_userIsSupervisor_returnsOk() throws Exception {
+//         DDDCase mockCase = new DDDCase();
+//         mockCase.setId(100);
+
+//         when(caseService.loadCase(100)).thenReturn(mockCase);
+
+//         mockMvc.perform(get("/case/100")
+//                 .accept(MediaType.APPLICATION_JSON))
+//                 .andExpect(status().isOk());
+//     }
+
+//     /**
+//      * FLOW: Case IS sealed + user NOT supervisor + user IS in SEALED-SG group
+//      * → Open Case Information screen in Read-Only mode → HTTP 200 OK
+//      */
+//     @Test
+//     @WithMockUser
+//     void getCaseById_caseSealed_notSupervisor_userInSealedGroup_returnsOkReadOnly() throws Exception {
+//         DDDCase mockCase = new DDDCase();
+//         mockCase.setId(100);
+
+//         when(caseService.loadCase(100)).thenReturn(mockCase);
+
+//         mockMvc.perform(get("/case/100")
+//                 .accept(MediaType.APPLICATION_JSON))
+//                 .andExpect(status().isOk());
+//     }
+
+
+        @ParameterizedTest(name = "{0}")
+        @MethodSource("loadCaseSuccessScenarios")
+        @WithMockUser
+        void getCaseById_successScenarios_returnsOk(String scenarioName) throws Exception {
+        DDDCase mockCase = new DDDCase();
+        mockCase.setId(100);
+        when(caseService.loadCase(100)).thenReturn(mockCase);
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        }
+
+        static Stream<Arguments> loadCaseSuccessScenarios() {
+        return Stream.of(
+                Arguments.of("userNotAssigned_notSealed_inOffice_returnsOkReadOnly"),
+                Arguments.of("caseSealed_userIsSupervisor_returnsOk"),
+                Arguments.of("caseSealed_notSupervisor_userInSealedGroup_returnsOkReadOnly")
+        );
+        }
+
+
+    /**
+     * FLOW: Case IS sealed + user NOT supervisor + user NOT in SEALED-SG group
+     * → HTTP 403 FORBIDDEN with error 1002 SEALED_ACCESS_PERM
+     * → Display "This Arrest ID is SEALED. Contact your Supervisor."
+     */
+    @Test
+    @WithMockUser
+    void getCaseById_caseSealed_notSupervisor_notInSealedGroup_returns403() throws Exception {
+        when(caseService.loadCase(100))
+                .thenThrow(new SealedAccessException("SEALED_ACCESS_PERM"));
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    /**
+     * FLOW: Unauthenticated user tries to access case
+     * → HTTP 401 UNAUTHORIZED
+     */
+    @Test
+    void getCaseById_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    /**
+     * FLOW: No Accept header
+     * → HTTP 405 METHOD NOT ALLOWED (unreachable NOT_IMPLEMENTED due to routing)
+     */
+    @Test
+    @WithMockUser
+    void getCaseById_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isNotImplemented());
+    }
+}
+
+====================
+package org.nnnn.ddd.service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
+import org.nnnn.ddd.TestConfig;
+import org.nnnn.ddd.api.CaseApiController;
+import org.nnnn.ddd.exceptions.CaseNotFoundException;
+import org.nnnn.ddd.exceptions.FileDeleteException;
+import org.nnnn.ddd.exceptions.InvalidArrestException;
+import org.nnnn.ddd.exceptions.SealedAccessException;
+import org.nnnn.ddd.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Collections;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(controllers = CaseApiController.class)
+@Import({TestConfig.class, CaseApiController.class})
+public class CaseServiceControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    
+    @MockBean
+    private javax.sql.DataSource dataSource;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private ModelMapper modelMapper;
+
+    @MockBean
+    private CaseService caseService;
+
+    @MockBean
+    private AuthenticationService authenticationService;
+
+    @MockBean
+    private AuditService auditService;
+
+    private DDDCase mockCaseDto;
+    private DDDCaseStats mockStats;
+
+    @BeforeEach
+    void setUp() {
+        mockCaseDto = new DDDCase();
+        mockCaseDto.setId(100);
+        mockCaseDto.setArrId("ARR001");
+
+        mockStats = new DDDCaseStats();
+        mockStats.setOverdueCount(3);
+        mockStats.setComingDueCount(2);
+    }
+
+    // =========================================================================
+    // GET /case/stats
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void getCaseStats_returnsOkWithStats() throws Exception {
+        when(caseService.getCaseStats(null)).thenReturn(mockStats);
+
+        mockMvc.perform(get("/case/stats")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.overdueCount").value(3))
+                .andExpect(jsonPath("$.comingDueCount").value(2));
+
+        verify(caseService, times(1)).getCaseStats(null);
+    }
+
+    @Test
+    void getCaseStats_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/case/stats")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // GET /case/{caseId}
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void getCaseById_existingCase_returnsOk() throws Exception {
+        when(caseService.loadCase(100)).thenReturn(mockCaseDto);
+
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100))
+                .andExpect(jsonPath("$.arrId").value("ARR001"));
+
+        verify(caseService, times(1)).loadCase(100);
+    }
+
+    @Test
+    @WithMockUser
+    void getCaseById_caseNotFound_returns404() throws Exception {
+        when(caseService.loadCase(999)).thenThrow(new CaseNotFoundException("Case not found"));
+
+        mockMvc.perform(get("/case/999")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    void getCaseById_noAcceptHeader_returns501() throws Exception {
+        mockMvc.perform(get("/case/100"))
+                .andExpect(status().isNotImplemented());
+    }
+
+    @Test
+    void getCaseById_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/case/100")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // POST /case  (createCaseByArrest)
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void createCaseByArrest_newCase_returns201() throws Exception {
+        CreateCaseRequest request = new CreateCaseRequest();
+        request.setArrId("ARR002");
+        request.setDddOfficeId(1);
+        request.setProactiveFlg(0);
+
+        DDDCase newCase = new DDDCase();
+        newCase.setId(101);
+        newCase.setNew(true);
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(newCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(101));
+    }
+
+    @Test
+    @WithMockUser
+    void createCaseByArrest_existingCase_returns200() throws Exception {
+        CreateCaseRequest request = new CreateCaseRequest();
+        request.setArrId("ARR001");
+        request.setDddOfficeId(1);
+        request.setProactiveFlg(0);
+
+        DDDCase existingCase = new DDDCase();
+        existingCase.setId(100);
+        existingCase.setNew(false);
+
+        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(existingCase);
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100));
+    }
+
+    @Test
+    @WithMockUser
+    void createCaseByArrest_sealedAccessException_throws() throws Exception {
+        CreateCaseRequest request = new CreateCaseRequest();
+        request.setArrId("ARR001");
+        request.setDddOfficeId(1);
+        request.setProactiveFlg(0);
+
+        when(caseService.createCase(any(CreateCaseRequest.class)))
+                .thenThrow(new SealedAccessException("No sealed access"));
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser
+    void createCaseByArrest_serviceThrowsException_returns500() throws Exception {
+        CreateCaseRequest request = new CreateCaseRequest();
+        request.setArrId("ARR001");
+        request.setDddOfficeId(1);
+        request.setProactiveFlg(0);
+
+        when(caseService.createCase(any(CreateCaseRequest.class)))
+                .thenThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void createCaseByArrest_noAuth_returns401() throws Exception {
+        CreateCaseRequest request = new CreateCaseRequest();
+        request.setArrId("ARR001");
+
+        mockMvc.perform(post("/case")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // PUT /case/{caseId}  (updateCase)
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void updateCase_validCase_returnsOk() throws Exception {
+        when(caseService.saveCase(any(DDDCase.class))).thenReturn(mockCaseDto);
+
+        mockMvc.perform(put("/case/100")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(mockCaseDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100));
+
+        verify(caseService, times(1)).saveCase(any(DDDCase.class));
+    }
+
+    @Test
+    @WithMockUser
+    void updateCase_caseNotFound_returns500() throws Exception {
+        when(caseService.saveCase(any(DDDCase.class)))
+                .thenThrow(new CaseNotFoundException("Case not found"));
+
+        mockMvc.perform(put("/case/100")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(mockCaseDto)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void updateCase_noAuth_returns401() throws Exception {
+        mockMvc.perform(put("/case/100")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(mockCaseDto)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // POST /case/list  (getCaseList)
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void getCaseList_validFilter_returnsOk() throws Exception {
+        CaseFilter filter = new CaseFilter();
+        filter.setArrId("ARR001");
+        filter.setPageNumber(0);
+        filter.setPageSize(10);
+
+        CaseListResponse response = new CaseListResponse();
+        response.setTotalElements(1L);
+        response.setCaseSummaries(Collections.emptyList());
+
+        when(caseService.findCases(any(CaseFilter.class))).thenReturn(response);
+
+        mockMvc.perform(post("/case/list")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(filter)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1));
+
+        verify(caseService, times(1)).findCases(any(CaseFilter.class));
+    }
+
+    @Test
+    @WithMockUser
+    void getCaseList_serviceThrowsException_returns500() throws Exception {
+        CaseFilter filter = new CaseFilter();
+        filter.setArrId("ARR001");
+
+        when(caseService.findCases(any(CaseFilter.class)))
+                .thenThrow(new RuntimeException("DB error"));
+
+        mockMvc.perform(post("/case/list")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(filter)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void getCaseList_noAuth_returns401() throws Exception {
+        mockMvc.perform(post("/case/list")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new CaseFilter())))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // POST /case/{caseId}/note  (createCaseNote)
+    // =========================================================================
+
+    @Test
+    @WithMockUser
+    void createCaseNote_validNote_returnsOk() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "PDF content".getBytes());
+        MockMultipartFile noteDesc = new MockMultipartFile(
+                "noteDesc", "", MediaType.TEXT_PLAIN_VALUE, "Test note".getBytes());
+        MockMultipartFile fileNm = new MockMultipartFile(
+                "fileNm", "", MediaType.TEXT_PLAIN_VALUE, "test.pdf".getBytes());
+
+        when(caseService.saveNote(eq(100), eq("Test note"), eq("test.pdf"), any()))
+                .thenReturn(mockCaseDto);
+
+        mockMvc.perform(multipart("/case/100/note")
+                .file(file)
+                .file(noteDesc)
+                .file(fileNm)
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100));
+    }
+
+    @Test
+    @WithMockUser
+    void createCaseNote_caseNotFound_returns500() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "PDF content".getBytes());
+        MockMultipartFile noteDesc = new MockMultipartFile(
+                "noteDesc", "", MediaType.TEXT_PLAIN_VALUE, "Note".getBytes());
+
+        when(caseService.saveNote(eq(999), any(), any(), any()))
+                .thenThrow(new CaseNotFoundException("Case not found"));
+
+        mockMvc.perform(multipart("/case/999/note")
+                .file(file)
+                .file(noteDesc)
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @WithMockUser
+    void createCaseNote_withoutFile_returnsOk() throws Exception {
+        MockMultipartFile noteDesc = new MockMultipartFile(
+                "noteDesc", "", MediaType.TEXT_PLAIN_VALUE, "Note only".getBytes());
+
+        when(caseService.saveNote(eq(100), eq("Note only"), isNull(), isNull()))
+                .thenReturn(mockCaseDto);
+
+        mockMvc.perform(multipart("/case/100/note")
+                .file(noteDesc)
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void createCaseNote_noAuth_returns401() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "content".getBytes());
+        MockMultipartFile noteDesc = new MockMultipartFile(
+                "noteDesc", "", MediaType.TEXT_PLAIN_VALUE, "Note".getBytes());
+
+        mockMvc.perform(multipart("/case/100/note")
+                .file(file)
+                .file(noteDesc)
+                .with(csrf())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+@WithMockUser
+void getCaseUploadById_validIds_returnsFileWithHeaders() throws Exception {
+    byte[] fileContent = "PDF content".getBytes();
+    Resource mockResource = new ByteArrayResource(fileContent);
+    Object[] fileNameAndResource = new Object[]{"test.pdf", mockResource};
+
+    when(caseService.getFile(100, 1)).thenReturn(fileNameAndResource);
+
+    mockMvc.perform(get("/case/100/file/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=\"test.pdf\""))
+            .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS,
+                    HttpHeaders.CONTENT_DISPOSITION))
+            .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM));
+
+    verify(caseService, times(1)).getFile(100, 1);
+}
+
+@Test
+@WithMockUser
+void getCaseUploadById_fileNotFound_returns500() throws Exception {
+    when(caseService.getFile(999, 1))
+            .thenThrow(new RuntimeException("File not found"));
+
+    mockMvc.perform(get("/case/999/file/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
+}
+
+@Test
+@WithMockUser
+void getCaseUploadById_caseNotFound_returns500() throws Exception {
+    when(caseService.getFile(999, 99))
+            .thenThrow(new CaseNotFoundException("Case not found"));
+
+    mockMvc.perform(get("/case/999/file/99")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
+}
+
+@Test
+@WithMockUser
+void getCaseUploadById_noAcceptHeader_returns501() throws Exception {
+    mockMvc.perform(get("/case/100/file/1"))
+            .andExpect(status().isNotImplemented());
+}
+
+@Test
+void getCaseUploadById_noAuth_returns401() throws Exception {
+    mockMvc.perform(get("/case/100/file/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+}
+
+@Test
+@WithMockUser
+void createCaseByArrest_invalidArrestException_returns500() throws Exception {
+        CreateCaseRequest request= new CreateCaseRequest();
+        request.setArrId("ARR001");
+        request.setDddOfficeId(1);
+        request.setProactiveFlg(0);
+    when(caseService.createCase(any(CreateCaseRequest.class)))
+            .thenThrow(new InvalidArrestException("Invalid arrest"));
+
+    mockMvc.perform(post("/case")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isInternalServerError());
+}
+
+@Test
+@WithMockUser
+void createCaseByArrest_noAcceptHeader_returns501() throws Exception {
+        CreateCaseRequest request= new CreateCaseRequest();
+        request.setArrId("ARR001");
+        request.setDddOfficeId(1);
+        request.setProactiveFlg(0);
+
+    mockMvc.perform(post("/case")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isNotImplemented());
+}
+
+@Test
+@WithMockUser
+void getCaseStats_serviceThrowsException_returns500() throws Exception {
+    when(caseService.getCaseStats(null)).thenThrow(new RuntimeException("DB error"));
+
+    mockMvc.perform(get("/case/stats")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
+}
+
+@Test
+@WithMockUser
+void createCaseByArrest_sealedAccessException_returns403() throws Exception {
+         CreateCaseRequest request= new CreateCaseRequest();
+        request.setArrId("ARR001");
+        request.setDddOfficeId(1);
+        request.setProactiveFlg(0);
+    when(caseService.createCase(any(CreateCaseRequest.class)))
+            .thenThrow(new SealedAccessException("Sealed access"));
+
+    mockMvc.perform(post("/case")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON)            
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isForbidden());
+}
+
+@Test
+@WithMockUser
+void deleteCaseUploadById_noAcceptHeader_returns403() throws Exception {
+    doThrow(new FileDeleteException("Failed to delete file 1"))
+            .when(caseService).deleteFile(100, 1);
+    mockMvc.perform(delete("/case/100/upload/1"))
+            .andExpect(status().isForbidden());
+}
+
+@Test
+@WithMockUser
+void deleteCaseUploadById_fileDeleteException_returns403() throws Exception {
+    doThrow(new FileDeleteException("Failed to delete file 1"))
+            .when(caseService).deleteFile(100, 1);
+    mockMvc.perform(delete("/case/100/upload/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+}
+
+@Test
+@WithMockUser
+void deleteCaseUploadById_serviceThrowsException_returns403() throws Exception {
+    doThrow(new FileDeleteException("Failed to delete file 1"))
+            .when(caseService).deleteFile(100, 1);
+
+    mockMvc.perform(delete("/case/100/upload/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+}
+
+}
+
+
