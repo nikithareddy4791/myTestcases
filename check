@@ -1,11 +1,31 @@
-Remove this field injection and use constructor injection instead.
+@org.springframework.beans.factory.annotation.Autowired
+public CacheApiController(ObjectMapper objectMapper, HttpServletRequest request, CacheService cacheService) {
+    this.objectMapper = objectMapper;
+    this.request = request;
+    this.cacheService = cacheService;
+}
 
-private CacheService cacheService;
-    @Autowired
-Remove this field injection and use constructor injection instead.
-    private ModelMapper modelMapper;
-    private static final Logger log = LoggerFactory.getLogger(ReferenceDataService.class);
-    @Cacheable("dddCodeRef")
-    public List<ReferenceCode> getRefCodeByType(final String codeType) {
-        return codeRefRepository.findDTOByCodeTypeOrderByIdAsc(codeType);
-    }
+
+private final ModelMapper modelMapper;
+
+public ReferenceDataService(ADAListRepository adaListRepository,
+        CategoryListRepository categoryListRepository,
+        TagListRepository tagListRepository,
+        ItemListRepository itemListRepository,
+        StatusListRepository statusListRepository,
+        DDDOfficeListRepository dddOfficeListRepository,
+        CodeRefRepository codeRefRepository,
+        AuthenticationService authenticationService,
+        CacheService cacheService,
+        ModelMapper modelMapper) {
+    this.adaListRepository = adaListRepository;
+    this.categoryListRepository = categoryListRepository;
+    this.tagListRepository = tagListRepository;
+    this.itemListRepository = itemListRepository;
+    this.statusListRepository = statusListRepository;
+    this.dddOfficeListRepository = dddOfficeListRepository;
+    this.codeRefRepository = codeRefRepository;
+    this.authenticationService = authenticationService;
+    this.cacheService = cacheService;
+    this.modelMapper = modelMapper;
+}
