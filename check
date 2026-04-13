@@ -1,9 +1,11 @@
-    private CacheService cacheService;
+Remove this field injection and use constructor injection instead.
+
+private CacheService cacheService;
     @Autowired
 Remove this field injection and use constructor injection instead.
     private ModelMapper modelMapper;
     private static final Logger log = LoggerFactory.getLogger(ReferenceDataService.class);
-    @Cacheable("dluCodeRef")
+    @Cacheable("dddCodeRef")
     public List<ReferenceCode> getRefCodeByType(final String codeType) {
         return codeRefRepository.findDTOByCodeTypeOrderByIdAsc(codeType);
     }
