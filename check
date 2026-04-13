@@ -1,31 +1,22 @@
-@org.springframework.beans.factory.annotation.Autowired
-public CacheApiController(ObjectMapper objectMapper, HttpServletRequest request, CacheService cacheService) {
-    this.objectMapper = objectMapper;
-    this.request = request;
-    this.cacheService = cacheService;
-}
-
-
-private final ModelMapper modelMapper;
-
-public ReferenceDataService(ADAListRepository adaListRepository,
-        CategoryListRepository categoryListRepository,
-        TagListRepository tagListRepository,
-        ItemListRepository itemListRepository,
-        StatusListRepository statusListRepository,
-        DDDOfficeListRepository dddOfficeListRepository,
-        CodeRefRepository codeRefRepository,
-        AuthenticationService authenticationService,
-        CacheService cacheService,
-        ModelMapper modelMapper) {
-    this.adaListRepository = adaListRepository;
-    this.categoryListRepository = categoryListRepository;
-    this.tagListRepository = tagListRepository;
-    this.itemListRepository = itemListRepository;
-    this.statusListRepository = statusListRepository;
-    this.dddOfficeListRepository = dddOfficeListRepository;
-    this.codeRefRepository = codeRefRepository;
-    this.authenticationService = authenticationService;
-    this.cacheService = cacheService;
-    this.modelMapper = modelMapper;
-}
+[ERROR] Failures: 
+[ERROR]   CaseFlowChartTest.createCase_caseExists_caseIsClosed_createsChildCase_returns201:136 Status expected:<201> but was:<400>
+[ERROR]   CaseFlowChartTest.createCase_caseExists_notClosed_userAssigned_returns200:158 Status expected:<200> but was:<400>
+[ERROR]   CaseFlowChartTest.createCase_caseExists_notClosed_userNotAssigned_isSupervisor_returns200:180 Status expected:<200> but was:<400>
+[ERROR]   CaseFlowChartTest.createCase_caseExists_notClosed_userNotAssigned_notSupervisor_inOffice_returns200:202 Status expected:<200> but was:<400>
+[ERROR]   CaseFlowChartTest.createCase_caseExists_notClosed_userNotAssigned_notSupervisor_notInOffice_returns403:221 Status expected:<403> but was:<400>
+[ERROR]   CaseFlowChartTest.createCase_invalidArrestId_returns500:239 Status expected:<500> but was:<400>
+[ERROR]   CaseFlowChartTest.createCase_newArrest_caseDoesNotExist_returns201:114 Status expected:<201> but was:<400>
+[ERROR]   CaseFlowChartTest.createCase_sealedArrest_userNotInSealedGroup_returns403:93 Status expected:<403> but was:<400>
+[ERROR]   CaseFlowChartTest.getCaseById_noAcceptHeader_returns501:406 Status expected:<501> but was:<400>
+[ERROR]   CaseServiceControllerTest.createCaseByArrest_existingCase_returns200:186 Status expected:<200> but was:<400>
+[ERROR]   CaseServiceControllerTest.createCaseByArrest_invalidArrestException_returns500:490 Status expected:<500> but was:<400>
+[ERROR]   CaseServiceControllerTest.createCaseByArrest_newCase_returns201:163 Status expected:<201> but was:<400>
+[ERROR]   CaseServiceControllerTest.createCaseByArrest_noAcceptHeader_returns501:505 Status expected:<501> but was:<400>
+[ERROR]   CaseServiceControllerTest.createCaseByArrest_sealedAccessException_returns403:533 Status expected:<403> but was:<400>
+[ERROR]   CaseServiceControllerTest.createCaseByArrest_sealedAccessException_throws:206 Status expected:<403> but was:<400>
+[ERROR]   CaseServiceControllerTest.createCaseByArrest_serviceThrowsException_returns500:225 Status expected:<500> but was:<400>
+[ERROR] Errors: 
+[ERROR]   CaseServiceTest.createCase_newCase_returnsNewCaseDto:178 » InvalidCategory CATEGORY_NOT_FOUND
+[ERROR]   CaseServiceTest.createCase_withDates_setsDatesOnEntity:274 » InvalidCategory CATEGORY_NOT_FOUND
+[INFO] 
+[ERROR] 
