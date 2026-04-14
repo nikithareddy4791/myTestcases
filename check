@@ -1,124 +1,13 @@
- @Test
-    @DisplayName("createCase - creates new case successfully")
-    void createCase_newCase_returnsNewCaseDto() {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDddOfficeId(1);
-        request.setProactiveFlg(0);
-        request.setCategoryId(1);
+Remove this use of "ISO8601DateFormat"; it is deprecated. and Remove this use of "ISO8601Utils"; it is deprecated.
 
-        DddOfficeList office = new DddOfficeList();
-        office.setId(1);
-        StatusList notStarted = new StatusList();
-        notStarted.setId(AppConstants.STATUS_NOT_STARTED);
-
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-        when(caseRepository.findByArrIdOrderByIdDesc("ARR001")).thenReturn(Collections.emptyList());
-        when(DDDOfficeListRepository.findById(1)).thenReturn(Optional.of(office));
-        when(statusListRepository.findById(AppConstants.STATUS_NOT_STARTED)).thenReturn(Optional.of(notStarted));
-        when(modelMapper.map(any(StatusList.class),eq(Status.class))).thenReturn(new Status());
-        when(caseRepository.save(any())).thenAnswer(inv -> {
-            org.nnnn.ddd.entity.DddCase c = inv.getArgument(0);
-            c.setId(101);
-            return c;
-        });
-
-        org.nnnn.ddd.model.DDDCase result = caseService.createCase(request);
-
-        assertThat(result.isNew()).isTrue();
-        verify(caseRepository).save(any());
-    }
-
-
-
-===============444
-
- @Test
-    @DisplayName("createCase - with requestDt and dueDt sets dates on entity")
-    void createCase_withDates_setsDatesOnEntity() {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDddOfficeId(1);
-        request.setProactiveFlg(0);
-        request.setCategoryId(1);
-        request.setRequestDt(LocalDate.now());
-        request.setDueDt(LocalDate.now().plusDays(30));
-
-        DddOfficeList office = new DddOfficeList();
-        StatusList notStarted = new StatusList();
-
-        when(cdwRepository.getArrestInfo("ARR001")).thenReturn(arrestInfo);
-        when(caseRepository.findByArrIdOrderByIdDesc("ARR001")).thenReturn(Collections.emptyList());
-        when(DDDOfficeListRepository.findById(1)).thenReturn(Optional.of(office));
-        when(modelMapper.map(any(StatusList.class),eq(Status.class))).thenReturn(new Status());
-        when(statusListRepository.findById(AppConstants.STATUS_NOT_STARTED)).thenReturn(Optional.of(notStarted));
-
-        caseService.createCase(request);
-
-        verify(caseRepository).save(argThat(c ->
-                ((org.nnnn.ddd.entity.DddCase) c).getRequestDt() != null &&
-                ((org.nnnn.ddd.entity.DddCase) c).getDueDt() != null
-        ));
-    }
-
-================
-
-  @Transactional
-    public DDDCase createCase(final CreateCaseRequest request) {
-        String username = authenticationService.getUsername();
-        log.info("createCase for " + username + " " + request.getArrId().trim());
-        ArrestInfo arrInfo = null;
-        try {
-            arrInfo = cdwRepository.getArrestInfo(request.getArrId().trim());
-        } catch (Exception e){
-            throw new InvalidArrestException("Arrest "+request.getArrId().trim()+" not found");
-        }
-        log.info(arrInfo.toString());
-        if (!authenticationService.hasSealedAccess() && "Y".equals(arrInfo.getArrSealedFlg())) {
-            throw new SealedAccessException("User has no sealed access");
-        }
-        List<DddCase> existingParent = caseRepository.findByArrIdOrderByIdDesc(request.getArrId().trim());
-        if (request.getParentId()==null && existingParent != null && existingParent.size() > 0) {
-            log.info("Case Exists " + existingParent.get(0).toString());
-            DDDCase json = new DDDCase();
-            json.setId(existingParent.get(0).getId());
-            Status status = modelMapper.map(existingParent.get(0).getStatus(), Status.class);
-            json.setStatus(status);
-            return json;
-        } else {
-            DddOfficeList dddOffice = dddOfficeListRepository.findById(request.getDddOfficeId()).orElse(null);
-            if(dddOffice == null){
-                throw new InvalidDDDOfficeException(ErrorCode.DDD_OFFICE_NOT_FOUND.getMessage());
-            }
-            CategoryList category = categoryListRepository.findById(request.getCategoryId()).orElse(null);
-            if(category == null){
-                throw new InvalidCategoryException(ErrorCode.CATEGORY_NOT_FOUND.getMessage());
-            }
-            StatusList notStarted = statusListRepository.findById(AppConstants.STATUS_NOT_STARTED).orElse(null);
-            DddCase entityCase = new DddCase();
-            entityCase.setArrId(request.getArrId().trim());
-            entityCase.setDdd(dddOffice);
-            entityCase.setCategory(category);
-            entityCase.setStatus(notStarted);
-            entityCase.setProactiveFlg((short) request.getProactiveFlg().intValue());
-            if (request.getDueDt() != null) {
-                entityCase.setDueDt(
-                        DateTimeUtils.toDate(request.getDueDt().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-            }
-            if (request.getRequestDt() != null) {
-                entityCase.setRequestDt(
-                        DateTimeUtils.toDate(request.getRequestDt().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-            } else {
-                entityCase.setRequestDt(new Date());
-            }
-            entityCase.setDvFlg((short) arrInfo.getDvFlg().intValue());
-            entityCase.setIndexFlg((short) arrInfo.getIndexCrimeFlg().intValue());
-            entityCase.setFelonyFlg((short) arrInfo.getFelonyFlg().intValue());
-            caseRepository.save(entityCase);
-            log.info("Case Created " + entityCase.getId());
-            DDDCase dtoCase = new DDDCase();
-            dtoCase.setId(entityCase.getId());
-            dtoCase.setNew(true);
-            return dtoCase;
-        }
-    }
+private static final long serialVersionUID = 1L;
+  // Same as ISO8601DateFormat but serializing milliseconds.
+  @Override
+  public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition fieldPosition) {
+Uncovered code
+    String value = ISO8601Utils.format(date, true);
+Remove this use of "ISO8601Utils"; it is deprecated.
+    toAppendTo.append(value);
+    return toAppendTo;
+  }
+}
