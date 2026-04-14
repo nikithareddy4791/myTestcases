@@ -1,37 +1,6 @@
-
-
-@Override
-  public T deserialize(JsonParser parser, DeserializationContext context) throws IOException {
-    //NOTE: Timestamps contain no timezone info, and are always in configured TZ. Only
-    //string values have to be adjusted to the configured TZ.
-    switch (parser.getCurrentTokenId()) {
-Remove this use of "getCurrentTokenId"; it is deprecated.
-      case JsonTokenId.ID_NUMBER_FLOAT: {
-        BigDecimal value = parser.getDecimalValue();
-        long seconds = value.longValue();
-        int nanoseconds = DecimalUtils.extractNanosecondDecimal(value, seconds);
-Remove this use of "extractNanosecondDecimal"; it is deprecated.
-        return fromNanoseconds.apply(new FromDecimalArguments(
-            seconds, nanoseconds, getZone(context)));
-      }
-      case JsonTokenId.ID_NUMBER_INT: {
-
-//string values have to be adjusted to the configured TZ.
-    switch (parser.getCurrentTokenId()) {
-Remove this use of "getCurrentTokenId"; it is deprecated.
-      case JsonTokenId.ID_NUMBER_FLOAT: {
-        BigDecimal value = parser.getDecimalValue();
-        long seconds = value.longValue();
-        int nanoseconds = DecimalUtils.extractNanosecondDecimal(value, seconds);
-
-
-Remove this use of "extractNanosecondDecimal"; it is deprecated.
-        return fromNanoseconds.apply(new FromDecimalArguments(
-            seconds, nanoseconds, getZone(context)));
-      }
-      case JsonTokenId.ID_NUMBER_INT: {
-Uncovered code
-        long timestamp = parser.getLongValue();
-        if (context.isEnabled(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)) {
-          return this.fromNanoseconds.apply(new FromDecimalArguments(
-              timestamp, 0, this.getZone(context)
+<sonar.exclusions>
+    src/main/java/org/nnnn/ddd/model/**/*
+</sonar.exclusions>
+<sonar.inclusions>
+    src/main/java/org/nnnn/ddd/model/User.java
+</sonar.inclusions>
