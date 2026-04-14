@@ -1,13 +1,40 @@
-Remove this use of "ISO8601DateFormat"; it is deprecated. and Remove this use of "ISO8601Utils"; it is deprecated.
 
-private static final long serialVersionUID = 1L;
-  // Same as ISO8601DateFormat but serializing milliseconds.
-  @Override
-  public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition fieldPosition) {
-Uncovered code
-    String value = ISO8601Utils.format(date, true);
-Remove this use of "ISO8601Utils"; it is deprecated.
-    toAppendTo.append(value);
-    return toAppendTo;
-  }
+
+
+
+Find the file src/main/java/io/swagger/RFC3339DateFormat.java and replace the content with:
+
+package io.swagger;
+
+import com.fasterxml.jackson.databind.util.StdDateFormat;
+import java.text.DateFormat;
+import java.text.FieldPosition;
+import java.text.ParsePosition;
+import java.util.Date;
+import java.util.TimeZone;
+
+public class RFC3339DateFormat extends DateFormat {
+
+    private static final long serialVersionUID = 1L;
+
+    private static final StdDateFormat delegate = new StdDateFormat()
+            .withColonInTimeZone(true)
+            .withTimeZone(TimeZone.getTimeZone("UTC"));
+
+    @Override
+    public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition fieldPosition) {
+        String value = delegate.format(date);
+        toAppendTo.append(value);
+        return toAppendTo;
+    }
+
+    @Override
+    public Date parse(String source, ParsePosition pos) {
+        return delegate.parse(source, pos);
+    }
+
+    @Override
+    public Object clone() {
+        return new RFC3339DateFormat();
+    }
 }
