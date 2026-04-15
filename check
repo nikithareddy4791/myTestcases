@@ -46,29 +46,37 @@ RequestMethod.GET)
 
 =====================
 
-<aws.java.sdk.version>2.42.5</aws.java.sdk.version>
-		<sonar.coverage.exclusions>
-		src/main/java/org/nypd/dlu/api/ApiResponseMessage.java,
-		src/main/java/org/nypd/dlu/api/ApiOriginFilter.java,
-		src/main/java/org/nypd/dlu/api/AuthTestController.java,
-		src/main/java/org/nypd/dlu/api/ApiException.java,
-		src/main/java/org/nypd/dlu/api/CacheApi.java,
-		src/main/java/org/nypd/dlu/api/CacheApiController.java,
-		src/main/java/org/nypd/dlu/api/CaseApi.java,
-		src/main/java/org/nypd/dlu/api/CaseApiController.java,
-		src/main/java/org/nypd/dlu/api/ReferenceApi.java,
-		src/main/java/org/nypd/dlu/api/ReferenceApiController.java,
-		src/main/java/org/nypd/dlu/api/NotFoundException.java,
-		src/main/java/org/nypd/dlu/api/UserApi.java,
-		src/main/java/org/nypd/dlu/api/UserApiController.java,
-		src/main/java/org/nypd/dlu/api/UsersApi.java,
-		src/main/java/org/nypd/dlu/api/UsersApiController.java,
-		src/main/java/io/swagger/configuration/SwaggerDocumentationConfig.java,
-		src/main/java/io/swagger/configuration/SwaggerUiConfiguration.java,
-    	src/main/java/org/nypd/dlu/model/**/*,
-		src/main/java/org/nypd/dlu/repository/**/*
-		</sonar.coverage.exclusions>
-		<sonar.coverage.jacoco.xmlReportPaths>
-			target/site/jacoco/jacoco.xml
-		</sonar.coverage.jacoco.xmlReportPaths>
-		
+<sonar.exclusions>
+    src/main/java/io/swagger/**/*
+</sonar.exclusions>
+
+<sonar.coverage.exclusions>
+    src/main/java/org/nnnn/ddd/api/ApiResponseMessage.java,
+    src/main/java/org/nnnn/ddd/api/ApiOriginFilter.java,
+    src/main/java/org/nnnn/ddd/api/AuthTestController.java,
+    src/main/java/org/nnnn/ddd/api/ApiException.java,
+    src/main/java/org/nnnn/ddd/api/CacheApi.java,
+    src/main/java/org/nnnn/ddd/api/CacheApiController.java,
+    src/main/java/org/nnnn/ddd/api/CaseApi.java,
+    src/main/java/org/nnnn/ddd/api/CaseApiController.java,
+    src/main/java/org/nnnn/ddd/api/ReferenceApi.java,
+    src/main/java/org/nnnn/ddd/api/ReferenceApiController.java,
+    src/main/java/org/nnnn/ddd/api/NotFoundException.java,
+    src/main/java/org/nnnn/ddd/api/UserApi.java,
+    src/main/java/org/nnnn/ddd/api/UserApiController.java,
+    src/main/java/org/nnnn/ddd/api/UsersApi.java,
+    src/main/java/org/nnnn/ddd/api/UsersApiController.java,
+    src/main/java/io/swagger/**/*,
+    src/main/java/org/nnnn/ddd/model/**/*,
+    src/main/java/org/nnnn/ddd/repository/**/*,
+    src/main/java/org/nnnn/ddd/entity/**/*,
+    src/main/java/org/nnnn/ddd/audit/**/*,
+    src/main/java/org/nnnn/ddd/converter/**/*,
+    src/main/java/org/nnnn/ddd/exceptions/GlobalExceptionHandler.java,
+    src/main/java/org/nnnn/ddd/ServletInitializer.java,
+    src/main/java/org/nnnn/ddd/MapperConfig.java,
+    src/main/java/org/nnnn/ddd/EnversSchemaGenerator.java,
+    src/main/java/org/nnnn/ddd/service/ADSearchServiceDev.java,
+    src/main/java/org/nnnn/ddd/service/ADSearchServiceProd.java
+</sonar.coverage.exclusions>
+
