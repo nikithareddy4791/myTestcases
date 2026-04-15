@@ -1,6 +1,74 @@
-<sonar.exclusions>
-    src/main/java/org/nnnn/ddd/model/**/*
-</sonar.exclusions>
-<sonar.inclusions>
-    src/main/java/org/nnnn/ddd/model/User.java
-</sonar.inclusions>
+RFC3339DateFormat
+
+Define a constant instead of duplicating this literal "version" 3 times
+ Health.Builder builder = Health.up();
+        try {
+            ClassPathResource resource = new ClassPathResource(BUILD_INFO_PATH);
+            if (!resource.exists()) {
+                builder.withDetail("buildTime", null);
+                builder.withDetail(
+"version", null);
+Define a constant instead of duplicating this literal "version" 3 times.
+                return builder.build();
+            }
+            Properties props = new Properties();
+            try (InputStream is = resource.getInputStream()) {
+                props.load(is);
+            }
+            String timeStr = props.getProperty("build.time");
+            if (timeStr != null && !timeStr.isBlank()) {
+                // Unescape colons from properties format (e.g. 18\:16\:42)
+                String unescaped = timeStr.replace("\\:", ":");
+                Instant time = Instant.parse(unescaped);
+                builder.withDetail("buildTime", time.toString());
+                builder.withDetail("buildTimeDisplay", FORMATTER.format(time));
+            }
+            String version = props.getProperty("build.version");
+            builder.withDetail(
+"version", version != null ? version : "unknown");
+        } catch (IOException e) {
+            builder.withDetail(
+"version", "unknown");
+        }
+        return builder.build();
+    }
+}
+
+===============
+
+ @RequestMapping(value = "/cache/clear",
+Replace "@RequestMapping(method = RequestMethod.GET)" with "@GetMapping"
+        produces = { "text/plain", "application/json" }, 
+        method = 
+RequestMethod.GET)
+    ResponseEntity<String> clearCache();
+}
+
+=====================
+
+<aws.java.sdk.version>2.42.5</aws.java.sdk.version>
+		<sonar.coverage.exclusions>
+		src/main/java/org/nypd/dlu/api/ApiResponseMessage.java,
+		src/main/java/org/nypd/dlu/api/ApiOriginFilter.java,
+		src/main/java/org/nypd/dlu/api/AuthTestController.java,
+		src/main/java/org/nypd/dlu/api/ApiException.java,
+		src/main/java/org/nypd/dlu/api/CacheApi.java,
+		src/main/java/org/nypd/dlu/api/CacheApiController.java,
+		src/main/java/org/nypd/dlu/api/CaseApi.java,
+		src/main/java/org/nypd/dlu/api/CaseApiController.java,
+		src/main/java/org/nypd/dlu/api/ReferenceApi.java,
+		src/main/java/org/nypd/dlu/api/ReferenceApiController.java,
+		src/main/java/org/nypd/dlu/api/NotFoundException.java,
+		src/main/java/org/nypd/dlu/api/UserApi.java,
+		src/main/java/org/nypd/dlu/api/UserApiController.java,
+		src/main/java/org/nypd/dlu/api/UsersApi.java,
+		src/main/java/org/nypd/dlu/api/UsersApiController.java,
+		src/main/java/io/swagger/configuration/SwaggerDocumentationConfig.java,
+		src/main/java/io/swagger/configuration/SwaggerUiConfiguration.java,
+    	src/main/java/org/nypd/dlu/model/**/*,
+		src/main/java/org/nypd/dlu/repository/**/*
+		</sonar.coverage.exclusions>
+		<sonar.coverage.jacoco.xmlReportPaths>
+			target/site/jacoco/jacoco.xml
+		</sonar.coverage.jacoco.xmlReportPaths>
+		
