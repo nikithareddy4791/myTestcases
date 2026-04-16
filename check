@@ -1,11 +1,7 @@
-@Test
-@WithMockUser
-void deleteCaseUploadById_serviceThrowsException_returns500() throws Exception {
-    doThrow(new RuntimeException("Unexpected error"))
-            .when(caseService).deleteFile(100, 1);
-
-    mockMvc.perform(delete("/case/100/file/1")
-            .with(csrf())
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isInternalServerError());
-}
+[ERROR] Errors: 
+[ERROR]   CaseServiceControllerTest.deleteCaseUploadById_serviceThrowsException_returns500:583 » Servlet Request processing failed: java.lang.RuntimeException: Unexpected error
+[ERROR]   CaseServiceControllerTest.deleteCaseUploadById_serviceThrowsIOException_returns500:569 » Mockito 
+Checked exception is invalid for this method!
+Invalid: java.io.IOException: IO error
+[INFO] 
+[ERROR] 
