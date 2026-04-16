@@ -1,17 +1,217 @@
-[ERROR] Failures: 
-[ERROR]   ReferenceControllerTest.saveADAList_noAcceptHeader_returns501:553 Status expected:<501> but was:<403>
-[ERROR]   ReferenceControllerTest.saveADAList_noAuth_returns401:544 Status expected:<401> but was:<403>
-[ERROR]   ReferenceControllerTest.saveADAList_returnsOkWithList:519 Status expected:<200> but was:<403>
-[ERROR]   ReferenceControllerTest.saveADAList_serviceThrowsException_returns500:535 Status expected:<500> but was:<403>
-[ERROR]   ReferenceControllerTest.saveCategoryList_noAcceptHeader_returns501:603 Status expected:<501> but was:<403>
-[ERROR]   ReferenceControllerTest.saveCategoryList_noAuth_returns401:594 Status expected:<401> but was:<403>
-[ERROR]   ReferenceControllerTest.saveCategoryList_returnsOkWithList:569 Status expected:<200> but was:<403>
-[ERROR]   ReferenceControllerTest.saveCategoryList_serviceThrowsException_returns500:585 Status expected:<500> but was:<403>
-[ERROR]   ReferenceControllerTest.saveItemList_noAcceptHeader_returns501:653 Status expected:<501> but was:<403>
-[ERROR]   ReferenceControllerTest.saveItemList_noAuth_returns401:644 Status expected:<401> but was:<403>
-[ERROR]   ReferenceControllerTest.saveItemList_returnsOkWithList:619 Status expected:<200> but was:<403>
-[ERROR]   ReferenceControllerTest.saveItemList_serviceThrowsException_returns500:635 Status expected:<500> but was:<403>
-[ERROR]   ReferenceControllerTest.saveTagList_noAcceptHeader_returns501:703 Status expected:<501> but was:<403>
-[ERROR]   ReferenceControllerTest.saveTagList_noAuth_returns401:694 Status expected:<401> but was:<403>
-[ERROR]   ReferenceControllerTest.saveTagList_returnsOkWithList:669 Status expected:<200> but was:<403>
-[ERROR]   ReferenceControllerTest.saveTagList_serviceThrowsException_returns500:685 Status expected:<500> but was:<403>
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
+// =========================================================================
+// PUT /reference/adas
+// =========================================================================
+
+@Test
+@WithMockUser
+void saveADAList_returnsOkWithList() throws Exception {
+    when(referenceDataService.updateAdas(any())).thenReturn(Arrays.asList(mockAda));
+
+    mockMvc.perform(put("/reference/adas")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockAda)))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].frstNm").value("Jane"));
+
+    verify(referenceDataService, times(1)).updateAdas(any());
+}
+
+@Test
+@WithMockUser
+void saveADAList_serviceThrowsException_returns500() throws Exception {
+    when(referenceDataService.updateAdas(any())).thenThrow(new RuntimeException("DB error"));
+
+    mockMvc.perform(put("/reference/adas")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockAda)))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
+}
+
+@Test
+void saveADAList_noAuth_returns401() throws Exception {
+    mockMvc.perform(put("/reference/adas")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockAda)))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+}
+
+@Test
+@WithMockUser
+void saveADAList_noAcceptHeader_returns501() throws Exception {
+    mockMvc.perform(put("/reference/adas")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockAda))))
+            .andExpect(status().isNotImplemented());
+}
+
+// =========================================================================
+// PUT /reference/categories
+// =========================================================================
+
+@Test
+@WithMockUser
+void saveCategoryList_returnsOkWithList() throws Exception {
+    when(referenceDataService.updateCategories(any())).thenReturn(Arrays.asList(mockCategory));
+
+    mockMvc.perform(put("/reference/categories")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockCategory)))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].categoryDesc").value("Shootings"));
+
+    verify(referenceDataService, times(1)).updateCategories(any());
+}
+
+@Test
+@WithMockUser
+void saveCategoryList_serviceThrowsException_returns500() throws Exception {
+    when(referenceDataService.updateCategories(any())).thenThrow(new RuntimeException("DB error"));
+
+    mockMvc.perform(put("/reference/categories")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockCategory)))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
+}
+
+@Test
+void saveCategoryList_noAuth_returns401() throws Exception {
+    mockMvc.perform(put("/reference/categories")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockCategory)))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+}
+
+@Test
+@WithMockUser
+void saveCategoryList_noAcceptHeader_returns501() throws Exception {
+    mockMvc.perform(put("/reference/categories")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockCategory))))
+            .andExpect(status().isNotImplemented());
+}
+
+// =========================================================================
+// PUT /reference/items
+// =========================================================================
+
+@Test
+@WithMockUser
+void saveItemList_returnsOkWithList() throws Exception {
+    when(referenceDataService.updateItems(any())).thenReturn(Arrays.asList(mockItem));
+
+    mockMvc.perform(put("/reference/items")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockItem)))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(10))
+            .andExpect(jsonPath("$[0].itemDesc").value("ECMS"));
+
+    verify(referenceDataService, times(1)).updateItems(any());
+}
+
+@Test
+@WithMockUser
+void saveItemList_serviceThrowsException_returns500() throws Exception {
+    when(referenceDataService.updateItems(any())).thenThrow(new RuntimeException("DB error"));
+
+    mockMvc.perform(put("/reference/items")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockItem)))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
+}
+
+@Test
+void saveItemList_noAuth_returns401() throws Exception {
+    mockMvc.perform(put("/reference/items")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockItem)))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+}
+
+@Test
+@WithMockUser
+void saveItemList_noAcceptHeader_returns501() throws Exception {
+    mockMvc.perform(put("/reference/items")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockItem))))
+            .andExpect(status().isNotImplemented());
+}
+
+// =========================================================================
+// PUT /reference/tags
+// =========================================================================
+
+@Test
+@WithMockUser
+void saveTagList_returnsOkWithList() throws Exception {
+    when(referenceDataService.updateTags(any())).thenReturn(Arrays.asList(mockTag));
+
+    mockMvc.perform(put("/reference/tags")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockTag)))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].tagDesc").value("Gun"));
+
+    verify(referenceDataService, times(1)).updateTags(any());
+}
+
+@Test
+@WithMockUser
+void saveTagList_serviceThrowsException_returns500() throws Exception {
+    when(referenceDataService.updateTags(any())).thenThrow(new RuntimeException("DB error"));
+
+    mockMvc.perform(put("/reference/tags")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockTag)))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
+}
+
+@Test
+void saveTagList_noAuth_returns401() throws Exception {
+    mockMvc.perform(put("/reference/tags")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockTag)))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+}
+
+@Test
+@WithMockUser
+void saveTagList_noAcceptHeader_returns501() throws Exception {
+    mockMvc.perform(put("/reference/tags")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(Arrays.asList(mockTag))))
+            .andExpect(status().isNotImplemented());
+}
