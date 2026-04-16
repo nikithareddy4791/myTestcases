@@ -1,7 +1,12 @@
-[ERROR] Errors: 
-[ERROR]   CaseServiceControllerTest.deleteCaseUploadById_serviceThrowsException_returns500:583 » Servlet Request processing failed: java.lang.RuntimeException: Unexpected error
-[ERROR]   CaseServiceControllerTest.deleteCaseUploadById_serviceThrowsIOException_returns500:569 » Mockito 
-Checked exception is invalid for this method!
-Invalid: java.io.IOException: IO error
-[INFO] 
-[ERROR] 
+@Test
+@WithMockUser
+void deleteCaseUploadById_objectMapperThrows_returns500() throws Exception {
+    doNothing().when(caseService).deleteFile(100, 1);
+    doThrow(new IOException("Serialization error"))
+            .when(objectMapper).readValue(anyString(), eq(String.class));
+
+    mockMvc.perform(delete("/case/100/file/1")
+            .with(csrf())
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isInternalServerError());
+}
