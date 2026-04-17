@@ -1,2 +1,3 @@
-The java.jdt.ls.java.home variable defined in Visual Studio Code settings points to
-a missing or inaccessible folder (D:\my-d-apps\java\jdk-23.0.1)
+[ERROR]   CaseServiceControllerTest.deleteCaseUploadById_objectMapperThrows_returns500:571 » Mockito 
+Checked exception is invalid for this method!
+Invalid: java.io.IOException: Serialization error
