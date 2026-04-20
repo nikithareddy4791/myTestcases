@@ -1,3 +1,182 @@
-[ERROR]   CaseServiceControllerTest.deleteCaseUploadById_objectMapperThrows_returns500:571 » Mockito 
-Checked exception is invalid for this method!
-Invalid: java.io.IOException: Serialization error
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[33,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[36,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[39,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[42,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[46,6] org.springframework.boot.test.mock.mockito.SpyBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[49,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[52,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[55,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[58,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[61,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[40,10] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[46,10] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[49,10] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[52,10] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[55,10] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceControllerTest.java:[40,6] org.springframework.boot.test.mock.mockito.SpyBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceControllerTest.java:[43,7] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceControllerTest.java:[46,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceControllerTest.java:[49,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceControllerTest.java:[52,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceControllerTest.java:[55,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceControllerTest.java:[58,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/UserControllerTest.java:[31,6] org.springframework.boot.test.mock.mockito.SpyBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/UserControllerTest.java:[34,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/UserControllerTest.java:[37,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/UserControllerTest.java:[40,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/UserControllerTest.java:[43,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/UserControllerTest.java:[46,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/UsersControllerTest.java:[31,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/UsersControllerTest.java:[34,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/UsersControllerTest.java:[37,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/UsersControllerTest.java:[40,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/UsersControllerTest.java:[43,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/UsersControllerTest.java:[46,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[INFO] 34 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[117,31] no suitable constructor found for ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[131,31] no suitable constructor found for ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[152,58] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[166,58] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[180,59] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[193,60] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[211,20] no suitable constructor found for ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[267,31] no suitable constructor found for ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,char,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,<nulltype>,<nulltype>,<nulltype>,<nulltype>,<nulltype>)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[136,48] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[149,48] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[162,59] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[304,52] cannot find symbol
+  symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.String>)
+  location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[320,52] cannot find symbol
+  symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.String>)
+  location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[337,52] cannot find symbol
+  symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.String>)
+  location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[357,52] cannot find symbol
+  symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.String>)
+  location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[371,26] cannot find symbol
+  symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.String>)
+  location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[384,26] cannot find symbol
+  symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.String>)
+  location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[443,27] cannot find symbol
+  symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.Object>)
+  location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[1499,23] cannot find symbol
+  symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.Object>)
+  location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[1505,26] cannot find symbol
+  symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.Object>)
+  location: class org.nnnn.ddd.repository.CDWRepository
+[INFO] 20 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  13.342 s
+[INFO] Finished at: 2026-04-20T12:25:00-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:testCompile (default-testCompile) on project ddd-services: Compilation failure: Compilation failure: 
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[117,31] no suitable constructor found for ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[131,31] no suitable constructor found for ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[152,58] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[166,58] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[180,59] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[193,60] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[211,20] no suitable constructor found for ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[267,31] no suitable constructor found for ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,char,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,<nulltype>,<nulltype>,<nulltype>,<nulltype>,<nulltype>)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[136,48] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[149,48] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[162,59] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[304,52] cannot find symbol
+[ERROR]   symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.String>)
+[ERROR]   location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[320,52] cannot find symbol
+[ERROR]   symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.String>)
+[ERROR]   location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[337,52] cannot find symbol
+[ERROR]   symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.String>)
+[ERROR]   location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[357,52] cannot find symbol
+[ERROR]   symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.String>)
+[ERROR]   location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[371,26] cannot find symbol
+[ERROR]   symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.String>)
+[ERROR]   location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[384,26] cannot find symbol
+[ERROR]   symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.String>)
+[ERROR]   location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[443,27] cannot find symbol
+[ERROR]   symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.Object>)
+[ERROR]   location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[1499,23] cannot find symbol
+[ERROR]   symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.Object>)
+[ERROR]   location: variable cdwRepository of type org.nnnn.ddd.repository.CDWRepository
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[1505,26] cannot find symbol
+[ERROR]   symbol:   method getMaskedArrestInfoSummary(java.util.List<java.lang.Object>)
+[ERROR]   location: class org.nnnn.ddd.repository.CDWRepository
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+PS F:\project\ddd-services> 
