@@ -1,45 +1,9 @@
-@Test
-@DisplayName("findCases - user without sealed access calls getArrestInfoSummary (masking applied internally)")
-void findCases_noSealedAccess_callsMaskedArrestInfoSummary() {
-    CaseFilter filter = new CaseFilter();
-    filter.setArrId("ARR001");
-    filter.setPageSize(10);
-    filter.setPageNumber(0);
-
-    when(authenticationService.hasSealedAccess()).thenReturn(false);
-
-    DDDCaseSummary summary = new DDDCaseSummary();
-    summary.setArrId("ARR001");
-
-    DddCase entity = new DddCase();
-    entity.setId(1);
-    entity.setArrId("ARR001");
-
-    Page<DddCase> page = new PageImpl<>(List.of(entity));
-    when(caseRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-    when(modelMapper.map(entity, DDDCaseSummary.class)).thenReturn(summary);
-    // Production calls getArrestInfoSummary regardless — masking is done internally
-    when(cdwRepository.getArrestInfoSummary(anyList())).thenReturn(Collections.emptyList());
-    when(caseRepository.countByDueDtBeforeAndStatus_IdNot(any(), anyInt())).thenReturn(0);
-    when(caseRepository.countByDueDtBetweenAndStatus_IdNot(any(), any(), anyInt())).thenReturn(0);
-
-    caseService.findCases(filter);
-
-    // Production always calls getArrestInfoSummary — masking is internal to CDWRepository
-    verify(cdwRepository).getArrestInfoSummary(anyList());
-}
-
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-// Remove @Autowired
-private ObjectMapper objectMapper;
-
-@BeforeEach
-void setUp() {
-    objectMapper = new ObjectMapper();
-    // ... rest of setup
-}
-
-
-
+ERROR] Failures: 
+[ERROR]   CaseServiceTest.findCases_noSealedAccess_callsMaskedArrestInfoSummary:1507 
+cdwRepository.getArrestInfoSummary(
+    <any List>
+);
+Never wanted here:
+-> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:48)
+But invoked here:
+-> at org.nnnn.ddd.service.CaseService.findCases(CaseService.java:484) with arguments: [[ARR001]]
