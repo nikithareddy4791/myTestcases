@@ -1,553 +1,155 @@
-package org.nnnn.ddd.service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
-import org.nnnn.ddd.TestConfig;
-import org.nnnn.ddd.api.CaseApiController;
-import org.nnnn.ddd.exceptions.CaseNotFoundException;
-import org.nnnn.ddd.exceptions.FileDeleteException;
-import org.nnnn.ddd.exceptions.GlobalExceptionHandler;
-import org.nnnn.ddd.exceptions.InvalidArrestException;
-import org.nnnn.ddd.exceptions.SealedAccessException;
-import org.nnnn.ddd.model.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Collections;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-@WebMvcTest(controllers = CaseApiController.class)
-@Import({TestConfig.class, CaseApiController.class, GlobalExceptionHandler.class})
-public class CaseServiceControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
-    private javax.sql.DataSource dataSource;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
-    private ModelMapper modelMapper;
-
-    @MockBean
-    private CaseService caseService;
-
-    @MockBean
-    private AuthenticationService authenticationService;
-
-    @MockBean
-    private AuditService auditService;
-
-    private DDDCase mockCaseDto;
-    private DDDCaseStats mockStats;
-
-    @BeforeEach
-    void setUp() {
-        mockCaseDto = new DDDCase();
-        mockCaseDto.setId(100);
-        mockCaseDto.setArrId("ARR001");
-
-        mockStats = new DDDCaseStats();
-        mockStats.setOverdueCount(3);
-        mockStats.setComingDueCount(2);
-    }
-
-    // =========================================================================
-    // GET /case/stats
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void getCaseStats_returnsOkWithStats() throws Exception {
-        when(authenticationService.getUsername()).thenReturn(null);
-        when(caseService.getCaseStats(any())).thenReturn(mockStats);
-
-        mockMvc.perform(get("/case/stats")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.overdueCount").value(3))
-                .andExpect(jsonPath("$.comingDueCount").value(2));
-
-        verify(caseService, times(1)).getCaseStats(any());
-    }
-
-    @Test
-    void getCaseStats_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/case/stats")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @WithMockUser
-    void getCaseStats_serviceThrowsException_returns500() throws Exception {
-        when(authenticationService.getUsername()).thenReturn(null);
-        when(caseService.getCaseStats(any())).thenThrow(new RuntimeException("DB error"));
-
-        mockMvc.perform(get("/case/stats")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    // =========================================================================
-    // GET /case/{caseId}
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void getCaseById_existingCase_returnsOk() throws Exception {
-        when(caseService.loadCase(100)).thenReturn(mockCaseDto);
-
-        mockMvc.perform(get("/case/100")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(100))
-                .andExpect(jsonPath("$.arrId").value("ARR001"));
-
-        verify(caseService, times(1)).loadCase(100);
-    }
-
-    @Test
-    @WithMockUser
-    void getCaseById_caseNotFound_returns404() throws Exception {
-        when(caseService.loadCase(999)).thenThrow(new CaseNotFoundException("Case not found"));
-
-        mockMvc.perform(get("/case/999")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @WithMockUser
-    void getCaseById_noAcceptHeader_returns501() throws Exception {
-        mockMvc.perform(get("/case/100"))
-                .andExpect(status().isNotImplemented());
-    }
-
-    @Test
-    void getCaseById_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/case/100")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // POST /case (createCaseByArrest)
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void createCaseByArrest_newCase_returns201() throws Exception {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR002");
-        request.setDddOfficeId(1);
-        request.setProactiveFlg(0);
-        request.setCategoryId(5);
-        DDDCase newCase = new DDDCase();
-        newCase.setId(101);
-        newCase.setNew(true);
-
-        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(newCase);
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(101));
-    }
-
-    @Test
-    @WithMockUser
-    void createCaseByArrest_existingCase_returns200() throws Exception {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDddOfficeId(1);
-        request.setProactiveFlg(0);
-        request.setCategoryId(5);
-        DDDCase existingCase = new DDDCase();
-        existingCase.setId(100);
-        existingCase.setNew(false);
-
-        when(caseService.createCase(any(CreateCaseRequest.class))).thenReturn(existingCase);
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(100));
-    }
-
-    @Test
-    @WithMockUser
-    void createCaseByArrest_sealedAccessException_returns403() throws Exception {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDddOfficeId(1);
-        request.setProactiveFlg(0);
-        request.setCategoryId(5);
-        when(caseService.createCase(any(CreateCaseRequest.class)))
-                .thenThrow(new SealedAccessException("No sealed access"));
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @WithMockUser
-    void createCaseByArrest_invalidArrestException_returns500() throws Exception {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDddOfficeId(1);
-        request.setProactiveFlg(0);
-        request.setCategoryId(5);
-        when(caseService.createCase(any(CreateCaseRequest.class)))
-                .thenThrow(new InvalidArrestException("Invalid arrest"));
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    @WithMockUser
-    void createCaseByArrest_serviceThrowsException_returns500() throws Exception {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDddOfficeId(1);
-        request.setProactiveFlg(0);
-        request.setCategoryId(5);
-        when(caseService.createCase(any(CreateCaseRequest.class)))
-                .thenThrow(new RuntimeException("Unexpected error"));
-
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    @WithMockUser
-    void createCaseByArrest_noAcceptHeader_returns501() throws Exception {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDddOfficeId(1);
-        request.setProactiveFlg(0);
-        request.setCategoryId(5);
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotImplemented());
-    }
-
-    @Test
-    void createCaseByArrest_noAuth_returns401() throws Exception {
-        CreateCaseRequest request = new CreateCaseRequest();
-        request.setArrId("ARR001");
-        request.setDddOfficeId(1);
-        request.setProactiveFlg(0);
-        request.setCategoryId(5);
-        mockMvc.perform(post("/case")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // PUT /case/{caseId} (updateCase)
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void updateCase_validCase_returnsOk() throws Exception {
-        when(caseService.saveCase(any(DDDCase.class))).thenReturn(mockCaseDto);
-
-        mockMvc.perform(put("/case/100")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(mockCaseDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(100));
-
-        verify(caseService, times(1)).saveCase(any(DDDCase.class));
-    }
-
-    @Test
-    @WithMockUser
-    void updateCase_caseNotFound_returns500() throws Exception {
-        when(caseService.saveCase(any(DDDCase.class)))
-                .thenThrow(new CaseNotFoundException("Case not found"));
-
-        mockMvc.perform(put("/case/100")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(mockCaseDto)))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void updateCase_noAuth_returns401() throws Exception {
-        mockMvc.perform(put("/case/100")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(mockCaseDto)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // POST /case/list (getCaseList)
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void getCaseList_validFilter_returnsOk() throws Exception {
-        CaseFilter filter = new CaseFilter();
-        filter.setArrId("ARR001");
-        filter.setPageNumber(0);
-        filter.setPageSize(10);
-
-        CaseListResponse response = new CaseListResponse();
-        response.setTotalElements(1L);
-        response.setCaseSummaries(Collections.emptyList());
-
-        when(caseService.findCases(any(CaseFilter.class))).thenReturn(response);
-
-        mockMvc.perform(post("/case/list")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(filter)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalElements").value(1));
-
-        verify(caseService, times(1)).findCases(any(CaseFilter.class));
-    }
-
-    @Test
-    @WithMockUser
-    void getCaseList_serviceThrowsException_returns500() throws Exception {
-        CaseFilter filter = new CaseFilter();
-        filter.setArrId("ARR001");
-
-        when(caseService.findCases(any(CaseFilter.class)))
-                .thenThrow(new RuntimeException("DB error"));
-
-        mockMvc.perform(post("/case/list")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(filter)))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void getCaseList_noAuth_returns401() throws Exception {
-        mockMvc.perform(post("/case/list")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new CaseFilter())))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // POST /case/{caseId}/note (createCaseNote)
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void createCaseNote_validNote_returnsOk() throws Exception {
-        MockMultipartFile file = new MockMultipartFile(
-                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "PDF content".getBytes());
-        MockMultipartFile noteDesc = new MockMultipartFile(
-                "noteDesc", "", MediaType.TEXT_PLAIN_VALUE, "Test note".getBytes());
-        MockMultipartFile fileNm = new MockMultipartFile(
-                "fileNm", "", MediaType.TEXT_PLAIN_VALUE, "test.pdf".getBytes());
-
-        when(caseService.saveNote(eq(100), eq("Test note"), eq("test.pdf"), any()))
-                .thenReturn(mockCaseDto);
-
-        mockMvc.perform(multipart("/case/100/note")
-                .file(file)
-                .file(noteDesc)
-                .file(fileNm)
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(100));
-    }
-
-    @Test
-    @WithMockUser
-    void createCaseNote_caseNotFound_returns500() throws Exception {
-        MockMultipartFile file = new MockMultipartFile(
-                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "PDF content".getBytes());
-        MockMultipartFile noteDesc = new MockMultipartFile(
-                "noteDesc", "", MediaType.TEXT_PLAIN_VALUE, "Note".getBytes());
-
-        when(caseService.saveNote(eq(999), any(), any(), any()))
-                .thenThrow(new CaseNotFoundException("Case not found"));
-
-        mockMvc.perform(multipart("/case/999/note")
-                .file(file)
-                .file(noteDesc)
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    @WithMockUser
-    void createCaseNote_withoutFile_returnsOk() throws Exception {
-        MockMultipartFile noteDesc = new MockMultipartFile(
-                "noteDesc", "", MediaType.TEXT_PLAIN_VALUE, "Note only".getBytes());
-
-        when(caseService.saveNote(eq(100), eq("Note only"), isNull(), isNull()))
-                .thenReturn(mockCaseDto);
-
-        mockMvc.perform(multipart("/case/100/note")
-                .file(noteDesc)
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void createCaseNote_noAuth_returns401() throws Exception {
-        MockMultipartFile file = new MockMultipartFile(
-                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "content".getBytes());
-        MockMultipartFile noteDesc = new MockMultipartFile(
-                "noteDesc", "", MediaType.TEXT_PLAIN_VALUE, "Note".getBytes());
-
-        mockMvc.perform(multipart("/case/100/note")
-                .file(file)
-                .file(noteDesc)
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // GET /case/{caseId}/file/{uploadId} (getCaseUploadById)
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void getCaseUploadById_validIds_returnsFileWithHeaders() throws Exception {
-        byte[] fileContent = "PDF content".getBytes();
-        Resource mockResource = new ByteArrayResource(fileContent);
-        Object[] fileNameAndResource = new Object[]{"test.pdf", mockResource};
-
-        when(caseService.getFile(100, 1)).thenReturn(fileNameAndResource);
-
-        mockMvc.perform(get("/case/100/file/1")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"test.pdf\""))
-                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS,
-                        HttpHeaders.CONTENT_DISPOSITION))
-                .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM));
-
-        verify(caseService, times(1)).getFile(100, 1);
-    }
-
-    @Test
-    @WithMockUser
-    void getCaseUploadById_fileNotFound_returns500() throws Exception {
-        when(caseService.getFile(999, 1))
-                .thenThrow(new RuntimeException("File not found"));
-
-        mockMvc.perform(get("/case/999/file/1")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    @WithMockUser
-    void getCaseUploadById_noAcceptHeader_returns501() throws Exception {
-        mockMvc.perform(get("/case/100/file/1"))
-                .andExpect(status().isNotImplemented());
-    }
-
-    @Test
-    void getCaseUploadById_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/case/100/file/1")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // =========================================================================
-    // DELETE /case/{caseId}/file/{uploadId} (deleteCaseUploadById)
-    // URL fix: /case/{caseId}/file/{uploadId} not /case/{caseId}/upload/{uploadId}
-    // =========================================================================
-
-    @Test
-    @WithMockUser
-    void deleteCaseUploadById_fileDeleteException_returns500() throws Exception {
-        doThrow(new FileDeleteException("Failed to delete file 1"))
-                .when(caseService).deleteFile(100, 1);
-
-        mockMvc.perform(delete("/case/100/file/1")
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-
-        verify(caseService).deleteFile(100, 1);
-    }
-
-    @Test
-    @WithMockUser
-    void deleteCaseUploadById_noAcceptHeader_returns501() throws Exception {
-        mockMvc.perform(delete("/case/100/file/1")
-                .with(csrf()))
-                .andExpect(status().isNotImplemented());
-
-        verify(caseService, never()).deleteFile(anyInt(), anyInt());
-    }
-
-    @Test
-    void deleteCaseUploadById_noAuth_returns401() throws Exception {
-        mockMvc.perform(delete("/case/100/file/1")
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-}
+-------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CacheApiControllerTest.java:[35,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nypd.dlu.service.CacheApiControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CacheApiControllerTest.java:[38,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nypd.dlu.service.CacheApiControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CacheApiControllerTest.java:[41,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nypd.dlu.service.CacheApiControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CacheApiControllerTest.java:[44,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nypd.dlu.service.CacheApiControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java:[53,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nypd.dlu.service.CaseFlowChartTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java:[56,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nypd.dlu.service.CaseFlowChartTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java:[59,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nypd.dlu.service.CaseFlowChartTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java:[62,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nypd.dlu.service.CaseFlowChartTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java:[65,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nypd.dlu.service.CaseFlowChartTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceControllerTest.java:[44,10] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nypd.dlu.service.CaseServiceControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceControllerTest.java:[50,10] cannot find symbol
+  symbol:   class MockitoBean
+  location: class org.nypd.dlu.service.CaseServiceControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceControllerTest.java:[53,10] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nypd.dlu.service.CaseServiceControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceControllerTest.java:[56,10] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nypd.dlu.service.CaseServiceControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceControllerTest.java:[59,10] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nypd.dlu.service.CaseServiceControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[53,34] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[152,58] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[166,58] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[180,59] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[193,60] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[211,20] no suitable constructor found for ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character)
+    constructor org.nypd.dlu.model.ArrestInfo.ArrestInfo() is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nypd.dlu.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nypd.dlu.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[267,31] no suitable constructor found for ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,char,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,<nulltype>,<nulltype>,<nulltype>,<nulltype>,<nulltype>)
+    constructor org.nypd.dlu.model.ArrestInfo.ArrestInfo() is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nypd.dlu.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nypd.dlu.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[444,42] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/repository/CDWRepositoryTest.java:[140,48] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/repository/CDWRepositoryTest.java:[153,48] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/repository/CDWRepositoryTest.java:[166,59] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/repository/CDWRepositoryTest.java:[391,27] cannot find symbol
+  symbol:   method never()
+  location: class org.nypd.dlu.repository.CDWRepositoryTest.GetMaskedArrestInfoSummaryTests
+[INFO] 26 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  11.470 s
+[INFO] Finished at: 2026-04-22T19:17:24-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:testCompile (default-testCompile) on project dlu-services: Compilation failure: Compilation failure: 
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CacheApiControllerTest.java:[35,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nypd.dlu.service.CacheApiControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CacheApiControllerTest.java:[38,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nypd.dlu.service.CacheApiControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CacheApiControllerTest.java:[41,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nypd.dlu.service.CacheApiControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CacheApiControllerTest.java:[44,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nypd.dlu.service.CacheApiControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java:[53,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nypd.dlu.service.CaseFlowChartTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java:[56,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nypd.dlu.service.CaseFlowChartTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java:[59,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nypd.dlu.service.CaseFlowChartTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java:[62,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nypd.dlu.service.CaseFlowChartTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java:[65,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nypd.dlu.service.CaseFlowChartTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceControllerTest.java:[44,10] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nypd.dlu.service.CaseServiceControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceControllerTest.java:[50,10] cannot find symbol
+[ERROR]   symbol:   class MockitoBean
+[ERROR]   location: class org.nypd.dlu.service.CaseServiceControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceControllerTest.java:[53,10] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nypd.dlu.service.CaseServiceControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceControllerTest.java:[56,10] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nypd.dlu.service.CaseServiceControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/service/CaseServiceControllerTest.java:[59,10] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nypd.dlu.service.CaseServiceControllerTest
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[53,34] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[152,58] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[166,58] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[180,59] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[193,60] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[211,20] no suitable constructor found for ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character)
+[ERROR]     constructor org.nypd.dlu.model.ArrestInfo.ArrestInfo() is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nypd.dlu.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nypd.dlu.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[267,31] no suitable constructor found for ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,char,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,<nulltype>,<nulltype>,<nulltype>,<nulltype>,<nulltype>)
+[ERROR]     constructor org.nypd.dlu.model.ArrestInfo.ArrestInfo() is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nypd.dlu.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nypd.dlu.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[444,42] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/repository/CDWRepositoryTest.java:[140,48] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/repository/CDWRepositoryTest.java:[153,48] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/repository/CDWRepositoryTest.java:[166,59] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/repository/CDWRepositoryTest.java:[391,27] cannot find symbol
+[ERROR]   symbol:   method never()
+[ERROR]   location: class org.nypd.dlu.repository.CDWRepositoryTest.GetMaskedArrestInfoSummaryTests
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
