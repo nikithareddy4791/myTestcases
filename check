@@ -1,7 +1,23 @@
-To gitlab.nnnn.org:application/ddd/ddd-services.git
- ! [rejected]        HEAD -> feature/backend (non-fast-forward)
-error: failed to push some refs to 'git@gitlab.nnnn.org:application/ddd/ddd-services.git'
-hint: Updates were rejected because a pushed branch tip is behind its remote
-hint: counterpart. Check out this branch and integrate the remote changes
-hint: (e.g. 'git pull ...') before pushing again.
-hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+git status
+rebase in progress; onto b907a4f
+You are currently rebasing branch 'feature/backend-unit-tests' on 'b907a4f'.
+  (fix conflicts and then run "git rebase --continue")
+  (use "git rebase --skip" to skip this patch)
+  (use "git rebase --abort" to check out the original branch)
+
+Changes to be committed:
+  (use "git reset HEAD <file>..." to unstage)
+
+        modified:   src/main/java/org/nnnn/ddd/service/CacheService.java
+        modified:   src/test/java/org/nnnn/ddd/AllTestsSuite.java
+        modified:   src/test/java/org/nnnn/ddd/actuator/BuildInfoHealthIndicatorTest.java
+        modified:   src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java
+        new file:   src/test/java/org/nnnn/ddd/service/CacheServiceTest.java
+        modified:   src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java
+        new file:   src/test/java/org/nnnn/ddd/service/CaseServiceLoadCaseTest.java
+
+Unmerged paths:
+  (use "git reset HEAD <file>..." to unstage)
+  (use "git add <file>..." to mark resolution)
+
+        both modified:   pom.xml
