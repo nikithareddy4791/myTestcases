@@ -1,9 +1,7 @@
-ERROR] Failures: 
-[ERROR]   CaseServiceTest.findCases_noSealedAccess_callsMaskedArrestInfoSummary:1507 
-cdwRepository.getArrestInfoSummary(
-    <any List>
-);
-Never wanted here:
--> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:48)
-But invoked here:
--> at org.nnnn.ddd.service.CaseService.findCases(CaseService.java:484) with arguments: [[ARR001]]
+To gitlab.nnnn.org:application/ddd/ddd-services.git
+ ! [rejected]        HEAD -> feature/backend (non-fast-forward)
+error: failed to push some refs to 'git@gitlab.nnnn.org:application/ddd/ddd-services.git'
+hint: Updates were rejected because a pushed branch tip is behind its remote
+hint: counterpart. Check out this branch and integrate the remote changes
+hint: (e.g. 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
