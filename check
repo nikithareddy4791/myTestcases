@@ -1,23 +1,31 @@
-git status
-rebase in progress; onto b907a4f
-You are currently rebasing branch 'feature/backend-unit-tests' on 'b907a4f'.
-  (fix conflicts and then run "git rebase --continue")
-  (use "git rebase --skip" to skip this patch)
-  (use "git rebase --abort" to check out the original branch)
-
-Changes to be committed:
-  (use "git reset HEAD <file>..." to unstage)
-
-        modified:   src/main/java/org/nnnn/ddd/service/CacheService.java
-        modified:   src/test/java/org/nnnn/ddd/AllTestsSuite.java
-        modified:   src/test/java/org/nnnn/ddd/actuator/BuildInfoHealthIndicatorTest.java
-        modified:   src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java
-        new file:   src/test/java/org/nnnn/ddd/service/CacheServiceTest.java
-        modified:   src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java
-        new file:   src/test/java/org/nnnn/ddd/service/CaseServiceLoadCaseTest.java
-
-Unmerged paths:
-  (use "git reset HEAD <file>..." to unstage)
-  (use "git add <file>..." to mark resolution)
-
-        both modified:   pom.xml
+$ git rebase --continue
+Applying: Add unit tests for caseService and cacheService classes
+Applying: modify caseService class
+Applying: modify caseService class
+Applying: Added Service and Config class unit tests
+Applying: adding junits to services
+Applying: adding junits to model and config classes
+Applying: adding junits for Entities and exceptions
+.git/rebase-apply/patch:6644: trailing whitespace.
+    dtoCase.setStatus(null);
+.git/rebase-apply/patch:6830: trailing whitespace.
+    when(authenticationService.hasSealedAccess()).thenReturn(false);
+.git/rebase-apply/patch:1449: new blank line at EOF.
++
+warning: 3 lines add whitespace errors.
+Using index info to reconstruct a base tree...
+M       pom.xml
+M       src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
+Falling back to patching base and 3-way merge...
+Auto-merging src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
+CONFLICT (content): Merge conflict in src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
+Removing src/test/java/org/nnnn/ddd/service/ADSearchServiceProdTest.java
+Auto-merging pom.xml
+CONFLICT (content): Merge conflict in pom.xml
+error: Failed to merge in the changes.
+hint: Use 'git am --show-current-patch' to see the failed patch
+Patch failed at 0009 adding junits for Entities and exceptions
+Resolve all conflicts manually, mark them as resolved with
+"git add/rm <conflicted_files>", then run "git rebase --continue".
+You can instead skip this commit: run "git rebase --skip".
+To abort and get back to the state before "git rebase", run "git rebase --abort".
