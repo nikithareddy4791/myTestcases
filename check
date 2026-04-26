@@ -1,39 +1,22 @@
-$ git rebase --continue
-Applying: adding pipeline ci-cd file
-Applying: adding gitlab CI pipeline file
-Applying: adding CI pipeline using shared team pipeline
-Applying: adding CI pipeline with podman runner
-Applying: modifying base image path
-Applying: fixing mock and assertion issues
-.git/rebase-apply/patch:23: trailing whitespace.
-        adaTypeMap.addMappings(mapper ->{
-.git/rebase-apply/patch:67: trailing whitespace.
-import java.util.List;
-warning: 2 lines add whitespace errors.
-Using index info to reconstruct a base tree...
-M       src/main/java/org/nnnn/ddd/CacheConfig.java
-M       src/main/java/org/nnnn/ddd/MapperConfig.java
-M       src/main/java/org/nnnn/ddd/api/CacheApi.java
-M       src/main/java/org/nnnn/ddd/api/ReferenceApiController.java
-M       src/main/java/org/nnnn/ddd/model/IntakeFilter.java
-M       src/main/java/org/nnnn/ddd/repository/CDWRepository.java
-M       src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java
-Falling back to patching base and 3-way merge...
-Auto-merging src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java
-CONFLICT (content): Merge conflict in src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java
-Auto-merging src/main/java/org/nnnn/ddd/repository/CDWRepository.java
-CONFLICT (content): Merge conflict in src/main/java/org/nnnn/ddd/repository/CDWRepository.java
-Auto-merging src/main/java/org/nnnn/ddd/api/ReferenceApiController.java
-Auto-merging src/main/java/org/nnnn/ddd/api/CacheApi.java
-CONFLICT (content): Merge conflict in src/main/java/org/nnnn/ddd/api/CacheApi.java
-Auto-merging src/main/java/org/nnnn/ddd/MapperConfig.java
-CONFLICT (content): Merge conflict in src/main/java/org/nnnn/ddd/MapperConfig.java
-Auto-merging src/main/java/org/nnnn/ddd/CacheConfig.java
-CONFLICT (content): Merge conflict in src/main/java/org/nnnn/ddd/CacheConfig.java
-error: Failed to merge in the changes.
-hint: Use 'git am --show-current-patch' to see the failed patch
-Patch failed at 0017 fixing mock and assertion issues
-Resolve all conflicts manually, mark them as resolved with
-"git add/rm <conflicted_files>", then run "git rebase --continue".
-You can instead skip this commit: run "git rebase --skip".
-To abort and get back to the state before "git rebase", run "git rebase --abort".
+# Production files — take remote version
+git checkout --theirs src/main/java/org/nypd/dlu/repository/CDWRepository.java
+git checkout --theirs src/main/java/org/nypd/dlu/api/CacheApi.java
+git checkout --theirs src/main/java/org/nypd/dlu/MapperConfig.java
+git checkout --theirs src/main/java/org/nypd/dlu/CacheConfig.java
+
+# Test file — take ours (already fixed)
+git checkout --ours src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java
+
+# Stage all
+git add src/main/java/org/nypd/dlu/repository/CDWRepository.java
+git add src/main/java/org/nypd/dlu/api/CacheApi.java
+git add src/main/java/org/nypd/dlu/MapperConfig.java
+git add src/main/java/org/nypd/dlu/CacheConfig.java
+git add src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java
+
+# Continue
+git rebase --continue
+
+===================
+
+git push origin feature/backend-unit-tests --force-with-lease
