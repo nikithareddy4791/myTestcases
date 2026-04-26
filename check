@@ -1,32 +1,9 @@
-$ git rebase --continue
-Applying: fixing mock and assertion issues
-Applying: excluding auto generated classes
-.git/rebase-apply/patch:24: space before tab in indent.
-        src/main/java/org/nnnn/ddd/model/**/*,
-.git/rebase-apply/patch:28: space before tab in indent.
-        src/main/java/org/nnnn/ddd/model/User.java
-.git/rebase-apply/patch:276: trailing whitespace.
+# Test files — take ours (already fixed)
+git checkout --ours src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java
+git checkout --ours src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java
 
-warning: 3 lines add whitespace errors.
-Using index info to reconstruct a base tree...
-M       pom.xml
-M       src/main/java/io/swagger/RFC3339DateFormat.java
-M       src/main/java/org/nnnn/ddd/api/CacheApiController.java
-M       src/main/java/org/nnnn/ddd/service/ReferenceDataService.java
-M       src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java
-M       src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java
-Falling back to patching base and 3-way merge...
-Auto-merging src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java
-CONFLICT (content): Merge conflict in src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java
-Auto-merging src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java
-CONFLICT (content): Merge conflict in src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java
-Auto-merging src/main/java/org/nnnn/ddd/service/ReferenceDataService.java
-Auto-merging src/main/java/org/nnnn/ddd/api/CacheApiController.java
-Auto-merging pom.xml
-error: Failed to merge in the changes.
-hint: Use 'git am --show-current-patch' to see the failed patch
-Patch failed at 0018 excluding auto generated classes
-Resolve all conflicts manually, mark them as resolved with
-"git add/rm <conflicted_files>", then run "git rebase --continue".
-You can instead skip this commit: run "git rebase --skip".
-To abort and get back to the state before "git rebase", run "git rebase --abort".
+# Stage test files
+git add src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java
+git add src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java
+
+======================
