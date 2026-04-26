@@ -1,35 +1,27 @@
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
-public class CDWRepositoryTest {
 
-
-@Nested
-@DisplayName("GetArrestInfoSummaryStringTests")
-class GetArrestInfoSummaryStringTests {
-@Test
-@DisplayName("sealed arrest - maskInfo masks defendant info")
-void constructor_sealedArrest_maskSealed_masksInfo() {
-    ArrestInfo info = new ArrestInfo();
-    info.setArrSealedFlg("Y");
-    info.setDeftFrstNm("Jane");
-    info.setDeftLastNm("Doe");
-    info.setDeftNysid("NY123456");
-    info.setTopCharge("PL 265.03");
-    info.maskInfo();
-
-    assertThat(info.getDeftFrstNm()).isEqualTo(AppConstants.SEALED_STRING);
-    assertThat(info.getDeftLastNm()).isEqualTo(AppConstants.SEALED_STRING);
-    assertThat(info.getDeftNysid()).isEqualTo(AppConstants.SEALED_STRING);
-    assertThat(info.getTopCharge()).isEqualTo(AppConstants.SEALED_STRING);
-    assertThat(info.getArrSealedFlg()).isEqualTo("Y");
-}
-
-===========================
-
-assertThat(info.arrSealedFlg(true)).isSameAs(info);
-to
-assertThat(info.arrSealedFlg("Y")).isSameAs(info);
-====================
-
-
-============================
+[ERROR] Failures: 
+[ERROR]   ArrestInfoTest$FluentBuilderTests.fluent_arrSealedFlg_returnsSameInstance:450 
+expected: "true"
+ but was: "Y"
+[ERROR] Errors: 
+[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_emptyResults_returnsEmptyList:151 » NullPointer Cannot invoke "jakarta.persistence.Query.setParameter(int, Object)" because "q" is null
+[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_mapsArrIdAndTopCharge:167 » NullPointer Cannot invoke "jakarta.persistence.Query.setParameter(int, Object)" because "q" is null
+[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_mapsSealedFlagN:251 » NullPointer Cannot invoke "jakarta.persistence.Query.setParameter(int, Object)" because "q" is null
+[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_mapsSealedFlagY:235 » NullPointer Cannot invoke "jakarta.persistence.Query.setParameter(int, Object)" because "q" is null
+[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_multipleRows_mapsAll:203 » NullPointer Cannot invoke "jakarta.persistence.Query.setParameter(int, Object)" because "q" is null
+[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_notMasked_nameVisible:185 » NullPointer Cannot invoke "jakarta.persistence.Query.setParameter(int, Object)" because "q" is null
+[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_setsParameter:219 » NullPointer Cannot invoke "jakarta.persistence.Query.setParameter(int, Object)" because "q" is null
+[INFO] 
+[ERROR] Tests run: 1477, Failures: 1, Errors: 7, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  45.926 s
+[INFO] Finished at: 2026-04-26T19:31:28-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.3:test (default-test) on project Ddd-services: There are test failures.
+[ERROR] 
+[ERROR] See F:\project\Ddd-services\target\surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
