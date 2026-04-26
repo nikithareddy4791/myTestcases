@@ -1,315 +1,35 @@
-Results:
-[INFO] 
-[ERROR] Failures: 
-[ERROR]   ArrestInfoTest$EightArgConstructorTests.constructor_sealedArrest_maskSealed_masksInfo:168 
-expected: "SEALED"
- but was: "Jane"
-[ERROR]   ArrestInfoTest$FluentBuilderTests.fluent_arrSealedFlg_returnsSameInstance:446 
-expected: "true"
- but was: "Y"
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryStringTests.getArrestInfoSummary_string_returnsSingleResult:173 
-Expecting actual:
-  []
-and:
-  class ArrestInfo {
-    arrId: null
-    arrDt: null
-    arrPct: null
-    arrPb: null
-    cmplntId: null
-    topCharge: null
-    aoTax: null
-    aoFrstNm: null
-    aoLastNm: null
-    aoCmd: null
-    deftFrstNm: null
-    deftLastNm: null
-    deftNysid: null
-    arrSealedFlg: null
-    deftGender: null
-    deftBrthDt: null
-    felonyFlg: null
-    dvFlg: null
-    indexCrimeFlg: null
-    reportUrl: null
-    arrVoidedFlg: null
-    juvStatCd: null
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+public class CDWRepositoryTest {
+
+
+@Nested
+@DisplayName("GetArrestInfoSummaryStringTests")
+class GetArrestInfoSummaryStringTests {
+@Test
+@DisplayName("sealed arrest - maskInfo masks defendant info")
+void constructor_sealedArrest_maskSealed_masksInfo() {
+    ArrestInfo info = new ArrestInfo();
+    info.setArrSealedFlg("Y");
+    info.setDeftFrstNm("Jane");
+    info.setDeftLastNm("Doe");
+    info.setDeftNysid("NY123456");
+    info.setTopCharge("PL 265.03");
+    info.maskInfo();
+
+    assertThat(info.getDeftFrstNm()).isEqualTo(AppConstants.SEALED_STRING);
+    assertThat(info.getDeftLastNm()).isEqualTo(AppConstants.SEALED_STRING);
+    assertThat(info.getDeftNysid()).isEqualTo(AppConstants.SEALED_STRING);
+    assertThat(info.getTopCharge()).isEqualTo(AppConstants.SEALED_STRING);
+    assertThat(info.getArrSealedFlg()).isEqualTo("Y");
 }
-to refer to the same object
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryStringTests.getArrestInfoSummary_string_setsParameter:162 
-Wanted but not invoked:
-query.setParameter(1, "ARR001");
--> at org.nnnn.ddd.repository.CDWRepositoryTest$GetArrestInfoSummaryStringTests.getArrestInfoSummary_string_setsParameter(CDWRepositoryTest.java:162)
 
-However, there were exactly 2 interactions with this mock:
-query.setParameter(1, [ARR001]);
--> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:54)
+===========================
 
-query.getResultList();
--> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:55)
+assertThat(info.arrSealedFlg(true)).isSameAs(info);
+to
+assertThat(info.arrSealedFlg("Y")).isSameAs(info);
+====================
 
 
-[ERROR] Errors: 
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_emptyResults_returnsEmptyList:193 » PotentialStubbingProblem 
-Strict stubbing argument mismatch. Please check:
- - this invocation of 'createNativeQuery' method:
-    entityManager.createNativeQuery(
-    "select RTRIM(ARR.ARR_ID), RTRIM(LWC.LAW_LONG_DESC) AS TOP_CHARGE , ARR.ARR_DT, PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG, LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID from CID.ARR_ARREST ARR LEFT JOIN CID.CCH_CRIMINAL_CHARGE CCH ON CCH.EVNT_KEY=ARR.ARR_KEY AND CCH.ROLE_CD='A' AND SEQ_NUM=1 LEFT JOIN CID.PSN_PERSON_OCCUR PSN ON PSN.EVNT_KEY=ARR.ARR_KEY AND PSN.ROLE_CD='A' LEFT JOIN CID.LWC_LAW_CODE LWC ON LWC.LAW_CD=CCH.LAW_CD LEFT JOIN CID.CAA_CMPT_ARST_ASOC CAA on CAA.ARR_KEY=ARR.ARR_KEY WHERE ARR.ARR_ID IN (?1) GROUP BY ARR.ARR_ID, LAW_LONG_DESC, ARR.ARR_DT, FRST_NM, LAST_NM, PSN.NYSID_NUM, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG",
-    class org.nnnn.ddd.model.ArrestInfo
-);
-    -> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:51)
- - has following stubbing(s) with different arguments:
-    1. entityManager.createNativeQuery("");
-      -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_emptyResults_returnsEmptyList(CDWRepositoryTest.java:189)
-Typically, stubbing argument mismatch indicates user mistake when writing tests.
-Mockito fails early so that you can debug potential problem easily.
-However, there are legit scenarios when this exception generates false negative signal:
-  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
-    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
-  - stubbed method is intentionally invoked with different arguments by code under test
-    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
-For more information see javadoc for PotentialStubbingProblem class.
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_mapsArrIdAndTopCharge:209 » PotentialStubbingProblem 
-Strict stubbing argument mismatch. Please check:
- - this invocation of 'createNativeQuery' method:
-    entityManager.createNativeQuery(
-    "select RTRIM(ARR.ARR_ID), RTRIM(LWC.LAW_LONG_DESC) AS TOP_CHARGE , ARR.ARR_DT, PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG, LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID from CID.ARR_ARREST ARR LEFT JOIN CID.CCH_CRIMINAL_CHARGE CCH ON CCH.EVNT_KEY=ARR.ARR_KEY AND CCH.ROLE_CD='A' AND SEQ_NUM=1 LEFT JOIN CID.PSN_PERSON_OCCUR PSN ON PSN.EVNT_KEY=ARR.ARR_KEY AND PSN.ROLE_CD='A' LEFT JOIN CID.LWC_LAW_CODE LWC ON LWC.LAW_CD=CCH.LAW_CD LEFT JOIN CID.CAA_CMPT_ARST_ASOC CAA on CAA.ARR_KEY=ARR.ARR_KEY WHERE ARR.ARR_ID IN (?1) GROUP BY ARR.ARR_ID, LAW_LONG_DESC, ARR.ARR_DT, FRST_NM, LAST_NM, PSN.NYSID_NUM, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG",
-    class org.nnnn.ddd.model.ArrestInfo
-);
-    -> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:51)
- - has following stubbing(s) with different arguments:
-    1. entityManager.createNativeQuery("");
-      -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_mapsArrIdAndTopCharge(CDWRepositoryTest.java:205)
-Typically, stubbing argument mismatch indicates user mistake when writing tests.
-Mockito fails early so that you can debug potential problem easily.
-However, there are legit scenarios when this exception generates false negative signal:
-  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
-    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
-  - stubbed method is intentionally invoked with different arguments by code under test
-    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
-For more information see javadoc for PotentialStubbingProblem class.
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_mapsSealedFlagN:293 » PotentialStubbingProblem 
-Strict stubbing argument mismatch. Please check:
- - this invocation of 'createNativeQuery' method:
-    entityManager.createNativeQuery(
-    "select RTRIM(ARR.ARR_ID), RTRIM(LWC.LAW_LONG_DESC) AS TOP_CHARGE , ARR.ARR_DT, PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG, LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID from CID.ARR_ARREST ARR LEFT JOIN CID.CCH_CRIMINAL_CHARGE CCH ON CCH.EVNT_KEY=ARR.ARR_KEY AND CCH.ROLE_CD='A' AND SEQ_NUM=1 LEFT JOIN CID.PSN_PERSON_OCCUR PSN ON PSN.EVNT_KEY=ARR.ARR_KEY AND PSN.ROLE_CD='A' LEFT JOIN CID.LWC_LAW_CODE LWC ON LWC.LAW_CD=CCH.LAW_CD LEFT JOIN CID.CAA_CMPT_ARST_ASOC CAA on CAA.ARR_KEY=ARR.ARR_KEY WHERE ARR.ARR_ID IN (?1) GROUP BY ARR.ARR_ID, LAW_LONG_DESC, ARR.ARR_DT, FRST_NM, LAST_NM, PSN.NYSID_NUM, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG",
-    class org.nnnn.ddd.model.ArrestInfo
-);
-    -> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:51)
- - has following stubbing(s) with different arguments:
-    1. entityManager.createNativeQuery("");
-      -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_mapsSealedFlagN(CDWRepositoryTest.java:289)
-Typically, stubbing argument mismatch indicates user mistake when writing tests.
-Mockito fails early so that you can debug potential problem easily.
-However, there are legit scenarios when this exception generates false negative signal:
-  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
-    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
-  - stubbed method is intentionally invoked with different arguments by code under test
-    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
-For more information see javadoc for PotentialStubbingProblem class.
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_mapsSealedFlagY:277 » PotentialStubbingProblem 
-Strict stubbing argument mismatch. Please check:
- - this invocation of 'createNativeQuery' method:
-    entityManager.createNativeQuery(
-    "select RTRIM(ARR.ARR_ID), RTRIM(LWC.LAW_LONG_DESC) AS TOP_CHARGE , ARR.ARR_DT, PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG, LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID from CID.ARR_ARREST ARR LEFT JOIN CID.CCH_CRIMINAL_CHARGE CCH ON CCH.EVNT_KEY=ARR.ARR_KEY AND CCH.ROLE_CD='A' AND SEQ_NUM=1 LEFT JOIN CID.PSN_PERSON_OCCUR PSN ON PSN.EVNT_KEY=ARR.ARR_KEY AND PSN.ROLE_CD='A' LEFT JOIN CID.LWC_LAW_CODE LWC ON LWC.LAW_CD=CCH.LAW_CD LEFT JOIN CID.CAA_CMPT_ARST_ASOC CAA on CAA.ARR_KEY=ARR.ARR_KEY WHERE ARR.ARR_ID IN (?1) GROUP BY ARR.ARR_ID, LAW_LONG_DESC, ARR.ARR_DT, FRST_NM, LAST_NM, PSN.NYSID_NUM, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG",
-    class org.nnnn.ddd.model.ArrestInfo
-);
-    -> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:51)
- - has following stubbing(s) with different arguments:
-    1. entityManager.createNativeQuery("");
-      -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_mapsSealedFlagY(CDWRepositoryTest.java:273)
-Typically, stubbing argument mismatch indicates user mistake when writing tests.
-Mockito fails early so that you can debug potential problem easily.
-However, there are legit scenarios when this exception generates false negative signal:
-  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
-    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
-  - stubbed method is intentionally invoked with different arguments by code under test
-    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
-For more information see javadoc for PotentialStubbingProblem class.
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_multipleRows_mapsAll:245 » PotentialStubbingProblem 
-Strict stubbing argument mismatch. Please check:
- - this invocation of 'createNativeQuery' method:
-    entityManager.createNativeQuery(
-    "select RTRIM(ARR.ARR_ID), RTRIM(LWC.LAW_LONG_DESC) AS TOP_CHARGE , ARR.ARR_DT, PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG, LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID from CID.ARR_ARREST ARR LEFT JOIN CID.CCH_CRIMINAL_CHARGE CCH ON CCH.EVNT_KEY=ARR.ARR_KEY AND CCH.ROLE_CD='A' AND SEQ_NUM=1 LEFT JOIN CID.PSN_PERSON_OCCUR PSN ON PSN.EVNT_KEY=ARR.ARR_KEY AND PSN.ROLE_CD='A' LEFT JOIN CID.LWC_LAW_CODE LWC ON LWC.LAW_CD=CCH.LAW_CD LEFT JOIN CID.CAA_CMPT_ARST_ASOC CAA on CAA.ARR_KEY=ARR.ARR_KEY WHERE ARR.ARR_ID IN (?1) GROUP BY ARR.ARR_ID, LAW_LONG_DESC, ARR.ARR_DT, FRST_NM, LAST_NM, PSN.NYSID_NUM, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG",
-    class org.nnnn.ddd.model.ArrestInfo
-);
-    -> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:51)
- - has following stubbing(s) with different arguments:
-    1. entityManager.createNativeQuery("");
-      -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_multipleRows_mapsAll(CDWRepositoryTest.java:241)
-Typically, stubbing argument mismatch indicates user mistake when writing tests.
-Mockito fails early so that you can debug potential problem easily.
-However, there are legit scenarios when this exception generates false negative signal:
-  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
-    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
-  - stubbed method is intentionally invoked with different arguments by code under test
-    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
-For more information see javadoc for PotentialStubbingProblem class.
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_notMasked_nameVisible:227 » PotentialStubbingProblem 
-Strict stubbing argument mismatch. Please check:
- - this invocation of 'createNativeQuery' method:
-    entityManager.createNativeQuery(
-    "select RTRIM(ARR.ARR_ID), RTRIM(LWC.LAW_LONG_DESC) AS TOP_CHARGE , ARR.ARR_DT, PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG, LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID from CID.ARR_ARREST ARR LEFT JOIN CID.CCH_CRIMINAL_CHARGE CCH ON CCH.EVNT_KEY=ARR.ARR_KEY AND CCH.ROLE_CD='A' AND SEQ_NUM=1 LEFT JOIN CID.PSN_PERSON_OCCUR PSN ON PSN.EVNT_KEY=ARR.ARR_KEY AND PSN.ROLE_CD='A' LEFT JOIN CID.LWC_LAW_CODE LWC ON LWC.LAW_CD=CCH.LAW_CD LEFT JOIN CID.CAA_CMPT_ARST_ASOC CAA on CAA.ARR_KEY=ARR.ARR_KEY WHERE ARR.ARR_ID IN (?1) GROUP BY ARR.ARR_ID, LAW_LONG_DESC, ARR.ARR_DT, FRST_NM, LAST_NM, PSN.NYSID_NUM, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG",
-    class org.nnnn.ddd.model.ArrestInfo
-);
-    -> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:51)
- - has following stubbing(s) with different arguments:
-    1. entityManager.createNativeQuery("");
-      -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_notMasked_nameVisible(CDWRepositoryTest.java:223)
-Typically, stubbing argument mismatch indicates user mistake when writing tests.
-Mockito fails early so that you can debug potential problem easily.
-However, there are legit scenarios when this exception generates false negative signal:
-  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
-    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
-  - stubbed method is intentionally invoked with different arguments by code under test
-    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
-For more information see javadoc for PotentialStubbingProblem class.
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_setsParameter:261 » PotentialStubbingProblem 
-Strict stubbing argument mismatch. Please check:
- - this invocation of 'createNativeQuery' method:
-    entityManager.createNativeQuery(
-    "select RTRIM(ARR.ARR_ID), RTRIM(LWC.LAW_LONG_DESC) AS TOP_CHARGE , ARR.ARR_DT, PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG, LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID from CID.ARR_ARREST ARR LEFT JOIN CID.CCH_CRIMINAL_CHARGE CCH ON CCH.EVNT_KEY=ARR.ARR_KEY AND CCH.ROLE_CD='A' AND SEQ_NUM=1 LEFT JOIN CID.PSN_PERSON_OCCUR PSN ON PSN.EVNT_KEY=ARR.ARR_KEY AND PSN.ROLE_CD='A' LEFT JOIN CID.LWC_LAW_CODE LWC ON LWC.LAW_CD=CCH.LAW_CD LEFT JOIN CID.CAA_CMPT_ARST_ASOC CAA on CAA.ARR_KEY=ARR.ARR_KEY WHERE ARR.ARR_ID IN (?1) GROUP BY ARR.ARR_ID, LAW_LONG_DESC, ARR.ARR_DT, FRST_NM, LAST_NM, PSN.NYSID_NUM, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG",
-    class org.nnnn.ddd.model.ArrestInfo
-);
-    -> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:51)
- - has following stubbing(s) with different arguments:
-    1. entityManager.createNativeQuery("");
-      -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetArrestInfoSummaryListTests.getArrestInfoSummary_list_setsParameter(CDWRepositoryTest.java:257)
-Typically, stubbing argument mismatch indicates user mistake when writing tests.
-Mockito fails early so that you can debug potential problem easily.
-However, there are legit scenarios when this exception generates false negative signal:
-  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
-    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
-  - stubbed method is intentionally invoked with different arguments by code under test
-    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
-For more information see javadoc for PotentialStubbingProblem class.
-[ERROR]   CDWRepositoryTest$GetArrestInfoSummaryStringTests.getArrestInfoSummary_string_callsCreateNativeQuery » UnnecessaryStubbing 
-Unnecessary stubbings detected.
-Clean & maintainable test code requires zero unnecessary code.
-Following stubbings are unnecessary (click to navigate to relevant line of code):
-  1. -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetArrestInfoSummaryStringTests.getArrestInfoSummary_string_callsCreateNativeQuery(CDWRepositoryTest.java:145)
-Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class.
-[ERROR]   CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_callsGetResultList:395 » PotentialStubbingProblem 
-Strict stubbing argument mismatch. Please check:
- - this invocation of 'createNativeQuery' method:
-    entityManager.createNativeQuery(
-    "select RTRIM(ARR.ARR_ID), RTRIM(LWC.LAW_LONG_DESC) AS TOP_CHARGE , ARR.ARR_DT, PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG, LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID from CID.ARR_ARREST ARR LEFT JOIN CID.CCH_CRIMINAL_CHARGE CCH ON CCH.EVNT_KEY=ARR.ARR_KEY AND CCH.ROLE_CD='A' AND SEQ_NUM=1 LEFT JOIN CID.PSN_PERSON_OCCUR PSN ON PSN.EVNT_KEY=ARR.ARR_KEY AND PSN.ROLE_CD='A' LEFT JOIN CID.LWC_LAW_CODE LWC ON LWC.LAW_CD=CCH.LAW_CD LEFT JOIN CID.CAA_CMPT_ARST_ASOC CAA on CAA.ARR_KEY=ARR.ARR_KEY WHERE ARR.ARR_ID IN (?1) GROUP BY ARR.ARR_ID, LAW_LONG_DESC, ARR.ARR_DT, FRST_NM, LAST_NM, PSN.NYSID_NUM, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG",
-    class org.nnnn.ddd.model.ArrestInfo
-);
-    -> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:51)
- - has following stubbing(s) with different arguments:
-    1. entityManager.createNativeQuery("");
-      -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_callsGetResultList(CDWRepositoryTest.java:391)
-Typically, stubbing argument mismatch indicates user mistake when writing tests.
-Mockito fails early so that you can debug potential problem easily.
-However, there are legit scenarios when this exception generates false negative signal:
-  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
-    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
-  - stubbed method is intentionally invoked with different arguments by code under test
-    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
-For more information see javadoc for PotentialStubbingProblem class.
-[ERROR]   CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_emptyResults_returnsEmptyList:315 » PotentialStubbingProblem 
-Strict stubbing argument mismatch. Please check:
- - this invocation of 'createNativeQuery' method:
-    entityManager.createNativeQuery(
-    "select RTRIM(ARR.ARR_ID), RTRIM(LWC.LAW_LONG_DESC) AS TOP_CHARGE , ARR.ARR_DT, PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG, LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID from CID.ARR_ARREST ARR LEFT JOIN CID.CCH_CRIMINAL_CHARGE CCH ON CCH.EVNT_KEY=ARR.ARR_KEY AND CCH.ROLE_CD='A' AND SEQ_NUM=1 LEFT JOIN CID.PSN_PERSON_OCCUR PSN ON PSN.EVNT_KEY=ARR.ARR_KEY AND PSN.ROLE_CD='A' LEFT JOIN CID.LWC_LAW_CODE LWC ON LWC.LAW_CD=CCH.LAW_CD LEFT JOIN CID.CAA_CMPT_ARST_ASOC CAA on CAA.ARR_KEY=ARR.ARR_KEY WHERE ARR.ARR_ID IN (?1) GROUP BY ARR.ARR_ID, LAW_LONG_DESC, ARR.ARR_DT, FRST_NM, LAST_NM, PSN.NYSID_NUM, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG",
-    class org.nnnn.ddd.model.ArrestInfo
-);
-    -> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:51)
- - has following stubbing(s) with different arguments:
-    1. entityManager.createNativeQuery("");
-      -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_emptyResults_returnsEmptyList(CDWRepositoryTest.java:311)
-Typically, stubbing argument mismatch indicates user mistake when writing tests.
-Mockito fails early so that you can debug potential problem easily.
-However, there are legit scenarios when this exception generates false negative signal:
-  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
-    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
-  - stubbed method is intentionally invoked with different arguments by code under test
-    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
-For more information see javadoc for PotentialStubbingProblem class.
-[ERROR]   CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_mapsArrId:331 » PotentialStubbingProblem 
-Strict stubbing argument mismatch. Please check:
- - this invocation of 'createNativeQuery' method:
-    entityManager.createNativeQuery(
-    "select RTRIM(ARR.ARR_ID), RTRIM(LWC.LAW_LONG_DESC) AS TOP_CHARGE , ARR.ARR_DT, PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG, LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID from CID.ARR_ARREST ARR LEFT JOIN CID.CCH_CRIMINAL_CHARGE CCH ON CCH.EVNT_KEY=ARR.ARR_KEY AND CCH.ROLE_CD='A' AND SEQ_NUM=1 LEFT JOIN CID.PSN_PERSON_OCCUR PSN ON PSN.EVNT_KEY=ARR.ARR_KEY AND PSN.ROLE_CD='A' LEFT JOIN CID.LWC_LAW_CODE LWC ON LWC.LAW_CD=CCH.LAW_CD LEFT JOIN CID.CAA_CMPT_ARST_ASOC CAA on CAA.ARR_KEY=ARR.ARR_KEY WHERE ARR.ARR_ID IN (?1) GROUP BY ARR.ARR_ID, LAW_LONG_DESC, ARR.ARR_DT, FRST_NM, LAST_NM, PSN.NYSID_NUM, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG",
-    class org.nnnn.ddd.model.ArrestInfo
-);
-    -> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:51)
- - has following stubbing(s) with different arguments:
-    1. entityManager.createNativeQuery("");
-      -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_mapsArrId(CDWRepositoryTest.java:327)Typically, stubbing argument mismatch indicates user mistake when writing tests.
-Mockito fails early so that you can debug potential problem easily.
-However, there are legit scenarios when this exception generates false negative signal:
-  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
-    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
-  - stubbed method is intentionally invoked with different arguments by code under test
-    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
-For more information see javadoc for PotentialStubbingProblem class.
-[ERROR]   CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_masked_nameIsMasked:348 » PotentialStubbingProblem 
-Strict stubbing argument mismatch. Please check:
- - this invocation of 'createNativeQuery' method:
-    entityManager.createNativeQuery(
-    "select RTRIM(ARR.ARR_ID), RTRIM(LWC.LAW_LONG_DESC) AS TOP_CHARGE , ARR.ARR_DT, PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG, LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID from CID.ARR_ARREST ARR LEFT JOIN CID.CCH_CRIMINAL_CHARGE CCH ON CCH.EVNT_KEY=ARR.ARR_KEY AND CCH.ROLE_CD='A' AND SEQ_NUM=1 LEFT JOIN CID.PSN_PERSON_OCCUR PSN ON PSN.EVNT_KEY=ARR.ARR_KEY AND PSN.ROLE_CD='A' LEFT JOIN CID.LWC_LAW_CODE LWC ON LWC.LAW_CD=CCH.LAW_CD LEFT JOIN CID.CAA_CMPT_ARST_ASOC CAA on CAA.ARR_KEY=ARR.ARR_KEY WHERE ARR.ARR_ID IN (?1) GROUP BY ARR.ARR_ID, LAW_LONG_DESC, ARR.ARR_DT, FRST_NM, LAST_NM, PSN.NYSID_NUM, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG",
-    class org.nnnn.ddd.model.ArrestInfo
-);
-    -> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:51)
- - has following stubbing(s) with different arguments:
-    1. entityManager.createNativeQuery("");
-      -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_masked_nameIsMasked(CDWRepositoryTest.java:344)
-Typically, stubbing argument mismatch indicates user mistake when writing tests.
-Mockito fails early so that you can debug potential problem easily.
-However, there are legit scenarios when this exception generates false negative signal:
-  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
-    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
-  - stubbed method is intentionally invoked with different arguments by code under test
-    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
-For more information see javadoc for PotentialStubbingProblem class.
-[ERROR]   CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_multipleRows_mapsAll:368 » PotentialStubbingProblem 
-Strict stubbing argument mismatch. Please check:
- - this invocation of 'createNativeQuery' method:
-    entityManager.createNativeQuery(
-    "select RTRIM(ARR.ARR_ID), RTRIM(LWC.LAW_LONG_DESC) AS TOP_CHARGE , ARR.ARR_DT, PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG, LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID from CID.ARR_ARREST ARR LEFT JOIN CID.CCH_CRIMINAL_CHARGE CCH ON CCH.EVNT_KEY=ARR.ARR_KEY AND CCH.ROLE_CD='A' AND SEQ_NUM=1 LEFT JOIN CID.PSN_PERSON_OCCUR PSN ON PSN.EVNT_KEY=ARR.ARR_KEY AND PSN.ROLE_CD='A' LEFT JOIN CID.LWC_LAW_CODE LWC ON LWC.LAW_CD=CCH.LAW_CD LEFT JOIN CID.CAA_CMPT_ARST_ASOC CAA on CAA.ARR_KEY=ARR.ARR_KEY WHERE ARR.ARR_ID IN (?1) GROUP BY ARR.ARR_ID, LAW_LONG_DESC, ARR.ARR_DT, FRST_NM, LAST_NM, PSN.NYSID_NUM, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG",
-    class org.nnnn.ddd.model.ArrestInfo
-);
-    -> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:51)
- - has following stubbing(s) with different arguments:
-    1. entityManager.createNativeQuery("");
-      -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_multipleRows_mapsAll(CDWRepositoryTest.java:364)
-Typically, stubbing argument mismatch indicates user mistake when writing tests.
-Mockito fails early so that you can debug potential problem easily.
-However, there are legit scenarios when this exception generates false negative signal:
-  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
-    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
-  - stubbed method is intentionally invoked with different arguments by code under test
-    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
-For more information see javadoc for PotentialStubbingProblem class.
-[ERROR]   CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_setsParameter:382 » PotentialStubbingProblem 
-Strict stubbing argument mismatch. Please check:
- - this invocation of 'createNativeQuery' method:
-    entityManager.createNativeQuery(
-    "select RTRIM(ARR.ARR_ID), RTRIM(LWC.LAW_LONG_DESC) AS TOP_CHARGE , ARR.ARR_DT, PSN.FRST_NM AS DEFT_FRST_NM, PSN.LAST_NM AS DEFT_LAST_NM, PSN.NYSID_NUM AS DEFT_NYSID, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG, LISTAGG(RTRIM(CAA.CMPLNT_ID), ',') WITHIN GROUP (ORDER BY ARR.ARR_ID) AS CMPLNT_ID from CID.ARR_ARREST ARR LEFT JOIN CID.CCH_CRIMINAL_CHARGE CCH ON CCH.EVNT_KEY=ARR.ARR_KEY AND CCH.ROLE_CD='A' AND SEQ_NUM=1 LEFT JOIN CID.PSN_PERSON_OCCUR PSN ON PSN.EVNT_KEY=ARR.ARR_KEY AND PSN.ROLE_CD='A' LEFT JOIN CID.LWC_LAW_CODE LWC ON LWC.LAW_CD=CCH.LAW_CD LEFT JOIN CID.CAA_CMPT_ARST_ASOC CAA on CAA.ARR_KEY=ARR.ARR_KEY WHERE ARR.ARR_ID IN (?1) GROUP BY ARR.ARR_ID, LAW_LONG_DESC, ARR.ARR_DT, FRST_NM, LAST_NM, PSN.NYSID_NUM, ARR.ARR_SEALED_FLG, ARR.ARR_VOIDED_FLG",
-    class org.nnnn.ddd.model.ArrestInfo
-);
-    -> at org.nnnn.ddd.repository.CDWRepository.getArrestInfoSummary(CDWRepository.java:51)
- - has following stubbing(s) with different arguments:
-    1. entityManager.createNativeQuery("");
-      -> at org.nnnn.ddd.repository.CDWRepositoryTest$GetMaskedArrestInfoSummaryTests.getMaskedArrestInfoSummary_setsParameter(CDWRepositoryTest.java:378)
-Typically, stubbing argument mismatch indicates user mistake when writing tests.
-Mockito fails early so that you can debug potential problem easily.
-However, there are legit scenarios when this exception generates false negative signal:
-  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
-    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
-  - stubbed method is intentionally invoked with different arguments by code under test
-    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
-For more information see javadoc for PotentialStubbingProblem class.
-[INFO] 
-[ERROR] Tests run: 1486, Failures: 4, Errors: 14, Skipped: 0
-[INFO] 
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  45.284 s
-[INFO] Finished at: 2026-04-26T19:02:04-04:00
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.3:test (default-test) on project ddd-services: There are test failures.
-[ERROR] 
+============================
