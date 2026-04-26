@@ -1,15 +1,43 @@
-@Mock
-private AuthenticationService authenticationService;
 
-@BeforeEach
-void setUp() {
-    lenient().when(authenticationService.hasSealedAccess()).thenReturn(true);
-    lenient().when(printhubUtil.getReportUrl(any())).thenReturn("http://mock-url");
-}
-
-
-// Remove this line:
-verify(cdwRepository, never()).getArrestInfoSummary(anyList());
-
-// Keep only:
-verify(cdwRepository).getArrestInfoSummary(anyList());
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[29,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[32,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[35,6] org.springframework.boot.test.mock.mockito.SpyBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[38,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[41,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[44,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[47,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[52,6] org.springframework.boot.test.mock.mockito.SpyBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[55,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[58,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[61,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[64,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[67,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[41,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[47,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[50,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[53,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[56,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[INFO] 18 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[40,13] cannot find symbol
+  symbol:   class AuthenticationService
+  location: class org.nnnn.ddd.repository.CDWRepositoryTest
+[INFO] 1 error
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.633 s
+[INFO] Finished at: 2026-04-26T18:56:53-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:testCompile (default-testCompile) on project ddd-services: Compilation failure
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[40,13] cannot find symbol
+[ERROR]   symbol:   class AuthenticationService
+[ERROR]   location: class org.nnnn.ddd.repository.CDWRepositoryTest
+[ERROR] 
