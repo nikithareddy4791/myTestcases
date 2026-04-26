@@ -1,8 +1,26 @@
-$ git rebase --continue
-Applying: adding junits for Entities and exceptions
-No changes - did you forget to use 'git add'?
-If there is nothing left to stage, chances are that something else
-already introduced the same changes; you might want to skip this patch.
+$ git rebase --skip
+Applying: modifying the cc email in emailService
+Applying: fixing merging/compilation errors
+.git/rebase-apply/patch:18: trailing whitespace.
+
+.git/rebase-apply/patch:89: trailing whitespace.
+
+warning: 2 lines add whitespace errors.
+Using index info to reconstruct a base tree...
+M       pom.xml
+M       src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java
+M       src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java
+M       src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
+Falling back to patching base and 3-way merge...
+Auto-merging src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java
+CONFLICT (content): Merge conflict in src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java
+Auto-merging src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java
+CONFLICT (content): Merge conflict in src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java
+Auto-merging pom.xml
+CONFLICT (content): Merge conflict in pom.xml
+error: Failed to merge in the changes.
+hint: Use 'git am --show-current-patch' to see the failed patch
+Patch failed at 0011 fixing merging/compilation errors
 Resolve all conflicts manually, mark them as resolved with
 "git add/rm <conflicted_files>", then run "git rebase --continue".
 You can instead skip this commit: run "git rebase --skip".
