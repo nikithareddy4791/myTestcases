@@ -1,4 +1,4 @@
-
+Results:
 [INFO] 
 [ERROR] Failures: 
 [ERROR]   ArrestInfoTest$EightArgConstructorTests.constructor_sealedArrest_maskSealed_masksInfo:168 
@@ -307,4 +307,9 @@ For more information see javadoc for PotentialStubbingProblem class.
 [INFO] 
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
-[INFO] ------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  45.284 s
+[INFO] Finished at: 2026-04-26T19:02:04-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.3:test (default-test) on project ddd-services: There are test failures.
+[ERROR] 
