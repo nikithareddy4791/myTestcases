@@ -1,8 +1,605 @@
-git checkout origin/feature/backend -- src/test/java/org/nypd/dlu/service/CaseServiceTest.java
-git checkout origin/feature/backend -- src/test/java/org/nypd/dlu/service/CacheApiControllerTest.java
-git checkout origin/feature/backend -- src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java
-git checkout origin/feature/backend -- src/test/java/org/nypd/dlu/repository/CDWRepositoryTest.java
-git checkout origin/feature/backend -- src/test/java/org/nypd/dlu/model/ArrestInfoTest.java
-
-git checkout origin/feature/backend -- src/test/java/org/nypd/dlu/AllTestsSuite.java
-
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[29,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[32,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[35,6] org.springframework.boot.test.mock.mockito.SpyBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[38,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[41,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[44,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java:[47,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[41,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[47,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[50,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[53,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java:[56,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[INFO] 12 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[30,18] cannot find symbol
+  symbol:   class mockito
+  location: package org
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[30,1] static import only from classes and interfaces
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[31,18] cannot find symbol
+  symbol:   class mockito
+  location: package org
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[31,1] static import only from classes and interfaces
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[50,6] cannot find symbol
+  symbol:   class SpyBean
+  location: class org.nnnn.ddd.service.CaseFlowChartTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[53,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nnnn.ddd.service.CaseFlowChartTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[56,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nnnn.ddd.service.CaseFlowChartTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[59,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nnnn.ddd.service.CaseFlowChartTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[62,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nnnn.ddd.service.CaseFlowChartTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[65,6] cannot find symbol
+  symbol:   class MockBean
+  location: class org.nnnn.ddd.service.CaseFlowChartTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[53,34] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[152,58] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[166,58] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[180,59] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[193,60] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[211,20] no suitable constructor found for ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[267,31] no suitable constructor found for ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,char,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,<nulltype>,<nulltype>,<nulltype>,<nulltype>,<nulltype>)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[444,42] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[140,48] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[153,48] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[166,59] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[391,27] cannot find symbol
+  symbol:   method never()
+  location: class org.nnnn.ddd.repository.CDWRepositoryTest.GetMaskedArrestInfoSummaryTests
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[83,9] cannot find symbol
+  symbol:   method lenient()
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[84,9] cannot find symbol
+  symbol:   method lenient()
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[85,9] cannot find symbol
+  symbol:   method lenient()
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[93,9] cannot find symbol
+  symbol:   method doReturn(java.util.Optional)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[94,9] cannot find symbol
+  symbol:   method doReturn(java.util.Optional)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[100,9] cannot find symbol
+  symbol:   method doReturn(java.util.Optional)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[101,9] cannot find symbol
+  symbol:   method doReturn(java.util.Optional)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[111,9] cannot find symbol
+  symbol:   method when(boolean)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[112,9] cannot find symbol
+  symbol:   method when(java.lang.Integer)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[113,9] cannot find symbol
+  symbol:   method when(java.lang.Integer)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[124,9] cannot find symbol
+  symbol:   method when(boolean)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[125,9] cannot find symbol
+  symbol:   method when(java.lang.String)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[126,9] cannot find symbol
+  symbol:   method when(java.lang.Integer)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[127,9] cannot find symbol
+  symbol:   method when(java.lang.Integer)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[143,9] cannot find symbol
+  symbol:   method when(java.lang.Integer)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[144,9] cannot find symbol
+  symbol:   method when(java.lang.Integer)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[167,9] cannot find symbol
+  symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.CategoryList>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[174,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.model.ArrestInfo)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[175,9] cannot find symbol
+  symbol:   method when(java.util.List<org.nnnn.ddd.entity.dddCase>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[176,9] cannot find symbol
+  symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.dddOfficeList>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[177,9] cannot find symbol
+  symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.StatusList>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[178,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.model.Status)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[179,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.entity.dddCase)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[188,9] cannot find symbol
+  symbol:   method verify(org.nnnn.ddd.repository.CaseRepository)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[207,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.model.ArrestInfo)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[208,9] cannot find symbol
+  symbol:   method when(java.util.List<org.nnnn.ddd.entity.dddCase>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[209,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.model.Status)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[214,32] cannot find symbol
+  symbol:   method never()
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[227,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.model.ArrestInfo)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[228,9] cannot find symbol
+  symbol:   method when(boolean)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[243,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.model.ArrestInfo)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[259,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.model.ArrestInfo)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[260,9] cannot find symbol
+  symbol:   method when(java.util.List<org.nnnn.ddd.entity.dddCase>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[261,9] cannot find symbol
+  symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.dddOfficeList>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[280,9] cannot find symbol
+  symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.CategoryList>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[285,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.model.ArrestInfo)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[286,9] cannot find symbol
+  symbol:   method when(java.util.List<org.nnnn.ddd.entity.dddCase>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[287,9] cannot find symbol
+  symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.dddOfficeList>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[288,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.model.Status)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[289,9] cannot find symbol
+  symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.StatusList>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[293,9] cannot find symbol
+  symbol:   method verify(org.nnnn.ddd.repository.CaseRepository)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[314,9] cannot find symbol
+  symbol:   method verify(org.nnnn.ddd.repository.CaseRepository)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[351,9] cannot find symbol
+  symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.CategoryList>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[355,9] cannot find symbol
+  symbol:   method verify(org.nnnn.ddd.repository.CategoryListRepository)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[384,9] cannot find symbol
+  symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.StatusList>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[388,9] cannot find symbol
+  symbol:   method verify(org.nnnn.ddd.repository.StatusListRepository)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[403,9] cannot find symbol
+  symbol:   method verifyNoInteractions(org.nnnn.ddd.repository.CaseRepository)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[415,9] cannot find symbol
+  symbol:   method when(org.springframework.data.domain.Page)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[416,9] cannot find symbol
+  symbol:   method when(java.util.List<org.nnnn.ddd.model.ArrestInfo>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[417,9] cannot find symbol
+  symbol:   method when(java.lang.Integer)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[418,9] cannot find symbol
+  symbol:   method when(java.lang.Integer)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[423,9] cannot find symbol
+  symbol:   method verify(org.nnnn.ddd.repository.CaseRepository)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[434,9] cannot find symbol
+  symbol:   method when(boolean)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[435,9] cannot find symbol
+  symbol:   method when(java.lang.String)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[439,9] cannot find symbol
+  symbol:   method when(java.util.List<org.nnnn.ddd.model.dddOffice>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[442,9] cannot find symbol
+  symbol:   method when(org.springframework.data.domain.Page)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[443,9] cannot find symbol
+  symbol:   method when(java.util.List<org.nnnn.ddd.model.ArrestInfo>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[444,9] cannot find symbol
+  symbol:   method when(java.lang.Integer)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[445,9] cannot find symbol
+  symbol:   method when(java.lang.Integer)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[449,9] cannot find symbol
+  symbol:   method verify(org.nnnn.ddd.service.ReferenceDataService)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[463,9] cannot find symbol
+  symbol:   method when(org.springframework.data.domain.Page)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[464,9] cannot find symbol
+  symbol:   method when(java.util.List<org.nnnn.ddd.model.ArrestInfo>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[465,9] cannot find symbol
+  symbol:   method when(java.lang.Integer)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[466,9] cannot find symbol
+  symbol:   method when(java.lang.Integer)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[470,9] cannot find symbol
+  symbol:   method verify(org.nnnn.ddd.repository.CaseRepository)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[482,9] cannot find symbol
+  symbol:   method doReturn(java.util.Optional<org.nnnn.ddd.entity.dddCase>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[483,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.entity.dddCase)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[484,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.model.dddCase)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[490,9] cannot find symbol
+  symbol:   method verify(org.nnnn.ddd.repository.CaseRepository)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[496,34] cannot find symbol
+  symbol:   method mock(java.lang.Class<org.springframework.web.multipart.MultipartFile>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[500,9] cannot find symbol
+  symbol:   method doReturn(java.util.Optional<org.nnnn.ddd.entity.dddCase>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[501,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.entity.CaseUpload)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[502,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.entity.dddCase)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[503,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.model.dddCase)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[508,9] cannot find symbol
+  symbol:   method verify(org.nnnn.ddd.service.DellS3Service)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[514,34] cannot find symbol
+  symbol:   method mock(java.lang.Class<org.springframework.web.multipart.MultipartFile>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[518,9] cannot find symbol
+  symbol:   method doReturn(java.util.Optional<org.nnnn.ddd.entity.dddCase>)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[519,9] cannot find symbol
+  symbol:   method when(org.nnnn.ddd.entity.CaseUpload)
+  location: class org.nnnn.ddd.service.CaseServiceTest
+[INFO] 100 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  11.839 s
+[INFO] Finished at: 2026-04-26T17:13:51-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:testCompile (default-testCompile) on project ddd-services: Compilation failure: Compilation failure: 
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[30,18] cannot find symbol
+[ERROR]   symbol:   class mockito
+[ERROR]   location: package org
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[30,1] static import only from classes and interfaces
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[31,18] cannot find symbol
+[ERROR]   symbol:   class mockito
+[ERROR]   location: package org
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[31,1] static import only from classes and interfaces
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[50,6] cannot find symbol
+[ERROR]   symbol:   class SpyBean
+[ERROR]   location: class org.nnnn.ddd.service.CaseFlowChartTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[53,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nnnn.ddd.service.CaseFlowChartTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[56,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nnnn.ddd.service.CaseFlowChartTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[59,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nnnn.ddd.service.CaseFlowChartTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[62,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nnnn.ddd.service.CaseFlowChartTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java:[65,6] cannot find symbol
+[ERROR]   symbol:   class MockBean
+[ERROR]   location: class org.nnnn.ddd.service.CaseFlowChartTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[53,34] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[152,58] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[166,58] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[180,59] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[193,60] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[211,20] no suitable constructor found for ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[267,31] no suitable constructor found for ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,char,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,<nulltype>,<nulltype>,<nulltype>,<nulltype>,<nulltype>)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo() is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor org.nnnn.ddd.model.ArrestInfo.ArrestInfo(java.lang.String,java.sql.Date,java.lang.String,java.lang.Character,java.lang.Character,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.sql.Date,java.lang.String,java.lang.String,java.lang.Character,java.lang.Character) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java:[444,42] incompatible types: boolean cannot be converted to java.lang.String
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[140,48] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[153,48] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[166,59] incompatible types: java.lang.String cannot be converted to java.util.List<java.lang.String>
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java:[391,27] cannot find symbol
+[ERROR]   symbol:   method never()
+[ERROR]   location: class org.nnnn.ddd.repository.CDWRepositoryTest.GetMaskedArrestInfoSummaryTests
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[83,9] cannot find symbol
+[ERROR]   symbol:   method lenient()
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[84,9] cannot find symbol
+[ERROR]   symbol:   method lenient()
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[85,9] cannot find symbol
+[ERROR]   symbol:   method lenient()
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[93,9] cannot find symbol
+[ERROR]   symbol:   method doReturn(java.util.Optional)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[94,9] cannot find symbol
+[ERROR]   symbol:   method doReturn(java.util.Optional)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[100,9] cannot find symbol
+[ERROR]   symbol:   method doReturn(java.util.Optional)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[101,9] cannot find symbol
+[ERROR]   symbol:   method doReturn(java.util.Optional)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[111,9] cannot find symbol
+[ERROR]   symbol:   method when(boolean)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[112,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.Integer)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[113,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.Integer)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[124,9] cannot find symbol
+[ERROR]   symbol:   method when(boolean)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[125,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.String)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[126,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.Integer)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[127,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.Integer)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[143,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.Integer)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[144,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.Integer)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[167,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.CategoryList>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[174,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.model.ArrestInfo)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[175,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.List<org.nnnn.ddd.entity.dddCase>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[176,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.dddOfficeList>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[177,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.StatusList>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[178,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.model.Status)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[179,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.entity.dddCase)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[188,9] cannot find symbol
+[ERROR]   symbol:   method verify(org.nnnn.ddd.repository.CaseRepository)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[207,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.model.ArrestInfo)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[208,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.List<org.nnnn.ddd.entity.dddCase>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[209,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.model.Status)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[214,32] cannot find symbol
+[ERROR]   symbol:   method never()
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[227,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.model.ArrestInfo)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[228,9] cannot find symbol
+[ERROR]   symbol:   method when(boolean)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[243,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.model.ArrestInfo)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[259,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.model.ArrestInfo)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[260,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.List<org.nnnn.ddd.entity.dddCase>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[261,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.dddOfficeList>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[280,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.CategoryList>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[285,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.model.ArrestInfo)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[286,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.List<org.nnnn.ddd.entity.dddCase>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[287,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.dddOfficeList>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[288,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.model.Status)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[289,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.StatusList>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[293,9] cannot find symbol
+[ERROR]   symbol:   method verify(org.nnnn.ddd.repository.CaseRepository)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[314,9] cannot find symbol
+[ERROR]   symbol:   method verify(org.nnnn.ddd.repository.CaseRepository)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[351,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.CategoryList>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[355,9] cannot find symbol
+[ERROR]   symbol:   method verify(org.nnnn.ddd.repository.CategoryListRepository)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[384,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.Optional<org.nnnn.ddd.entity.StatusList>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[388,9] cannot find symbol
+[ERROR]   symbol:   method verify(org.nnnn.ddd.repository.StatusListRepository)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[403,9] cannot find symbol
+[ERROR]   symbol:   method verifyNoInteractions(org.nnnn.ddd.repository.CaseRepository)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[415,9] cannot find symbol
+[ERROR]   symbol:   method when(org.springframework.data.domain.Page)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[416,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.List<org.nnnn.ddd.model.ArrestInfo>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[417,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.Integer)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[418,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.Integer)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[423,9] cannot find symbol
+[ERROR]   symbol:   method verify(org.nnnn.ddd.repository.CaseRepository)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[434,9] cannot find symbol
+[ERROR]   symbol:   method when(boolean)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[435,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.String)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[439,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.List<org.nnnn.ddd.model.dddOffice>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[442,9] cannot find symbol
+[ERROR]   symbol:   method when(org.springframework.data.domain.Page)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[443,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.List<org.nnnn.ddd.model.ArrestInfo>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[444,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.Integer)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[445,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.Integer)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[449,9] cannot find symbol
+[ERROR]   symbol:   method verify(org.nnnn.ddd.service.ReferenceDataService)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[463,9] cannot find symbol
+[ERROR]   symbol:   method when(org.springframework.data.domain.Page)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[464,9] cannot find symbol
+[ERROR]   symbol:   method when(java.util.List<org.nnnn.ddd.model.ArrestInfo>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[465,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.Integer)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[466,9] cannot find symbol
+[ERROR]   symbol:   method when(java.lang.Integer)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[470,9] cannot find symbol
+[ERROR]   symbol:   method verify(org.nnnn.ddd.repository.CaseRepository)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[482,9] cannot find symbol
+[ERROR]   symbol:   method doReturn(java.util.Optional<org.nnnn.ddd.entity.dddCase>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[483,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.entity.dddCase)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[484,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.model.dddCase)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[490,9] cannot find symbol
+[ERROR]   symbol:   method verify(org.nnnn.ddd.repository.CaseRepository)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[496,34] cannot find symbol
+[ERROR]   symbol:   method mock(java.lang.Class<org.springframework.web.multipart.MultipartFile>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[500,9] cannot find symbol
+[ERROR]   symbol:   method doReturn(java.util.Optional<org.nnnn.ddd.entity.dddCase>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[501,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.entity.CaseUpload)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[502,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.entity.dddCase)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[503,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.model.dddCase)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[508,9] cannot find symbol
+[ERROR]   symbol:   method verify(org.nnnn.ddd.service.DellS3Service)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[514,34] cannot find symbol
+[ERROR]   symbol:   method mock(java.lang.Class<org.springframework.web.multipart.MultipartFile>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[518,9] cannot find symbol
+[ERROR]   symbol:   method doReturn(java.util.Optional<org.nnnn.ddd.entity.dddCase>)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/CaseServiceTest.java:[519,9] cannot find symbol
+[ERROR]   symbol:   method when(org.nnnn.ddd.entity.CaseUpload)
+[ERROR]   location: class org.nnnn.ddd.service.CaseServiceTest
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
