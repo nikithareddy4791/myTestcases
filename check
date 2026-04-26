@@ -1,31 +1,31 @@
-$ git rebase --continue
-Applying: Add unit tests for caseService and cacheService classes
-Applying: modify caseService class
-Applying: modify caseService class
-Applying: Added Service and Config class unit tests
-Applying: adding junits to services
-Applying: adding junits to model and config classes
-Applying: adding junits for Entities and exceptions
-.git/rebase-apply/patch:6644: trailing whitespace.
-    dtoCase.setStatus(null);
-.git/rebase-apply/patch:6830: trailing whitespace.
-    when(authenticationService.hasSealedAccess()).thenReturn(false);
-.git/rebase-apply/patch:1449: new blank line at EOF.
-+
-warning: 3 lines add whitespace errors.
-Using index info to reconstruct a base tree...
-M       pom.xml
-M       src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
-Falling back to patching base and 3-way merge...
-Auto-merging src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
-CONFLICT (content): Merge conflict in src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java
-Removing src/test/java/org/nnnn/ddd/service/ADSearchServiceProdTest.java
-Auto-merging pom.xml
-CONFLICT (content): Merge conflict in pom.xml
-error: Failed to merge in the changes.
-hint: Use 'git am --show-current-patch' to see the failed patch
-Patch failed at 0009 adding junits for Entities and exceptions
-Resolve all conflicts manually, mark them as resolved with
-"git add/rm <conflicted_files>", then run "git rebase --continue".
-You can instead skip this commit: run "git rebase --skip".
-To abort and get back to the state before "git rebase", run "git rebase --abort".
+-------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[259,13] invalid method declaration; return type required
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[259,44] <identifier> expected
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[260,13] invalid method declaration; return type required
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[260,46] <identifier> expected
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[262,31] <identifier> expected
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[262,39] <identifier> expected
+[INFO] 6 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  9.854 s
+[INFO] Finished at: 2026-04-26T12:47:00-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:testCompile (default-testCompile) on project ddd-services: Compilation failure: Compilation failure: 
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[259,13] invalid method declaration; return type required
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[259,44] <identifier> expected
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[260,13] invalid method declaration; return type required
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[260,46] <identifier> expected
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[262,31] <identifier> expected
+[ERROR] /F:/project/ddd-services/src/test/java/org/nnnn/ddd/service/ReferenceDataServiceTest.java:[262,39] <identifier> expected
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
