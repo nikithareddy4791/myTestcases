@@ -1,32 +1,5 @@
-$ git rebase --continue
-Applying: excluding auto generated classes
-Applying: add sonar coverage eclusions and fix constructor injection
-.git/rebase-apply/patch:11: space before tab in indent.
-                  src/main/java/io/swagger/**/*
-warning: 1 line adds whitespace errors.
-Using index info to reconstruct a base tree...
-M       pom.xml
-M       src/main/java/org/nnnn/ddd/api/CacheApiController.java
-Falling back to patching base and 3-way merge...
-Auto-merging pom.xml
-Applying: modifying the testcases for the updated code
-Using index info to reconstruct a base tree...
-M       src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java
-M       src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java
-M       src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java
-M       src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java
-M       src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java
-Falling back to patching base and 3-way merge...
-Auto-merging src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java
-CONFLICT (content): Merge conflict in src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java
-Auto-merging src/test/java/org/nnnn/ddd/service/CaseFlowChartTest.java
-Auto-merging src/test/java/org/nnnn/ddd/service/CacheApiControllerTest.java
-Auto-merging src/test/java/org/nnnn/ddd/repository/CDWRepositoryTest.java
-Auto-merging src/test/java/org/nnnn/ddd/model/ArrestInfoTest.java
-error: Failed to merge in the changes.
-hint: Use 'git am --show-current-patch' to see the failed patch
-Patch failed at 0020 modifying the testcases for the updated code
-Resolve all conflicts manually, mark them as resolved with
-"git add/rm <conflicted_files>", then run "git rebase --continue".
-You can instead skip this commit: run "git rebase --skip".
-To abort and get back to the state before "git rebase", run "git rebase --abort".
+# Take ours for the test file
+git checkout --ours src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java
+git add src/test/java/org/nnnn/ddd/service/CaseServiceControllerTest.java
+
+git rebase --continue
