@@ -1,44 +1,9 @@
-# Accept remote version for all test files
-git checkout --theirs src/test/java/org/nypd/dlu/service/CaseServiceTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/service/EmailServiceTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/service/CacheServiceTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/service/CacheApiControllerTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/service/CaseServiceControllerTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/service/CaseFlowChartTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/service/ADSearchServiceDevTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/security/KeyCloakAuthorityConverterTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/repository/CDWRepositoryTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/model/CaseFilterTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/model/ArrestInfoTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/SecurityConfigTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/MapperConfigTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/Entity/Entitytests.java
-git checkout --theirs src/test/java/org/nypd/dlu/Dells3ConfigTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/CacheConfigTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/AppConstantsTest.java
-git checkout --theirs src/test/java/org/nypd/dlu/AllTestsSuite.java
-git checkout --theirs src/test/java/io/swagger/configuration/JacksonConfigurationTest.java
-git checkout --theirs src/main/java/org/nypd/dlu/repository/CDWRepository.java
-
-# Stage all of them
-git add src/test/ src/main/java/org/nypd/dlu/repository/CDWRepository.java
-
-
-
-=========================================
-============================
-
-git commit -m "Merge remote feature/backend-unit-tests - resolve conflicts"
-
-
-=========================================
-============================
-
-# Copy your fixed files from outputs into the project
-# Then commit again
-git add .
-git commit -m "Fix test compilation errors - update to match production API changes"
-git push origin feature/backend-unit-tests
-
-
-
+$ git rebase --continue
+Applying: adding junits for Entities and exceptions
+No changes - did you forget to use 'git add'?
+If there is nothing left to stage, chances are that something else
+already introduced the same changes; you might want to skip this patch.
+Resolve all conflicts manually, mark them as resolved with
+"git add/rm <conflicted_files>", then run "git rebase --continue".
+You can instead skip this commit: run "git rebase --skip".
+To abort and get back to the state before "git rebase", run "git rebase --abort".
