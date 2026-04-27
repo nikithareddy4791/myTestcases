@@ -1,12 +1,33 @@
-In GetArrestInfoSummaryListTests delete these 5 test methods entirely:
+Title: Add Unit Tests for DDD Services
+Description:
+Summary
+Added comprehensive JUnit 5 unit test coverage for the DDD Case Management Services application (ddd-services).
+Test Coverage Added
 
-getArrestInfoSummary_list_mapsArrIdAndTopCharge
-getArrestInfoSummary_list_notMasked_nameVisible
-getArrestInfoSummary_list_multipleRows_mapsAll
-getArrestInfoSummary_list_mapsSealedFlagY
-getArrestInfoSummary_list_mapsSealedFlagN
+Security & Config — SecurityConfig, ServletInitializer, JacksonConfiguration
+Services — CaseService, CacheService, EmailService, ReferenceDataService, ADSearchService, AuthenticationService
+API Controllers — CaseApiController, CacheApiController, ReferenceApiController, UserController
+Repository — CDWRepository, CaseSpecifications
+Models — ArrestInfo, CaseFilter, ReferenceCode
+Entities — DddCase, AdaList, CategoryList, StatusList, TagList, ItemList, CaseNote, CaseItem, CaseUpload, CaseTag
+Converters — LocalDateToDate, DateToLocalDate, TimestampToOffsetDateTime
+Exceptions — GlobalExceptionHandler, CaseAccessException, SealedAccessException, FileUploadException
+Actuator — BuildInfoHealthIndicator
 
-These tests can't work without a real JPA context since the mapping happens inside the production JPA query result processing. Keep only:
+Tech Stack
 
-getArrestInfoSummary_list_emptyResults_returnsEmptyList
-getArrestInfoSummary_list_setsParameter
+JUnit 5 (Jupiter)
+Mockito 5.17.0
+AssertJ
+Spring Boot Test (@WebMvcTest, @ExtendWith)
+
+Total Coverage
+
+40 test files
+~1,477 test cases
+
+Notes
+
+Security filter chain excluded from controller tests via @AutoConfigureMockMvc(addFilters = false)
+@MockitoSettings(strictness = Strictness.LENIENT) applied where needed for lenient stubbing
+SonarQube exclusions configured in pom.xml for Swagger-generated classes
