@@ -1,5 +1,2 @@
-193:        @DisplayName("null arrSealedFlg - sets arrSealedFlg to null")
-413:        @DisplayName("null arrSealedFlg sets arrSealedFlg to null")
-446:        @DisplayName("fluent arrSealedFlg returns same instance")
-447:        void fluent_arrSealedFlg_returnsSameInstance() {
-449:            assertThat(info.arrSealedFlg("true")).isSameAs(info);
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:testCompile (default-testCompile) on project dlu-services: Compilation failure
+[ERROR] /F:/project/dlu-services/src/test/java/org/nypd/dlu/model/ArrestInfoTest.java:[449,42] incompatible types: boolean cannot be converted to java.lang.String
